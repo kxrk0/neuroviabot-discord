@@ -1,0 +1,97 @@
+name: ⚙️ Deploy Backend API to VPS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: 🚀 Deploy Backend API
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🔐 Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+          
+      - name: 🚀 Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ secrets.VPS_BACKEND_PATH }}
+        run: |
+          # Backend klasörünü VPS'e gönder
+          echo "📤 Uploading backend to VPS..."
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            ./backend/ \
+            $VPS_USER@$VPS_HOST:$VPS_PATH/
+          
+          # VPS'te deployment işlemleri
+          ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << 'ENDSSH'
+            set -e
+            
+            echo "🔄 Starting backend deployment..."
+            
+            cd ${{ secrets.VPS_BACKEND_PATH }}
+            
+            # Node modules temizle ve yeniden yükle
+            echo "🧹 Cleaning node_modules..."
+            rm -rf node_modules
+            rm -f package-lock.json
+            
+            echo "📦 Installing dependencies..."
+            npm install --production
+            
+            # .env dosyasını oluştur
+            cat > .env << EOF
+          PORT=${{ secrets.BACKEND_PORT }}
+          NODE_ENV=production
+          DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }}
+          DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }}
+          DISCORD_REDIRECT_URI=${{ secrets.DISCORD_REDIRECT_URI }}
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          BOT_TOKEN=${{ secrets.DISCORD_TOKEN }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          CORS_ORIGIN=${{ secrets.FRONTEND_URL }}
+          EOF
+            
+            # PM2 ile backend'i yeniden başlat
+            echo "🔄 Restarting backend with PM2..."
+            
+            pm2 delete neuroviabot-backend 2>/dev/null || true
+            
+            pm2 start index.js --name neuroviabot-backend \
+              --max-memory-restart 400M \
+              --time \
+              --log-date-format "YYYY-MM-DD HH:mm:ss" \
+              --merge-logs
+            
+            pm2 save
+            
+            echo "✅ Backend deployment completed!"
+            pm2 status neuroviabot-backend
+          ENDSSH
+          
+      - name: ✅ Deployment Success
+        if: success()
+        run: |
+          echo "🎉 Backend API successfully deployed!"
+          echo "⚙️ Backend is now running!"
+          
+      - name: ❌ Deployment Failed
+        if: failure()
+        run: |
+          echo "💥 Backend deployment failed!"
+          exit 1
