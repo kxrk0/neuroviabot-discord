@@ -81,17 +81,24 @@ npm install --production
 
 ### B. .env Oluştur
 ```bash
-cat > .env << 'EOF'
+# Önce SESSION_SECRET oluştur
+SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+
+# Sonra .env dosyasını oluştur
+cat > .env << EOF
 PORT=5000
 NODE_ENV=production
-DISCORD_CLIENT_ID=773539215098249246
-DISCORD_CLIENT_SECRET=UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk
+DISCORD_CLIENT_ID=YOUR_CLIENT_ID_HERE
+DISCORD_CLIENT_SECRET=YOUR_CLIENT_SECRET_HERE
 DISCORD_REDIRECT_URI=https://neuroviabot.xyz/api/auth/callback
-SESSION_SECRET=[rastgele-32-karakter-string]
-BOT_TOKEN=NzczNTM5MjE1MDk4MjQ5MjQ2.GpTMDe.WArQmgqTCJX_xWhHREZ75EKTKEN_DqMbUW6_ys
+SESSION_SECRET=$SESSION_SECRET
+BOT_TOKEN=YOUR_BOT_TOKEN_HERE
 DATABASE_URL=../data/database.json
 CORS_ORIGIN=https://neuroviabot.xyz
 EOF
+
+# ⚠️ NOT: YOUR_*_HERE kısımlarına GERÇEK değerlerinizi yazın!
+# Token'larınızı local .env dosyanızdan kopyalayın
 ```
 
 **SESSION_SECRET oluştur:**
