@@ -73,9 +73,9 @@ Repository'nizin **Settings > Secrets and variables > Actions** bölümüne aşa
 
 | Secret Adı | Açıklama | Örnek |
 |------------|----------|-------|
-| `DISCORD_TOKEN` | Bot token'ı | `NzczNTM5...` |
+| `DISCORD_TOKEN` | Bot token'ı | `NzczNTM5...` (yeni token) |
 | `DISCORD_CLIENT_ID` | Bot client ID | `773539215098249246` |
-| `DISCORD_CLIENT_SECRET` | Bot client secret | `Yu6sYxI...` |
+| `DISCORD_CLIENT_SECRET` | Bot client secret | `UXxunZzBQ...` (yeni secret) |
 
 ### VPS Secrets
 
