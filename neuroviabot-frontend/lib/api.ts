@@ -183,6 +183,19 @@ export async function updateGuildSettings(
 }
 
 /**
+ * API object for easier imports
+ */
+export const api = {
+  fetchUserGuilds,
+  checkBotInGuilds,
+  getBotInviteUrl,
+  fetchBotStats,
+  fetchGuildSettings: async (guildId: string) => await fetchGuildSettings(guildId),
+  updateGuildSettings: async (guildId: string, settings: any) => await updateGuildSettings(guildId, settings),
+  getGuildStats: async (guildId: string) => await fetchGuildStats(guildId),
+};
+
+/**
  * Fetch guild stats
  */
 export async function fetchGuildStats(guildId: string): Promise<any> {

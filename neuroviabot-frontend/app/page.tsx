@@ -44,18 +44,25 @@ export default function Home() {
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-10 border-b border-white/5 backdrop-blur-xl"
+        className="relative z-10 border-b border-white/5 backdrop-blur-xl bg-black/50 sticky top-0"
       >
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-discord flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-3 group">
+              <motion.div 
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-discord to-purple-600 flex items-center justify-center shadow-lg shadow-discord/30"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
                 <span className="text-white font-bold text-xl">N</span>
-              </div>
-              <span className="text-white font-semibold text-lg">NeuroViaBot</span>
+              </motion.div>
+              <span className="text-white font-semibold text-lg group-hover:text-discord transition-colors">NeuroViaBot</span>
             </Link>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
+              <Link href="#features" className="text-gray-400 hover:text-white transition-colors text-sm">
+                Features
+              </Link>
               <Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors text-sm">
                 Dashboard
               </Link>
@@ -130,15 +137,32 @@ export default function Home() {
       </div>
 
       {/* Features */}
-      <div className="relative max-w-7xl mx-auto px-6 py-20">
+      <div id="features" className="relative max-w-7xl mx-auto px-6 py-20">
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-black text-white mb-4">Everything You Need</h2>
-          <p className="text-gray-400">Powerful features in a minimal package</p>
+          <motion.div
+            initial={{ scale: 0.9 }}
+            whileInView={{ scale: 1 }}
+            viewport={{ once: true }}
+            className="inline-block"
+          >
+            <h2 className="text-5xl font-black text-white mb-4">
+              Everything You Need
+              <motion.span
+                className="block text-transparent bg-gradient-to-r from-discord via-purple-500 to-pink-500 bg-clip-text"
+                animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                transition={{ duration: 5, repeat: Infinity }}
+              >
+                In One Place
+              </motion.span>
+            </h2>
+          </motion.div>
+          <p className="text-lg text-gray-400 mt-4">Powerful features with real-time dashboard control</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
