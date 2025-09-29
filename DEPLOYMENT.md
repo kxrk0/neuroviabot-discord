@@ -36,7 +36,7 @@
 ### 1. VPS'e Bağlanma
 
 ```bash
-ssh your_user@your_vps_ip
+ssh root@your_vps_ip
 ```
 
 ### 2. Kurulum Scriptini Çalıştırma
@@ -83,10 +83,10 @@ Repository'nizin **Settings > Secrets and variables > Actions** bölümüne aşa
 |------------|----------|-------|
 | `VPS_SSH_KEY` | VPS SSH private key | SSH key içeriği |
 | `VPS_HOST` | VPS IP adresi | `123.45.67.89` |
-| `VPS_USER` | VPS kullanıcı adı | `ubuntu` |
-| `VPS_BOT_PATH` | Bot klasör yolu | `/home/ubuntu/neuroviabot/bot` |
-| `VPS_FRONTEND_PATH` | Frontend klasör yolu | `/home/ubuntu/neuroviabot/frontend` |
-| `VPS_BACKEND_PATH` | Backend klasör yolu | `/home/ubuntu/neuroviabot/backend` |
+| `VPS_USER` | VPS kullanıcı adı | `root` |
+| `VPS_BOT_PATH` | Bot klasör yolu | `/root/neuroviabot/bot` |
+| `VPS_FRONTEND_PATH` | Frontend klasör yolu | `/root/neuroviabot/frontend` |
+| `VPS_BACKEND_PATH` | Backend klasör yolu | `/root/neuroviabot/backend` |
 
 ### API Secrets
 
@@ -113,9 +113,9 @@ Repository'nizin **Settings > Secrets and variables > Actions** bölümüne aşa
 ### Bot Deployment
 
 ```bash
-ssh your_user@your_vps_ip
+ssh root@your_vps_ip
 
-cd ~/neuroviabot/bot
+cd /root/neuroviabot/bot
 
 # Güncel kodu çek
 git pull origin main
@@ -134,7 +134,7 @@ pm2 save
 ### Frontend Deployment
 
 ```bash
-cd ~/neuroviabot/frontend
+cd /root/neuroviabot/frontend
 
 # Güncel kodu çek
 git pull origin main
@@ -154,7 +154,7 @@ pm2 save
 ### Backend Deployment
 
 ```bash
-cd ~/neuroviabot/backend
+cd /root/neuroviabot/backend
 
 # Güncel kodu çek
 git pull origin main
@@ -263,15 +263,15 @@ pm2 start index.js --name neuroviabot
 3. **Permission Hatası:**
    ```bash
    # Klasör izinlerini düzelt
-   sudo chown -R $USER:$USER ~/neuroviabot
-   chmod -R 755 ~/neuroviabot
+   chown -R root:root /root/neuroviabot
+   chmod -R 755 /root/neuroviabot
    ```
 
 ### Database Sorunları
 
 ```bash
 # Backup'tan geri yükle
-cd ~/neuroviabot/bot/data
+cd /root/neuroviabot/bot/data
 cp database-backup-YYYYMMDD-HHMMSS.json database.json
 pm2 restart neuroviabot
 ```
@@ -296,7 +296,7 @@ sudo systemctl restart nginx
 ### Bot Güncelleme
 
 ```bash
-cd ~/neuroviabot/bot
+cd /root/neuroviabot/bot
 git pull origin main
 npm install
 pm2 restart neuroviabot
@@ -329,11 +329,11 @@ Her deployment'ta otomatik backup alınır:
 
 ```bash
 # Database backup
-cd ~/neuroviabot/bot
+cd /root/neuroviabot/bot
 cp data/database.json data/manual-backup-$(date +%Y%m%d).json
 
 # Full backup
-cd ~
+cd /root
 tar -czf neuroviabot-backup-$(date +%Y%m%d).tar.gz neuroviabot/
 ```
 

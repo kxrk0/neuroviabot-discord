@@ -29,9 +29,9 @@ sudo npm install -g pm2
 
 # Create directories
 echo "📁 Creating project directories..."
-mkdir -p ~/neuroviabot/bot
-mkdir -p ~/neuroviabot/frontend
-mkdir -p ~/neuroviabot/backend
+mkdir -p /root/neuroviabot/bot
+mkdir -p /root/neuroviabot/frontend
+mkdir -p /root/neuroviabot/backend
 
 # Setup firewall
 echo "🔒 Configuring firewall..."
@@ -89,7 +89,7 @@ fi
 
 # Clone repository
 echo "📥 Cloning repository..."
-cd ~/neuroviabot/bot
+cd /root/neuroviabot/bot
 git clone git@github.com:kxrk0/neuroviabot-discord.git .
 
 echo "✅ VPS setup completed!"
