@@ -54,14 +54,26 @@ const deploy = async () => {
     log('🚀 Deployment başlatılıyor...', 'DEPLOY');
 
     try {
-        // 1. Git pull (with stash for local changes)
+        // 1. Git pull (clean untracked files and stash changes)
         log('📥 Git pull yapılıyor...', 'DEPLOY');
+        
+        // Clean untracked files and directories
         try {
-            // Stash any local changes first
-            await runCommand('git stash');
+            await runCommand('git clean -fd');
+            log('🧹 Untracked dosyalar temizlendi', 'DEPLOY');
+        } catch (e) {
+            log('ℹ️  No untracked files to clean', 'DEPLOY');
+        }
+        
+        // Stash any local changes
+        try {
+            await runCommand('git stash -u');
+            log('💾 Local değişiklikler stash edildi', 'DEPLOY');
         } catch (e) {
             log('ℹ️  No local changes to stash', 'DEPLOY');
         }
+        
+        // Pull latest changes
         await runCommand('git pull origin main');
         log('✅ Git pull tamamlandı', 'DEPLOY');
 
