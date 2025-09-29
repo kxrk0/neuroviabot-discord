@@ -27,6 +27,10 @@ id_rsa.pub
 id_ed25519
 id_ed25519.pub
 
+# Webhook Deployment (VPS only)
+webhook-deploy.js
+WEBHOOK-*.md
+
 # Node.js
 node_modules/
 npm-debug.log*
