@@ -53,7 +53,7 @@ jobs:
           rm -rf node_modules .next
           
           echo "📦 Installing frontend dependencies..."
-          npm ci
+          npm install
           
           echo "🏗️ Building Next.js..."
           npm run build
@@ -70,7 +70,7 @@ jobs:
           rm -rf node_modules
           
           echo "📦 Installing backend dependencies..."
-          npm ci --omit=dev
+          npm install --production
           
           echo "✅ Backend dependencies installed!"
 
@@ -153,15 +153,15 @@ jobs:
             # ==========================================
             echo "📦 Installing bot dependencies..."
             cd /root/neuroviabot/bot
-            npm ci --omit=dev
+            npm install --production
             
             echo "📦 Installing frontend dependencies..."
             cd /root/neuroviabot/bot/frontend
-            npm ci --omit=dev
+            npm install --production
             
             echo "📦 Installing backend dependencies..."
             cd /root/neuroviabot/bot/backend
-            npm ci --omit=dev
+            npm install --production
             
             # ==========================================
             # CREATE ENV FILES
