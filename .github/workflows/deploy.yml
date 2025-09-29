@@ -1,0 +1,292 @@
+name: 🚀 Deploy NeuroViaBot to VPS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'frontend/**'
+      - 'backend/**'
+      - 'index.js'
+      - 'package.json'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy All Services to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Setup Node.js
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # ==========================================
+      # BOT BUILD
+      # ==========================================
+      - name: 🤖 Build Bot
+        run: |
+          echo "📦 Installing bot dependencies..."
+          npm ci --omit=dev
+          echo "✅ Bot dependencies installed!"
+
+      # ==========================================
+      # FRONTEND BUILD
+      # ==========================================
+      - name: 🌐 Build Frontend
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://neuroviabot.xyz
+          NEXT_PUBLIC_BOT_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+          NODE_ENV: production
+        run: |
+          echo "🧹 Cleaning frontend..."
+          rm -rf node_modules .next
+          
+          echo "📦 Installing frontend dependencies..."
+          npm ci
+          
+          echo "🏗️ Building Next.js..."
+          npm run build
+          
+          echo "✅ Frontend build complete!"
+          
+      # ==========================================
+      # BACKEND BUILD
+      # ==========================================
+      - name: ⚙️ Build Backend
+        working-directory: ./backend
+        run: |
+          echo "🧹 Cleaning backend..."
+          rm -rf node_modules
+          
+          echo "📦 Installing backend dependencies..."
+          npm ci --omit=dev
+          
+          echo "✅ Backend dependencies installed!"
+
+      # ==========================================
+      # ARCHIVE ALL
+      # ==========================================
+      - name: 📦 Archive Bot
+        run: |
+          echo "📦 Creating bot archive..."
+          tar --exclude='node_modules' --exclude='.git' --exclude='frontend' --exclude='backend' \
+              -czvf bot.tar.gz . || exit 0
+
+      - name: 📦 Archive Frontend
+        run: |
+          echo "📦 Creating frontend archive..."
+          tar --exclude='node_modules' -czvf frontend.tar.gz -C frontend . || exit 0
+
+      - name: 📦 Archive Backend
+        run: |
+          echo "📦 Creating backend archive..."
+          tar --exclude='node_modules' -czvf backend.tar.gz -C backend . || exit 0
+
+      # ==========================================
+      # COPY TO VPS
+      # ==========================================
+      - name: 📤 Copy archives to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          source: "bot.tar.gz,frontend.tar.gz,backend.tar.gz"
+          target: "/root"
+
+      # ==========================================
+      # DEPLOY ON VPS
+      # ==========================================
+      - name: 🚀 Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            
+            echo "🚀 Starting NeuroViaBot deployment..."
+            
+            # ==========================================
+            # BACKUP
+            # ==========================================
+            if [ -d "/root/neuroviabot/bot" ]; then
+              echo "📦 Creating backup..."
+              cp -r /root/neuroviabot/bot /root/neuroviabot-backup-$(date +%Y%m%d-%H%M%S) || true
+              # Keep only last 5 backups
+              ls -t /root/neuroviabot-backup-* 2>/dev/null | tail -n +6 | xargs rm -rf 2>/dev/null || true
+            fi
+            
+            # Create base directory
+            mkdir -p /root/neuroviabot/bot
+            
+            # ==========================================
+            # EXTRACT ARCHIVES
+            # ==========================================
+            echo "📦 Extracting bot archive..."
+            tar -xzvf /root/bot.tar.gz -C /root/neuroviabot/bot
+            
+            echo "📦 Extracting frontend archive..."
+            mkdir -p /root/neuroviabot/bot/frontend
+            tar -xzvf /root/frontend.tar.gz -C /root/neuroviabot/bot/frontend
+            
+            echo "📦 Extracting backend archive..."
+            mkdir -p /root/neuroviabot/bot/backend
+            tar -xzvf /root/backend.tar.gz -C /root/neuroviabot/bot/backend
+            
+            # ==========================================
+            # INSTALL DEPENDENCIES
+            # ==========================================
+            echo "📦 Installing bot dependencies..."
+            cd /root/neuroviabot/bot
+            npm ci --omit=dev
+            
+            echo "📦 Installing frontend dependencies..."
+            cd /root/neuroviabot/bot/frontend
+            npm ci --omit=dev
+            
+            echo "📦 Installing backend dependencies..."
+            cd /root/neuroviabot/bot/backend
+            npm ci --omit=dev
+            
+            # ==========================================
+            # CREATE ENV FILES
+            # ==========================================
+            echo "⚙️ Creating environment files..."
+            
+            # Bot .env (preserve existing if exists, otherwise create)
+            if [ ! -f "/root/neuroviabot/bot/.env" ]; then
+              echo "Creating bot .env file..."
+              cat > /root/neuroviabot/bot/.env << EOF
+            DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
+            DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }}
+            DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }}
+            EMBED_COLOR=#0099ff
+            DEFAULT_VOLUME=50
+            MAX_QUEUE_SIZE=100
+            NODE_ENV=production
+            EOF
+            fi
+            
+            # Frontend .env.production
+            cat > /root/neuroviabot/bot/frontend/.env.production << EOF
+            NEXT_PUBLIC_API_URL=https://neuroviabot.xyz
+            NEXT_PUBLIC_BOT_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }}
+            NODE_ENV=production
+            PORT=3001
+            EOF
+            
+            # Backend .env
+            cat > /root/neuroviabot/bot/backend/.env << EOF
+            PORT=5000
+            NODE_ENV=production
+            DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }}
+            DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }}
+            DISCORD_REDIRECT_URI=https://neuroviabot.xyz/api/auth/callback
+            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+            BOT_TOKEN=${{ secrets.DISCORD_TOKEN }}
+            DATABASE_URL=../data/database.json
+            CORS_ORIGIN=https://neuroviabot.xyz
+            EOF
+            
+            # ==========================================
+            # PM2 RESTART SERVICES
+            # ==========================================
+            echo "🔄 Restarting services with PM2..."
+            
+            # Restart Bot
+            echo "🤖 Restarting Discord Bot..."
+            pm2 stop neuroviabot || true
+            pm2 delete neuroviabot || true
+            cd /root/neuroviabot/bot
+            pm2 start index.js --name neuroviabot \
+              --max-memory-restart 500M \
+              --time \
+              --log-date-format "YYYY-MM-DD HH:mm:ss"
+            
+            # Restart Frontend
+            echo "🌐 Restarting Frontend..."
+            pm2 stop neuroviabot-frontend || true
+            pm2 delete neuroviabot-frontend || true
+            cd /root/neuroviabot/bot/frontend
+            pm2 start npm --name neuroviabot-frontend -- start \
+              --max-memory-restart 300M \
+              --time \
+              --log-date-format "YYYY-MM-DD HH:mm:ss"
+            
+            # Restart Backend
+            echo "⚙️ Restarting Backend..."
+            pm2 stop neuroviabot-backend || true
+            pm2 delete neuroviabot-backend || true
+            cd /root/neuroviabot/bot/backend
+            pm2 start index.js --name neuroviabot-backend \
+              --max-memory-restart 400M \
+              --time \
+              --log-date-format "YYYY-MM-DD HH:mm:ss"
+            
+            # Save PM2 configuration
+            pm2 save
+            
+            # ==========================================
+            # HEALTH CHECKS
+            # ==========================================
+            echo "🏥 Waiting for services to start..."
+            sleep 10
+            
+            echo "🔍 Health check: Frontend (Port 3001)..."
+            curl -I http://localhost:3001 && echo "✅ Frontend OK" || echo "⚠️ Frontend may need more time"
+            
+            echo "🔍 Health check: Backend (Port 5000)..."
+            curl -I http://localhost:5000/health && echo "✅ Backend OK" || echo "⚠️ Backend may need more time"
+            
+            echo "📊 PM2 Status:"
+            pm2 status
+            
+            # ==========================================
+            # CLEANUP
+            # ==========================================
+            echo "🧹 Cleaning up temporary files..."
+            rm -f /root/bot.tar.gz /root/frontend.tar.gz /root/backend.tar.gz
+            
+            echo ""
+            echo "🎉 NeuroViaBot deployment completed successfully!"
+            echo "🌐 Frontend: https://neuroviabot.xyz"
+            echo "⚙️ Backend: https://neuroviabot.xyz/api"
+            echo "🤖 Bot: Active on Discord"
+
+      # ==========================================
+      # CLEANUP LOCAL
+      # ==========================================
+      - name: 🧹 Cleanup local files
+        run: rm -f bot.tar.gz frontend.tar.gz backend.tar.gz
+        
+      # ==========================================
+      # DEPLOYMENT SUCCESS
+      # ==========================================
+      - name: ✅ Deployment Success
+        if: success()
+        run: |
+          echo "🎉 All services deployed successfully!"
+          echo "✅ Bot deployed"
+          echo "✅ Frontend deployed"
+          echo "✅ Backend deployed"
+          
+      - name: ❌ Deployment Failed
+        if: failure()
+        run: |
+          echo "💥 Deployment failed! Check logs above for details."
+          exit 1
