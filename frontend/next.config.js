@@ -3,10 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
-  // Skip TypeScript and ESLint checks during production build
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Skip ESLint checks during production build
   eslint: {
     ignoreDuringBuilds: true,
   },
