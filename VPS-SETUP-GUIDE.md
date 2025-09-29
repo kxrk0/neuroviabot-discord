@@ -47,10 +47,12 @@ npm install
 ```bash
 cat > .env.production << 'EOF'
 NEXT_PUBLIC_API_URL=https://neuroviabot.xyz
-NEXT_PUBLIC_BOT_CLIENT_ID=773539215098249246
+NEXT_PUBLIC_BOT_CLIENT_ID=YOUR_CLIENT_ID_HERE
 NODE_ENV=production
 PORT=3001
 EOF
+
+# NOT: YOUR_CLIENT_ID_HERE yerine gerçek Client ID'nizi yazın
 ```
 
 ### C. Build & Start

@@ -16,21 +16,23 @@ Bu rehber, NeuroViaBot için gerekli GitHub Secrets yapılandırmasını adım a
 ### DISCORD_TOKEN
 ```
 Name: DISCORD_TOKEN
-Secret: NzczNTM5MjE1MDk4MjQ5MjQ2.GpTMDe.WArQmgqTCJX_xWhHREZ75EKTKEN_DqMbUW6_ys
+Secret: YOUR_DISCORD_BOT_TOKEN_HERE
 ```
 **Açıklama:** Discord bot token'ı. Bot'un Discord'a bağlanması için gerekli.
+**Nereden alınır:** Discord Developer Portal > Applications > Bot > Token
 
 ### DISCORD_CLIENT_ID
 ```
 Name: DISCORD_CLIENT_ID
-Secret: 773539215098249246
+Secret: YOUR_CLIENT_ID_HERE
 ```
 **Açıklama:** Discord bot'unuzun Application ID'si.
+**Nereden alınır:** Discord Developer Portal > Applications > General Information > Application ID
 
 ### DISCORD_CLIENT_SECRET
 ```
 Name: DISCORD_CLIENT_SECRET
-Secret: UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk
+Secret: YOUR_CLIENT_SECRET_HERE
 ```
 **Açıklama:** Discord OAuth için gerekli secret key.
 
