@@ -145,6 +145,8 @@ export function ConfirmModal({
           </Button>
         </>
       }
-    />
+    >
+      <></>
+    </Modal>
   );
 }

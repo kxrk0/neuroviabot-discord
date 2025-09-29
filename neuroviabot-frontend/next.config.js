@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   
   // Production build optimizations
   eslint: {
@@ -11,6 +10,16 @@ const nextConfig = {
     // Type checking happens during build, don't block deployment
     ignoreBuildErrors: false,
   },
+  
+  // Turbopack configuration (Next.js 15+)
+  turbopack: {
+    resolveAlias: {
+      '@': './',
+    },
+  },
+  
+  // Output file tracing
+  outputFileTracingRoot: require('path').join(__dirname, '../'),
   
   // Environment variables
   env: {
