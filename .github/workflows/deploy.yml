@@ -52,11 +52,14 @@ jobs:
           echo "🧹 Cleaning frontend..."
           rm -rf node_modules .next
           
-          echo "📦 Installing frontend dependencies..."
+          echo "📦 Installing frontend dependencies (including dev for build)..."
           npm install
           
           echo "🏗️ Building Next.js..."
           npm run build
+          
+          echo "🧹 Removing dev dependencies after build..."
+          npm prune --production
           
           echo "✅ Frontend build complete!"
           
