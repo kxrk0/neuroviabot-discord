@@ -54,8 +54,14 @@ const deploy = async () => {
     log('🚀 Deployment başlatılıyor...', 'DEPLOY');
 
     try {
-        // 1. Git pull
+        // 1. Git pull (with stash for local changes)
         log('📥 Git pull yapılıyor...', 'DEPLOY');
+        try {
+            // Stash any local changes first
+            await runCommand('git stash');
+        } catch (e) {
+            log('ℹ️  No local changes to stash', 'DEPLOY');
+        }
         await runCommand('git pull origin main');
         log('✅ Git pull tamamlandı', 'DEPLOY');
 
