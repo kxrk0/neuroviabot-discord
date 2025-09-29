@@ -76,11 +76,30 @@ const deploy = async () => {
         await runCommand('npm install --omit=dev', `${REPO_PATH}/backend`);
         log('✅ Backend dependencies kuruldu', 'DEPLOY');
 
-        // 5. PM2 restart
+        // 5. PM2 restart (or start if not exists)
         log('🔄 PM2 servisleri yeniden başlatılıyor...', 'DEPLOY');
-        await runCommand('pm2 restart neuroviabot');
-        await runCommand('pm2 restart neuroviabot-frontend');
-        await runCommand('pm2 restart neuroviabot-backend');
+        
+        // Bot
+        try {
+            await runCommand('pm2 restart neuroviabot');
+        } catch {
+            await runCommand('pm2 start index.js --name neuroviabot', REPO_PATH);
+        }
+        
+        // Frontend
+        try {
+            await runCommand('pm2 restart neuroviabot-frontend');
+        } catch {
+            await runCommand('pm2 start npm --name neuroviabot-frontend -- start', `${REPO_PATH}/frontend`);
+        }
+        
+        // Backend
+        try {
+            await runCommand('pm2 restart neuroviabot-backend');
+        } catch {
+            await runCommand('pm2 start npm --name neuroviabot-backend -- start', `${REPO_PATH}/backend`);
+        }
+        
         await runCommand('pm2 save');
         log('✅ PM2 servisleri restart edildi', 'DEPLOY');
 
@@ -153,3 +172,4 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (error) => {
     log(`Unhandled Rejection: ${error.message}`, 'ERROR');
 });
+
