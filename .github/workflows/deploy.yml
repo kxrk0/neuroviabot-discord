@@ -55,6 +55,9 @@ jobs:
           echo "📦 Installing frontend dependencies (including dev for build)..."
           npm install
           
+          echo "📦 Ensuring TypeScript is installed..."
+          npm install --save-dev typescript @types/react @types/node
+          
           echo "🏗️ Building Next.js..."
           npm run build
           
