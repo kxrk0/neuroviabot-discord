@@ -36,7 +36,7 @@ jobs:
       - name: 🤖 Build Bot
         run: |
           echo "📦 Installing bot dependencies..."
-          npm ci --omit=dev
+          npm install --production
           echo "✅ Bot dependencies installed!"
 
       # ==========================================
