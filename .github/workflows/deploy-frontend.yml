@@ -38,8 +38,10 @@ jobs:
       - name: 🏗️ Build Next.js app
         working-directory: ./frontend
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+          NEXT_PUBLIC_API_URL: https://neuroviabot.xyz
           NEXT_PUBLIC_BOT_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+          NODE_ENV: production
+          PORT: 3001
         run: |
           echo "🏗️ Building Next.js application..."
           npm run build
@@ -74,12 +76,12 @@ jobs:
             
             cd ${{ secrets.VPS_FRONTEND_PATH }}
             
-            # .env.local dosyasını oluştur
-            cat > .env.local << EOF
-          NEXT_PUBLIC_API_URL=${{ secrets.API_URL }}
+            # .env.production dosyasını oluştur
+            cat > .env.production << EOF
+          NEXT_PUBLIC_API_URL=https://neuroviabot.xyz
           NEXT_PUBLIC_BOT_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }}
-          DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }}
-          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          NODE_ENV=production
+          PORT=3001
           EOF
             
             # PM2 ile frontend'i yeniden başlat

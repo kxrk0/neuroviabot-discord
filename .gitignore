@@ -2,11 +2,19 @@
 # 🤖 NeuroViaBot - Git Ignore Configuration
 # ==========================================
 
-# Environment & Secrets
+# Environment & Secrets (CRITICAL - NEVER COMMIT!)
 .env
 .env.local
 .env.production
+.env.development
 config/config.json
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+backend/.env
+backend/.env.local
+backend/.env.production
+Caddyfile
 
 # Node.js
 node_modules/

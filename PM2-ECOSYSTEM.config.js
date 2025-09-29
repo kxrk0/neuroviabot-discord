@@ -30,7 +30,7 @@ module.exports = {
     {
       name: 'neuroviabot-backend',
       script: './index.js',
-      cwd: '/root/neuroviabot/backend',
+      cwd: '/root/neuroviabot/bot/backend',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -52,7 +52,7 @@ module.exports = {
       name: 'neuroviabot-frontend',
       script: 'npm',
       args: 'start',
-      cwd: '/root/neuroviabot/frontend',
+      cwd: '/root/neuroviabot/bot/frontend',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -60,7 +60,7 @@ module.exports = {
       max_memory_restart: '300M',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 3001,
       },
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',
