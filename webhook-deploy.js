@@ -84,14 +84,14 @@ const deploy = async () => {
 
         // 3. Frontend build
         log('🌐 Frontend build başlıyor...', 'DEPLOY');
-        await runCommand('npm install', `${REPO_PATH}/frontend`);
-        await runCommand('npm run build', `${REPO_PATH}/frontend`);
-        await runCommand('npm prune --production', `${REPO_PATH}/frontend`);
+        await runCommand('npm install', `${REPO_PATH}/neuroviabot-frontend`);
+        await runCommand('npm run build', `${REPO_PATH}/neuroviabot-frontend`);
+        await runCommand('npm prune --production', `${REPO_PATH}/neuroviabot-frontend`);
         log('✅ Frontend build tamamlandı', 'DEPLOY');
 
         // 4. Backend dependencies
         log('⚙️ Backend dependencies kuruluyor...', 'DEPLOY');
-        await runCommand('npm install --omit=dev', `${REPO_PATH}/backend`);
+        await runCommand('npm install --omit=dev', `${REPO_PATH}/neuroviabot-backend`);
         log('✅ Backend dependencies kuruldu', 'DEPLOY');
 
         // 5. PM2 restart (or start if not exists)
@@ -108,14 +108,14 @@ const deploy = async () => {
         try {
             await runCommand('pm2 restart neuroviabot-frontend');
         } catch {
-            await runCommand('pm2 start npm --name neuroviabot-frontend -- start', `${REPO_PATH}/frontend`);
+            await runCommand('pm2 start npm --name neuroviabot-frontend -- start', `${REPO_PATH}/neuroviabot-frontend`);
         }
         
         // Backend
         try {
             await runCommand('pm2 restart neuroviabot-backend');
         } catch {
-            await runCommand('pm2 start npm --name neuroviabot-backend -- start', `${REPO_PATH}/backend`);
+            await runCommand('pm2 start npm --name neuroviabot-backend -- start', `${REPO_PATH}/neuroviabot-backend`);
         }
         
         await runCommand('pm2 save');
