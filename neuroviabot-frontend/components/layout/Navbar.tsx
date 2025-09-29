@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import UserAvatar from '../auth/UserAvatar';
+import UserDropdown from '@/components/auth/UserDropdown';
 import { Bars3Icon, BellIcon } from '@heroicons/react/24/outline';
 
 interface NavbarProps {
@@ -10,7 +10,7 @@ interface NavbarProps {
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
   return (
-    <nav className="sticky top-0 z-30 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+    <nav className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Menu + Logo */}
@@ -40,8 +40,8 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             
-            {/* User Avatar */}
-            <UserAvatar />
+            {/* User Dropdown */}
+            <UserDropdown />
           </div>
         </div>
       </div>

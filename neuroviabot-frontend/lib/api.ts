@@ -8,7 +8,9 @@ class APIClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+      baseURL: typeof window !== 'undefined' 
+        ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000')
+        : 'http://localhost:5000',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -68,12 +70,17 @@ class APIClient {
   // ==========================================
   
   async getCurrentUser() {
-    const { data } = await this.client.get('/api/user/me');
+    const { data } = await this.client.get('/api/auth/user');
+    return data;
+  }
+
+  async logout() {
+    const { data } = await this.client.post('/api/auth/logout');
     return data;
   }
 
   async getUserGuilds() {
-    const { data } = await this.client.get('/api/user/guilds');
+    const { data } = await this.client.get('/api/guilds/user');
     return data;
   }
 

@@ -1,6 +1,6 @@
-# ⚙️ NeuroViaBot Backend API
+# 🔥 NeuroViaBot Backend API
 
-Express.js REST API for NeuroViaBot dashboard with Discord OAuth and WebSocket support.
+Express.js backend API for NeuroViaBot dashboard.
 
 ## 🚀 Quick Start
 
@@ -8,72 +8,53 @@ Express.js REST API for NeuroViaBot dashboard with Discord OAuth and WebSocket s
 # Install dependencies
 npm install
 
-# Development server (with nodemon)
+# Create .env file
+cp .env.example .env
+
+# Start development server
 npm run dev
-
-# Production server
-npm start
-```
-
-## 🛠️ Tech Stack
-
-- **Framework:** Express.js
-- **Authentication:** Passport.js (Discord Strategy)
-- **Real-time:** Socket.io
-- **Security:** Helmet, CORS, Rate Limiting
-- **Session:** express-session with SQLite
-
-## 📁 Project Structure
-
-```
-backend/
-├── index.js               # Main application
-├── routes/               # API routes
-├── middleware/           # Custom middleware
-├── models/               # Data models
-└── utils/                # Utilities
-```
-
-## ⚙️ Configuration
-
-Create `.env`:
-
-```env
-PORT=5000
-NODE_ENV=production
-DISCORD_CLIENT_ID=your_client_id
-DISCORD_CLIENT_SECRET=your_client_secret
-DISCORD_REDIRECT_URI=http://localhost:5000/api/auth/callback
-SESSION_SECRET=your_session_secret
-BOT_TOKEN=your_bot_token
-CORS_ORIGIN=http://localhost:3000
 ```
 
 ## 📡 API Endpoints
 
 ### Authentication
 - `GET /api/auth/discord` - Start Discord OAuth
-- `GET /api/auth/callback` - OAuth callback
-- `GET /api/auth/logout` - Logout user
+- `GET /api/auth/discord/callback` - OAuth callback
 - `GET /api/auth/user` - Get current user
+- `POST /api/auth/logout` - Logout
 
-### Bot Stats
+### Bot
 - `GET /api/bot/stats` - Get bot statistics
-- `GET /health` - Health check
+- `GET /api/bot/status` - Get bot status
 
 ### Guilds
-- `GET /api/guilds` - Get user guilds
+- `GET /api/guilds/user` - Get user guilds
 - `GET /api/guilds/:id/settings` - Get guild settings
-- `PUT /api/guilds/:id/settings` - Update guild settings
+- `PATCH /api/guilds/:id/settings` - Update guild settings
+- `GET /api/guilds/:id/stats` - Get guild stats
+- `GET /api/guilds/:id/members` - Get guild members
 
-## 🔒 Security Features
+### Health
+- `GET /api/health` - Health check
 
-- ✅ Helmet.js security headers
-- ✅ CORS protection
-- ✅ Rate limiting
-- ✅ Session management
-- ✅ Input validation
+## 🛠️ Tech Stack
 
-## 📄 License
+- **Express.js** - Web framework
+- **Passport.js** - Discord OAuth
+- **Axios** - HTTP client
+- **CORS** - Cross-origin requests
+- **Express Session** - Session management
 
-MIT
+## 🔧 Environment Variables
+
+See `.env.example` for required variables.
+
+## 📝 Development
+
+Backend automatically starts with frontend when you run:
+```bash
+cd neuroviabot-frontend
+npm run dev
+```
+
+This runs both frontend (port 3001) and backend (port 5000) concurrently.

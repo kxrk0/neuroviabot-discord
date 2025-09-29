@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import ShimmerButton from '@/components/ui/ShimmerButton';
 import MinimalCard from '@/components/ui/MinimalCard';
+import UserDropdown from '@/components/auth/UserDropdown';
 import {
   MusicalNoteIcon,
   ShieldCheckIcon,
@@ -43,7 +44,7 @@ export default function Home() {
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative border-b border-white/5 backdrop-blur-xl"
+        className="relative z-10 border-b border-white/5 backdrop-blur-xl"
       >
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
@@ -58,9 +59,7 @@ export default function Home() {
               <Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors text-sm">
                 Dashboard
               </Link>
-              <ShimmerButton href="/dashboard" className="text-sm">
-                Get Started
-              </ShimmerButton>
+              <UserDropdown />
             </div>
           </div>
         </div>

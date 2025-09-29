@@ -1,16 +1,12 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { redirect, useParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import MinimalCard from '@/components/ui/MinimalCard';
-import Loading from '@/components/ui/Loading';
-import Badge from '@/components/ui/Badge';
-import Switch from '@/components/ui/Switch';
-import Button from '@/components/ui/Button';
-import { useToast } from '@/hooks/useToast';
+import { MinimalCard, Loading, Switch, Button } from '@/components/ui';
+import { useToast } from '@/hooks';
+import { api } from '@/lib';
 import {
   ServerIcon,
   UsersIcon,
@@ -22,7 +18,6 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function ServerDetailPage() {
-  const { data: session, status } = useSession();
   const params = useParams();
   const serverId = params.id as string;
   const { showToast } = useToast();
@@ -33,40 +28,44 @@ export default function ServerDetailPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      redirect('/login');
-    }
-
-    if (status === 'authenticated') {
-      fetchServerDetails();
-    }
-  }, [status, serverId]);
+    fetchServerDetails();
+  }, [serverId]);
 
   const fetchServerDetails = async () => {
     try {
-      // Mock data for now
-      const mockServer = {
-        id: serverId,
-        name: 'NeuroVia Community',
-        icon: null,
-        memberCount: 1234,
-        onlineCount: 567,
-        botPresent: true,
-      };
+      // Fetch guild settings from API
+      const guildSettings = await api.getGuildSettings(serverId);
+      const guildStats = await api.getGuildStats(serverId);
 
-      const mockSettings = {
+      setServer({
+        id: serverId,
+        name: guildStats.name || 'Server',
+        icon: null,
+        memberCount: guildStats.memberCount || 0,
+        onlineCount: guildStats.onlineCount || 0,
+        botPresent: true,
+      });
+
+      setSettings(guildSettings);
+    } catch (error) {
+      console.error('Failed to fetch server details:', error);
+      // Fallback to mock data
+      setServer({
+        id: serverId,
+        name: 'Server',
+        icon: null,
+        memberCount: 0,
+        onlineCount: 0,
+        botPresent: true,
+      });
+      setSettings({
         musicEnabled: true,
         moderationEnabled: true,
         economyEnabled: true,
         levelingEnabled: true,
         welcomeEnabled: false,
         prefix: '!',
-      };
-
-      setServer(mockServer);
-      setSettings(mockSettings);
-    } catch (error) {
-      console.error('Failed to fetch server details:', error);
+      });
     } finally {
       setLoading(false);
     }
@@ -79,20 +78,20 @@ export default function ServerDetailPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // TODO: Save to API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await api.updateGuildSettings(serverId, settings);
       showToast('Settings saved successfully!', 'success');
     } catch (error) {
+      console.error('Failed to save settings:', error);
       showToast('Failed to save settings', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading || status === 'loading') {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
-        <Loading size="lg" text="Loading server details..." />
+        <Loading size="lg" />
       </div>
     );
   }

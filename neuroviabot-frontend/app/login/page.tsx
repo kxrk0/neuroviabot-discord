@@ -1,6 +1,5 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
@@ -12,14 +11,11 @@ function LoginContent() {
   const error = searchParams?.get('error');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleDiscordLogin = async () => {
+  const handleDiscordLogin = () => {
     setIsLoading(true);
-    try {
-      await signIn('discord', { callbackUrl: '/dashboard' });
-    } catch (err) {
-      console.error('Login failed:', err);
-      setIsLoading(false);
-    }
+    // Redirect to backend Discord OAuth
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    window.location.href = `${apiUrl}/api/auth/discord`;
   };
 
   return (
