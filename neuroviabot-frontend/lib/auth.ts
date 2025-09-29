@@ -4,11 +4,11 @@ import DiscordProvider from 'next-auth/providers/discord';
 export const authOptions: NextAuthOptions = {
   providers: [
     DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID || process.env.NEXT_PUBLIC_BOT_CLIENT_ID || '',
+      clientId: process.env.DISCORD_CLIENT_ID || process.env.NEXT_PUBLIC_BOT_CLIENT_ID || '773539215098249246',
       clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
       authorization: {
         params: {
-          scope: 'identify email guilds',
+          scope: 'identify email guilds applications.commands connections',
         },
       },
     }),
@@ -33,6 +33,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).username = token.username;
         (session.user as any).discriminator = token.discriminator;
         (session.user as any).avatar = token.avatar;
+        (session.user as any).email = token.email;
       }
       return session;
     },

@@ -50,4 +50,56 @@ router.get('/status', (req, res) => {
   }
 });
 
+// Check if bot is in a guild
+router.get('/check-guild/:guildId', (req, res) => {
+  const { guildId } = req.params;
+  
+  try {
+    const client = getBotClient();
+    // TODO: Replace with actual check when bot client is connected
+    // const guild = client.guilds.cache.get(guildId);
+    // const isPresent = !!guild;
+    
+    // Mock response for now
+    const mockGuilds = ['1', '2']; // Mock guild IDs where bot is present
+    const isPresent = mockGuilds.includes(guildId);
+    
+    res.json({
+      guildId,
+      botPresent: isPresent,
+      ...(isPresent && {
+        memberCount: 1234,
+        name: 'Test Server',
+      }),
+    });
+  } catch (error) {
+    console.error('Error checking guild:', error);
+    res.status(500).json({ error: 'Failed to check guild' });
+  }
+});
+
+// Batch check bot presence in multiple guilds
+router.post('/check-guilds', (req, res) => {
+  const { guildIds } = req.body;
+  
+  if (!Array.isArray(guildIds)) {
+    return res.status(400).json({ error: 'guildIds must be an array' });
+  }
+  
+  try {
+    // TODO: Replace with actual checks when bot client is connected
+    const mockGuilds = ['1', '2']; // Mock guild IDs where bot is present
+    
+    const results = guildIds.map(guildId => ({
+      guildId,
+      botPresent: mockGuilds.includes(guildId),
+    }));
+    
+    res.json({ results });
+  } catch (error) {
+    console.error('Error checking guilds:', error);
+    res.status(500).json({ error: 'Failed to check guilds' });
+  }
+});
+
 module.exports = router;

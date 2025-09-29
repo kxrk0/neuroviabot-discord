@@ -1,221 +1,203 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+/**
+ * API Client for NeuroViaBot Backend
+ */
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+export interface Guild {
+  id: string;
+  name: string;
+  icon: string | null;
+  owner: boolean;
+  permissions: string;
+  features: string[];
+  botPresent?: boolean;
+  memberCount?: number;
+}
+
+export interface BotStats {
+  guilds: number;
+  users: number;
+  commands: number;
+  uptime: number;
+  ping: number;
+  memoryUsage: number;
+}
+
+export interface GuildSettings {
+  guildId: string;
+  prefix: string;
+  language: string;
+  musicEnabled: boolean;
+  moderationEnabled: boolean;
+  economyEnabled: boolean;
+  levelingEnabled: boolean;
+  welcomeEnabled: boolean;
+  welcomeChannel: string | null;
+  welcomeMessage: string;
+  [key: string]: any;
+}
 
 /**
- * API Client for Backend Communication
+ * Fetch user's guilds
  */
-class APIClient {
-  private client: AxiosInstance;
-
-  constructor() {
-    this.client = axios.create({
-      baseURL: typeof window !== 'undefined' 
-        ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000')
-        : 'http://localhost:5000',
-      timeout: 10000,
+export async function fetchUserGuilds(accessToken: string): Promise<Guild[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/guilds/user`, {
       headers: {
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
       },
-      withCredentials: true, // Send cookies
+      credentials: 'include',
     });
 
-    // Request interceptor
-    this.client.interceptors.request.use(
-      (config) => {
-        // Add auth token if available
-        const token = typeof window !== 'undefined' 
-          ? localStorage.getItem('authToken') 
-          : null;
-        
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch guilds');
+    }
 
-    // Response interceptor
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError) => {
-        if (error.response?.status === 401) {
-          // Unauthorized - redirect to login
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('authToken');
-            window.location.href = '/login';
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
-  }
-
-  // ==========================================
-  // BOT STATS
-  // ==========================================
-  
-  async getBotStats() {
-    const { data } = await this.client.get('/api/bot/stats');
-    return data;
-  }
-
-  async getBotStatus() {
-    const { data } = await this.client.get('/api/bot/status');
-    return data;
-  }
-
-  // ==========================================
-  // USER & AUTH
-  // ==========================================
-  
-  async getCurrentUser() {
-    const { data } = await this.client.get('/api/auth/user');
-    return data;
-  }
-
-  async logout() {
-    const { data } = await this.client.post('/api/auth/logout');
-    return data;
-  }
-
-  async getUserGuilds() {
-    const { data } = await this.client.get('/api/guilds/user');
-    return data;
-  }
-
-  // ==========================================
-  // GUILD/SERVER MANAGEMENT
-  // ==========================================
-  
-  async getGuildSettings(guildId: string) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/settings`);
-    return data;
-  }
-
-  async updateGuildSettings(guildId: string, settings: any) {
-    const { data } = await this.client.patch(`/api/guilds/${guildId}/settings`, settings);
-    return data;
-  }
-
-  async getGuildStats(guildId: string) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/stats`);
-    return data;
-  }
-
-  async getGuildMembers(guildId: string, page: number = 1, limit: number = 50) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/members`, {
-      params: { page, limit },
-    });
-    return data;
-  }
-
-  // ==========================================
-  // MODERATION
-  // ==========================================
-  
-  async getModerationCases(guildId: string) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/moderation/cases`);
-    return data;
-  }
-
-  async createModerationCase(guildId: string, caseData: any) {
-    const { data } = await this.client.post(`/api/guilds/${guildId}/moderation/cases`, caseData);
-    return data;
-  }
-
-  // ==========================================
-  // ECONOMY
-  // ==========================================
-  
-  async getEconomySettings(guildId: string) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/economy/settings`);
-    return data;
-  }
-
-  async updateEconomySettings(guildId: string, settings: any) {
-    const { data } = await this.client.patch(`/api/guilds/${guildId}/economy/settings`, settings);
-    return data;
-  }
-
-  async getLeaderboard(guildId: string, type: 'money' | 'level' = 'money') {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/leaderboard/${type}`);
-    return data;
-  }
-
-  // ==========================================
-  // LEVELING
-  // ==========================================
-  
-  async getLevelingSettings(guildId: string) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/leveling/settings`);
-    return data;
-  }
-
-  async updateLevelingSettings(guildId: string, settings: any) {
-    const { data } = await this.client.patch(`/api/guilds/${guildId}/leveling/settings`, settings);
-    return data;
-  }
-
-  // ==========================================
-  // MUSIC
-  // ==========================================
-  
-  async getMusicQueue(guildId: string) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/music/queue`);
-    return data;
-  }
-
-  async playMusic(guildId: string, query: string) {
-    const { data } = await this.client.post(`/api/guilds/${guildId}/music/play`, { query });
-    return data;
-  }
-
-  async pauseMusic(guildId: string) {
-    const { data } = await this.client.post(`/api/guilds/${guildId}/music/pause`);
-    return data;
-  }
-
-  async skipMusic(guildId: string) {
-    const { data} = await this.client.post(`/api/guilds/${guildId}/music/skip`);
-    return data;
-  }
-
-  async stopMusic(guildId: string) {
-    const { data } = await this.client.post(`/api/guilds/${guildId}/music/stop`);
-    return data;
-  }
-
-  // ==========================================
-  // COMMANDS
-  // ==========================================
-  
-  async getCommandStats(guildId?: string) {
-    const { data } = await this.client.get('/api/commands/stats', {
-      params: guildId ? { guildId } : undefined,
-    });
-    return data;
-  }
-
-  async getCommandHistory(guildId: string, page: number = 1, limit: number = 50) {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/commands/history`, {
-      params: { page, limit },
-    });
-    return data;
-  }
-
-  // ==========================================
-  // ANALYTICS
-  // ==========================================
-  
-  async getAnalytics(guildId: string, period: '7d' | '30d' | '90d' = '7d') {
-    const { data } = await this.client.get(`/api/guilds/${guildId}/analytics`, {
-      params: { period },
-    });
-    return data;
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching guilds:', error);
+    throw error;
   }
 }
 
-// Export singleton instance
-export const api = new APIClient();
-export default api;
+/**
+ * Check if bot is present in multiple guilds
+ */
+export async function checkBotInGuilds(guildIds: string[]): Promise<Record<string, boolean>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/bot/check-guilds`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ guildIds }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to check guilds');
+    }
+
+    const data = await response.json();
+    return data.results.reduce((acc: Record<string, boolean>, item: any) => {
+      acc[item.guildId] = item.botPresent;
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error('Error checking guilds:', error);
+    return {};
+  }
+}
+
+/**
+ * Get bot invite URL for a guild
+ */
+export async function getBotInviteUrl(guildId?: string): Promise<string> {
+  try {
+    const params = new URLSearchParams();
+    if (guildId) params.append('guildId', guildId);
+
+    const response = await fetch(`${API_BASE_URL}/api/guilds/invite-url?${params}`);
+    const data = await response.json();
+    return data.inviteUrl;
+  } catch (error) {
+    console.error('Error getting invite URL:', error);
+    // Fallback URL
+    const clientId = process.env.NEXT_PUBLIC_BOT_CLIENT_ID || '773539215098249246';
+    return `https://discord.com/oauth2/authorize?client_id=${clientId}&permissions=8&scope=bot%20applications.commands${guildId ? `&guild_id=${guildId}` : ''}`;
+  }
+}
+
+/**
+ * Fetch bot stats
+ */
+export async function fetchBotStats(): Promise<BotStats> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/bot/stats`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch bot stats');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching bot stats:', error);
+    // Return default values on error
+    return {
+      guilds: 0,
+      users: 0,
+      commands: 43,
+      uptime: 0,
+      ping: 0,
+      memoryUsage: 0,
+    };
+  }
+}
+
+/**
+ * Fetch guild settings
+ */
+export async function fetchGuildSettings(guildId: string): Promise<GuildSettings> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/guilds/${guildId}/settings`, {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch guild settings');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching guild settings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update guild settings
+ */
+export async function updateGuildSettings(
+  guildId: string,
+  settings: Partial<GuildSettings>
+): Promise<{ success: boolean; settings: GuildSettings }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/guilds/${guildId}/settings`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(settings),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update guild settings');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating guild settings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch guild stats
+ */
+export async function fetchGuildStats(guildId: string): Promise<any> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/guilds/${guildId}/stats`, {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch guild stats');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching guild stats:', error);
+    throw error;
+  }
+}
