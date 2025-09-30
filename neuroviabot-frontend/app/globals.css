@@ -9,15 +9,15 @@
 :root {
   /* Foreground & Background */
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 11, 14, 17;
-  --background-end-rgb: 21, 25, 34;
+  --background-start-rgb: 35, 39, 42;
+  --background-end-rgb: 21, 22, 33;
 
-  /* Background Colors */
-  --bg-primary: #0B0E11;
-  --bg-secondary: #151922;
-  --bg-tertiary: #1E2530;
-  --bg-hover: #252D3A;
-  --bg-card: #1a1d26;
+  /* Background Colors - MEE6 Style */
+  --bg-primary: #151621;
+  --bg-secondary: #1E1F2E;
+  --bg-tertiary: #2C2F33;
+  --bg-hover: #36393F;
+  --bg-card: #23272A;
   
   /* Discord Brand Colors */
   --discord-blue: #5865F2;
@@ -91,18 +91,14 @@
   color-scheme: dark;
 }
 
-/* Body Styles */
+/* Body Styles - MEE6 Theme */
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgb(var(--background-end-rgb))
-  )
-  rgb(var(--background-start-rgb));
+  background: #23272A;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* HTML Styles */
@@ -110,23 +106,24 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling - MEE6 Style */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: #1E1F2E;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-full);
+  background: #2C2F33;
+  border-radius: 10px;
+  border: 2px solid #1E1F2E;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--bg-hover);
+  background: #36393F;
 }
 
 /* Selection */
@@ -162,4 +159,32 @@ html {
 
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
 }
