@@ -3,7 +3,6 @@
 import { useSearchParams } from 'next/navigation';
 import { useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 
 function LoginContent() {
@@ -11,9 +10,10 @@ function LoginContent() {
   const error = searchParams?.get('error');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleDiscordLogin = async () => {
+  const handleDiscordLogin = () => {
     setIsLoading(true);
-    await signIn('discord', { callbackUrl: '/dashboard/servers' });
+    // Backend OAuth kullanıyoruz - Passport.js
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/discord`;
   };
 
   return (

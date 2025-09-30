@@ -1,6 +1,14 @@
+// ==========================================
+// NextAuth DISABLED - Backend OAuth kullanıyoruz
+// ==========================================
+// Backend Passport.js ile OAuth yapıyoruz
+// Frontend sadece backend'e redirect yapıyor
+// ==========================================
+
 import type { NextAuthOptions } from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 
+// NextAuth config (şu anda kullanılmıyor - backend OAuth aktif)
 export const authOptions: NextAuthOptions = {
   providers: [
     DiscordProvider({
@@ -14,7 +22,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   
-  debug: true, // Temporarily enable debug for troubleshooting
+  debug: false, // Disabled - using backend OAuth
   
   secret: process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET,
   
