@@ -9,12 +9,15 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope: 'identify email guilds',
+          prompt: 'none',
         },
       },
     }),
   ],
   
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NEXTAUTH_DEBUG === 'true' || process.env.NODE_ENV === 'development',
+  
+  secret: process.env.NEXTAUTH_SECRET,
   
   callbacks: {
     async jwt({ token, account, profile }) {
