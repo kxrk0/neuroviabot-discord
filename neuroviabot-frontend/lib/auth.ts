@@ -14,6 +14,8 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   
+  debug: true, // Temporarily enable debug for troubleshooting
+  
   secret: process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET,
   
   callbacks: {
