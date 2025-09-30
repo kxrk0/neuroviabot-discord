@@ -2,6 +2,8 @@
 
 **Hata:** `https://neuroviabot.xyz/api/auth/error`
 
+**⚠️ NOT:** VPS kullanıyorsan **VPS-KURULUM-REHBERI.md** dosyasına bak! Daha spesifik ve kolay.
+
 Bu hatanın 3 ana nedeni var. Hepsini adım adım çözelim:
 
 ---
