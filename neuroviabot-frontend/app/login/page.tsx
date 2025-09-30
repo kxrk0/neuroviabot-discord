@@ -1,278 +1,227 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, Suspense, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { signIn } from 'next-auth/react';
-import ShimmerButton from '@/components/ui/ShimmerButton';
-import MinimalCard from '@/components/ui/MinimalCard';
-import { 
-  ShieldCheckIcon, 
-  SparklesIcon, 
-  LockClosedIcon,
-  CheckCircleIcon 
-} from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams?.get('error');
   const [isLoading, setIsLoading] = useState(false);
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
-
-  useEffect(() => {
-    // Create floating particles
-    const newParticles = Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-    }));
-    setParticles(newParticles);
-  }, []);
 
   const handleDiscordLogin = async () => {
     setIsLoading(true);
-    // Use NextAuth for Discord OAuth
     await signIn('discord', { callbackUrl: '/dashboard/servers' });
   };
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center p-6">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(88,101,242,0.15),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-        
-        {/* Floating Particles */}
-        {particles.map((particle) => (
-          <motion.div
-            key={particle.id}
-            className="absolute w-1 h-1 bg-discord/30 rounded-full"
-            initial={{ x: `${particle.x}%`, y: `${particle.y}%`, opacity: 0 }}
-            animate={{
-              x: [`${particle.x}%`, `${particle.x + 10}%`, `${particle.x}%`],
-              y: [`${particle.y}%`, `${particle.y - 20}%`, `${particle.y}%`],
-              opacity: [0, 0.6, 0],
-            }}
-            transition={{
-              duration: 8 + Math.random() * 4,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-        
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden flex items-center justify-center">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
         {/* Gradient Orbs */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-discord/20 rounded-full blur-3xl"
+          className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
+            x: [0, 100, 0],
+            y: [0, 50, 0],
+            scale: [1, 1.1, 1],
           }}
           transition={{
-            duration: 8,
+            duration: 20,
             repeat: Infinity,
-            ease: 'easeInOut',
+            ease: "easeInOut",
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
+          className="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
           animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.3, 0.5, 0.3],
+            x: [0, -100, 0],
+            y: [0, -50, 0],
+            scale: [1.1, 1, 1.1],
           }}
           transition={{
-            duration: 8,
+            duration: 15,
             repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 4,
+            ease: "easeInOut",
           }}
         />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative max-w-md w-full"
-      >
-        <MinimalCard className="text-center p-12">
-          {/* Logo */}
+      {/* Main Content */}
+      <div className="relative z-10 w-full max-w-md mx-auto px-6">
+        {/* Logo Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-12"
+        >
           <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ 
-              type: "spring", 
-              duration: 0.8,
-              delay: 0.2 
-            }}
-            className="mb-8 inline-block relative"
+            className="inline-flex items-center justify-center mb-6"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400 }}
           >
-            <motion.div
-              className="absolute inset-0 bg-discord blur-2xl opacity-50"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.5, 0.8, 0.5],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-            <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-discord to-purple-600 flex items-center justify-center shadow-lg shadow-discord/50">
-              <span className="text-white font-black text-4xl">N</span>
+            <div className="relative">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-3xl blur-2xl opacity-50"
+                animate={{
+                  opacity: [0.5, 0.8, 0.5],
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              <div className="relative w-24 h-24 bg-gradient-to-br from-purple-600 via-pink-600 to-cyan-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-purple-500/50">
+                <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+              </div>
             </div>
           </motion.div>
-
-          {/* Title */}
-          <motion.h1 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-3xl font-black text-white mb-3"
+          
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="text-5xl font-black text-white mb-3 tracking-tight"
           >
-            Welcome Back
+            NeuroVia<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Bot</span>
           </motion.h1>
-          <motion.p 
+          
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-gray-400 mb-8"
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="text-gray-400 text-lg"
           >
-            Sign in with Discord to manage your servers
+            Welcome back to the future
           </motion.p>
+        </motion.div>
 
-          {/* Features List */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mb-8 space-y-3"
-          >
-            {[
-              { icon: <ShieldCheckIcon className="w-5 h-5" />, text: 'Secure OAuth2 Authentication' },
-              { icon: <SparklesIcon className="w-5 h-5" />, text: 'Real-time Dashboard' },
-              { icon: <CheckCircleIcon className="w-5 h-5" />, text: 'Instant Server Management' },
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 + index * 0.1 }}
-                className="flex items-center gap-3 text-left text-sm text-gray-300"
+        {/* Login Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+        >
+          <div className="relative group">
+            {/* Glow Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 rounded-3xl blur-xl opacity-25 group-hover:opacity-40 transition duration-500" />
+            
+            {/* Card */}
+            <div className="relative bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl"
+                >
+                  <p className="text-red-400 text-sm font-medium text-center">
+                    ⚠️ Authentication failed. Please try again.
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Login Button */}
+              <motion.button
+                onClick={handleDiscordLogin}
+                disabled={isLoading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative w-full group/btn overflow-hidden rounded-2xl transition-all duration-300"
               >
-                <div className="p-2 rounded-lg bg-discord/10 text-discord">
-                  {feature.icon}
+                {/* Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] to-[#7289DA]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+                
+                {/* Content */}
+                <div className="relative px-8 py-4 flex items-center justify-center gap-3">
+                  {isLoading ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
+                      />
+                      <span className="text-white font-semibold text-lg">Connecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                      </svg>
+                      <span className="text-white font-semibold text-lg">Continue with Discord</span>
+                      <motion.svg
+                        className="w-5 h-5 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </motion.svg>
+                    </>
+                  )}
                 </div>
-                <span>{feature.text}</span>
-              </motion.div>
-            ))}
-          </motion.div>
+              </motion.button>
 
-          {/* Error */}
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20"
-              >
-                <p className="text-red-400 text-sm font-medium">
-                  {error === 'OAuthCallback'
-                    ? '❌ Authentication failed. Please try again.'
-                    : '❌ An error occurred. Please try again.'}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              {/* Security Badge */}
+              <div className="mt-6 flex items-center justify-center gap-2 text-gray-500 text-sm">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Secured by Discord OAuth2</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
-          {/* Login Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-          >
-            <button
-              onClick={handleDiscordLogin}
-              disabled={isLoading}
-              className="relative w-full py-4 mb-6 px-8 bg-gradient-to-r from-discord to-purple-600 text-white rounded-xl font-semibold overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-discord opacity-0 group-hover:opacity-100 transition-opacity" />
-              <AnimatePresence mode="wait">
-                {isLoading ? (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center gap-2"
-                  >
-                    <motion.svg 
-                      className="h-5 w-5" 
-                      fill="none" 
-                      viewBox="0 0 24 24"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </motion.svg>
-                    <span>Connecting to Discord...</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="login"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center gap-2"
-                  >
-                    <svg className="w-6 h-6" viewBox="0 0 127.14 96.36" fill="currentColor">
-                      <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
-                    </svg>
-                    <span>Continue with Discord</span>
-                    <motion.div
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      →
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
-          </motion.div>
-
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.1 }}
-            className="text-gray-500 text-xs"
-          >
-            <LockClosedIcon className="w-3 h-3 inline-block mr-1" />
-            Secure authentication powered by Discord OAuth2
-          </motion.p>
-        </MinimalCard>
-
-        <motion.div 
+        {/* Back Link */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="text-center mt-6"
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="mt-8 text-center"
         >
-          <a href="/" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-2 group">
-            <motion.span
-              className="inline-block"
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+          >
+            <motion.svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
               whileHover={{ x: -5 }}
             >
-              ←
-            </motion.span>
-            <span className="group-hover:underline">Back to Home</span>
-          </a>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </motion.svg>
+            <span className="font-medium">Back to home</span>
+          </Link>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -280,8 +229,8 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
       </div>
     }>
       <LoginContent />

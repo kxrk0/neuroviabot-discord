@@ -8,11 +8,13 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
       authorization: {
         params: {
-          scope: 'identify email guilds applications.commands connections',
+          scope: 'identify email guilds',
         },
       },
     }),
   ],
+  
+  debug: process.env.NODE_ENV === 'development',
   
   callbacks: {
     async jwt({ token, account, profile }) {
