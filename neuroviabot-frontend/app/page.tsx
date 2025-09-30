@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { fetchBotStats } from '@/lib/api';
 import UserDropdown from '@/components/auth/UserDropdown';
 import {
@@ -12,20 +12,14 @@ import {
   ChartBarIcon,
   TicketIcon,
   GiftIcon,
-  BoltIcon,
   SparklesIcon,
-  ServerIcon,
-  UsersIcon,
-  CommandLineIcon,
+  BoltIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 
 export default function Home() {
   const [stats, setStats] = useState({ guilds: 0, users: 0, commands: 43 });
   const [mounted, setMounted] = useState(false);
-  const { scrollY } = useScroll();
-  
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
-  const scale = useTransform(scrollY, [0, 300], [1, 0.8]);
 
   useEffect(() => {
     setMounted(true);
@@ -37,75 +31,33 @@ export default function Home() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
-      {/* Fixed Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"
-          animate={{
-            y: [0, 100, 0],
-            x: [0, 50, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"
-          animate={{
-            y: [0, -100, 0],
-            x: [0, -50, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
-      {/* Navbar */}
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className="sticky top-0 z-50 backdrop-blur-2xl bg-slate-900/50 border-b border-white/5"
-      >
+    <div className="min-h-screen bg-[#23272A]">
+      {/* Navbar - Discord Styled */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#2C2F33]/95 backdrop-blur-lg border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
               <motion.div
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.6 }}
-                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-purple-500/50"
+                whileHover={{ scale: 1.05 }}
+                className="w-12 h-12 rounded-2xl bg-[#5865F2] flex items-center justify-center"
               >
                 <span className="text-white font-black text-xl">N</span>
               </motion.div>
-              <div>
-                <div className="text-white font-bold text-lg tracking-tight">
-                  NeuroVia<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Bot</span>
-                </div>
-                <div className="text-xs text-gray-500">Advanced Discord Bot</div>
-              </div>
+              <span className="text-white font-bold text-xl hidden sm:block">NeuroViaBot</span>
             </Link>
-            
-            <div className="flex items-center gap-6">
-              <Link
-                href="#features"
-                className="text-gray-400 hover:text-white transition-colors text-sm font-medium hidden md:block"
-              >
+
+            {/* Nav Links */}
+            <div className="flex items-center gap-8">
+              <Link href="#features" className="text-gray-400 hover:text-white transition-colors text-sm font-medium hidden md:block">
                 Features
               </Link>
-              <Link
-                href="#stats"
-                className="text-gray-400 hover:text-white transition-colors text-sm font-medium hidden md:block"
-              >
-                Stats
+              <Link href="#premium" className="text-gray-400 hover:text-white transition-colors text-sm font-medium hidden md:block">
+                Premium
               </Link>
               <Link
                 href="/dashboard"
-                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300"
+                className="px-6 py-2.5 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-lg font-semibold transition-all"
               >
                 Dashboard
               </Link>
@@ -113,246 +65,254 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
-        <motion.div
-          style={{ opacity, scale }}
-          className="relative max-w-5xl mx-auto text-center z-10"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
+      {/* Hero Section - MEE6 Style */}
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
+        {/* Background Decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#5865F2] rounded-full opacity-10 blur-3xl" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#5865F2] rounded-full opacity-10 blur-3xl" />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.4, type: "spring" }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-8"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
             >
-              <SparklesIcon className="w-5 h-5 text-purple-400" />
-              <span className="text-purple-300 text-sm font-medium">Now with Real-time Dashboard</span>
-            </motion.div>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-6xl md:text-8xl font-black text-white mb-6 leading-tight"
-          >
-            Next-Gen<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">
-              Discord Bot
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed"
-          >
-            Powerful moderation, immersive music, virtual economy, and real-time dashboard control
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Link href="/dashboard">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl overflow-hidden shadow-2xl shadow-purple-500/50"
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#5865F2]/10 rounded-full mb-6"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative flex items-center gap-2 text-white font-semibold text-lg">
-                  <BoltIcon className="w-6 h-6" />
-                  Get Started
-                  <motion.svg
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                <SparklesIcon className="w-5 h-5 text-[#5865F2]" />
+                <span className="text-[#5865F2] text-sm font-semibold">The most powerful Discord bot</span>
+              </motion.div>
+
+              <h1 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight">
+                Level up your
+                <br />
+                <span className="text-[#5865F2]">Discord server</span>
+              </h1>
+
+              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+                Engage your community with powerful moderation, music, economy, and leveling features.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/dashboard">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-8 py-4 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#5865F2]/50 transition-all"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </motion.svg>
-                </div>
-              </motion.button>
-            </Link>
-            
-            <a href="https://github.com/kxrk0/neuroviabot-discord" target="_blank" rel="noopener noreferrer">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all rounded-2xl text-white font-semibold text-lg"
-              >
-                View on GitHub
-              </motion.button>
-            </a>
-          </motion.div>
+                    Add to Discord
+                    <ArrowRightIcon className="w-5 h-5" />
+                  </motion.button>
+                </Link>
+                <Link href="#features">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-8 py-4 bg-[#2C2F33] hover:bg-[#36393F] text-white rounded-xl font-bold text-lg transition-all"
+                  >
+                    Learn More
+                  </motion.button>
+                </Link>
+              </div>
 
-          {/* Floating Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="grid grid-cols-3 gap-4 mt-20 max-w-2xl mx-auto"
-          >
-            <StatCard icon={<ServerIcon className="w-6 h-6" />} value={stats.guilds} label="Servers" />
-            <StatCard icon={<UsersIcon className="w-6 h-6" />} value={stats.users} label="Users" />
-            <StatCard icon={<CommandLineIcon className="w-6 h-6" />} value={stats.commands} label="Commands" />
-          </motion.div>
-        </motion.div>
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-8 mt-12">
+                <div>
+                  <div className="text-3xl font-black text-white mb-1">
+                    {stats.guilds > 1000 ? `${(stats.guilds / 1000).toFixed(1)}K` : stats.guilds}+
+                  </div>
+                  <div className="text-sm text-gray-500 font-medium">Servers</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-black text-white mb-1">
+                    {stats.users > 1000 ? `${(stats.users / 1000).toFixed(1)}K` : stats.users}+
+                  </div>
+                  <div className="text-sm text-gray-500 font-medium">Users</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-black text-white mb-1">{stats.commands}+</div>
+                  <div className="text-sm text-gray-500 font-medium">Commands</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Visual */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative hidden lg:block"
+            >
+              <div className="relative">
+                <motion.div
+                  animate={{ y: [0, -20, 0] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                  className="absolute inset-0 bg-gradient-to-br from-[#5865F2] to-[#7289DA] rounded-3xl opacity-20 blur-2xl"
+                />
+                <div className="relative bg-[#2C2F33] rounded-3xl p-8 border border-white/5">
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className="flex items-center gap-4 p-4 bg-[#36393F] rounded-xl"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#5865F2] flex items-center justify-center">
+                          <BoltIcon className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="h-3 bg-gray-700 rounded w-3/4 mb-2" />
+                          <div className="h-2 bg-gray-800 rounded w-1/2" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="relative py-32 px-6">
+      {/* Features Section - MEE6 Style */}
+      <section id="features" className="py-20 px-6 bg-[#2C2F33]">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
           >
-            <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-              Everything You Need
+            <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
+              Powerful features for your server
             </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Powerful features designed for modern Discord communities
+              Everything you need to engage, moderate, and grow your Discord community
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
-              icon={<MusicalNoteIcon className="w-7 h-7" />}
-              title="Premium Music"
-              description="High-quality music from YouTube & Spotify with advanced queue management"
-              gradient="from-pink-500 to-rose-500"
-              delay={0}
+              icon={<MusicalNoteIcon className="w-8 h-8" />}
+              title="Music Player"
+              description="High-quality music from YouTube and Spotify with advanced controls"
+              color="bg-pink-500"
             />
             <FeatureCard
-              icon={<ShieldCheckIcon className="w-7 h-7" />}
-              title="Smart Moderation"
-              description="AI-powered auto-moderation with customizable rules and warnings"
-              gradient="from-blue-500 to-cyan-500"
-              delay={0.1}
+              icon={<ShieldCheckIcon className="w-8 h-8" />}
+              title="Moderation"
+              description="Keep your server safe with auto-moderation and advanced tools"
+              color="bg-blue-500"
             />
             <FeatureCard
-              icon={<CurrencyDollarIcon className="w-7 h-7" />}
-              title="Virtual Economy"
-              description="Engaging economy system with casino games and custom shop"
-              gradient="from-amber-500 to-orange-500"
-              delay={0.2}
+              icon={<CurrencyDollarIcon className="w-8 h-8" />}
+              title="Economy"
+              description="Engage members with virtual currency and custom rewards"
+              color="bg-yellow-500"
             />
             <FeatureCard
-              icon={<ChartBarIcon className="w-7 h-7" />}
-              title="Leveling System"
-              description="Track user activity with XP, levels, and role rewards"
-              gradient="from-green-500 to-emerald-500"
-              delay={0.3}
+              icon={<ChartBarIcon className="w-8 h-8" />}
+              title="Leveling"
+              description="Reward active members with XP, levels, and role rewards"
+              color="bg-green-500"
             />
             <FeatureCard
-              icon={<TicketIcon className="w-7 h-7" />}
-              title="Support Tickets"
-              description="Professional ticket system for community support"
-              gradient="from-purple-500 to-violet-500"
-              delay={0.4}
+              icon={<TicketIcon className="w-8 h-8" />}
+              title="Ticket System"
+              description="Professional support ticket system for your community"
+              color="bg-purple-500"
             />
             <FeatureCard
-              icon={<GiftIcon className="w-7 h-7" />}
+              icon={<GiftIcon className="w-8 h-8" />}
               title="Giveaways"
-              description="Create and manage exciting giveaways with auto-selection"
-              gradient="from-pink-500 to-purple-500"
-              delay={0.5}
+              description="Create and manage giveaways with automatic winner selection"
+              color="bg-red-500"
             />
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="relative py-32 px-6">
+      {/* Premium Section */}
+      <section id="premium" className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-3xl blur-3xl opacity-20" />
-            <div className="relative bg-gradient-to-br from-slate-900/90 to-purple-900/50 backdrop-blur-2xl border border-white/10 rounded-3xl p-12">
-              <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-                Ready to Get Started?
-              </h2>
-              <p className="text-xl text-gray-400 mb-8">
-                Join thousands of communities using NeuroViaBot
-              </p>
-              <Link href="/login">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-10 py-5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl text-white font-bold text-xl shadow-2xl shadow-purple-500/50"
-                >
-                  Launch Dashboard
-                </motion.button>
-              </Link>
-            </div>
+            <h2 className="text-4xl lg:text-5xl font-black text-white mb-6">
+              Ready to get started?
+            </h2>
+            <p className="text-xl text-gray-400 mb-8">
+              Join thousands of servers using NeuroViaBot to engage their communities
+            </p>
+            <Link href="/dashboard">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-12 py-5 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-xl font-bold text-xl shadow-2xl shadow-[#5865F2]/50 transition-all"
+              >
+                Add to Discord
+              </motion.button>
+            </Link>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative border-t border-white/5 py-12">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-gray-500">
-            © 2025 NeuroViaBot. Made with ❤️ by the NeuroVia Team
-          </p>
+      <footer className="py-12 px-6 border-t border-white/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#5865F2] flex items-center justify-center">
+                <span className="text-white font-black">N</span>
+              </div>
+              <span className="text-white font-bold text-lg">NeuroViaBot</span>
+            </div>
+            <div className="flex gap-8">
+              <Link href="#features" className="text-gray-400 hover:text-white transition-colors">
+                Features
+              </Link>
+              <Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              <a href="https://github.com/kxrk0/neuroviabot-discord" className="text-gray-400 hover:text-white transition-colors">
+                GitHub
+              </a>
+            </div>
+            <p className="text-gray-500 text-sm">
+              © 2025 NeuroViaBot. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
   );
 }
 
-function StatCard({ icon, value, label }: any) {
+function FeatureCard({ icon, title, description, color }: any) {
   return (
     <motion.div
-      whileHover={{ y: -5 }}
-      className="relative group"
-    >
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition duration-300" />
-      <div className="relative bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-        <div className="text-purple-400 mb-2">{icon}</div>
-        <div className="text-3xl font-black text-white mb-1">
-          {value > 1000 ? `${(value / 1000).toFixed(1)}K` : value}+
-        </div>
-        <div className="text-sm text-gray-400 font-medium">{label}</div>
-      </div>
-    </motion.div>
-  );
-}
-
-function FeatureCard({ icon, title, description, gradient, delay }: any) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay }}
-      whileHover={{ y: -10 }}
-      className="relative group"
+      viewport={{ once: true }}
+      whileHover={{ y: -5 }}
+      className="group"
     >
-      <div className={`absolute inset-0 bg-gradient-to-r ${gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition duration-500`} />
-      <div className="relative h-full bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-white/20 transition duration-500">
-        <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${gradient} text-white mb-6 shadow-lg`}>
+      <div className="h-full bg-[#23272A] rounded-2xl p-8 border border-white/5 hover:border-[#5865F2]/30 transition-all">
+        <div className={`inline-flex p-4 rounded-xl ${color} text-white mb-6`}>
           {icon}
         </div>
         <h3 className="text-2xl font-bold text-white mb-3">{title}</h3>
