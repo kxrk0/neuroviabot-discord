@@ -167,7 +167,7 @@ export default function ServersPage() {
             </div>
             <div>
               <div className="text-2xl font-black text-white">
-                {servers.reduce((acc, s) => acc + s.memberCount, 0).toLocaleString()}
+                {servers.reduce((acc, s) => acc + (s.memberCount || 0), 0).toLocaleString()}
               </div>
               <div className="text-sm text-gray-400">Total Members</div>
             </div>

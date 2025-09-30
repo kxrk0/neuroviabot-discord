@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib';
+import { signOut } from 'next-auth/react';
 
 export interface DiscordUser {
   id: string;
@@ -24,8 +24,7 @@ export function useUser() {
   const fetchUser = async () => {
     try {
       setLoading(true);
-      const userData = await api.getCurrentUser();
-      setUser(userData);
+      // User data comes from NextAuth session
       setError(null);
     } catch (err: any) {
       console.error('Failed to fetch user:', err);
@@ -38,9 +37,8 @@ export function useUser() {
 
   const logout = async () => {
     try {
-      await api.logout();
+      await signOut({ callbackUrl: '/' });
       setUser(null);
-      window.location.href = '/';
     } catch (err) {
       console.error('Logout failed:', err);
     }

@@ -8,7 +8,7 @@ import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Loading from '@/components/ui/Loading';
 import Badge from '@/components/ui/Badge';
 import { formatNumber } from '@/lib/utils';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import {
   ServerIcon,
   CommandLineIcon,
@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const data = await api.getBotStats();
+      const data = await api.fetchBotStats();
       setStats(data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);

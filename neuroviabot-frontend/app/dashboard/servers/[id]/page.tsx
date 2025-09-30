@@ -34,7 +34,7 @@ export default function ServerDetailPage() {
   const fetchServerDetails = async () => {
     try {
       // Fetch guild settings from API
-      const guildSettings = await api.getGuildSettings(serverId);
+      const guildSettings = await api.fetchGuildSettings(serverId);
       const guildStats = await api.getGuildStats(serverId);
 
       setServer({
