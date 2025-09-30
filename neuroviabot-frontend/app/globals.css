@@ -3,102 +3,54 @@
 @tailwind utilities;
 
 /* ==========================================
-   NeuroViaBot Dashboard - Theme Variables
+   NeuroViaBot - Discord Theme
+   Official Discord Color Palette
    ========================================== */
 
 :root {
-  /* Foreground & Background */
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 35, 39, 42;
-  --background-end-rgb: 21, 22, 33;
-
-  /* Background Colors - MEE6 Style */
-  --bg-primary: #151621;
-  --bg-secondary: #1E1F2E;
-  --bg-tertiary: #2C2F33;
-  --bg-hover: #36393F;
-  --bg-card: #23272A;
-  
-  /* Discord Brand Colors */
-  --discord-blue: #5865F2;
-  --discord-blue-dark: #4752C4;
-  --discord-blue-light: #7289DA;
+  /* Discord Official Colors */
   --discord-blurple: #5865F2;
+  --discord-blurple-dark: #4752C4;
+  --discord-green: #3BA55D;
+  --discord-yellow: #FAA81A;
+  --discord-fuchsia: #EB459F;
+  --discord-red: #ED4245;
+  --discord-white: #FFFFFF;
+  --discord-black: #000000;
+  
+  /* Discord Dark Theme Colors */
+  --discord-dark-1: #1E1F22;  /* Primary background */
+  --discord-dark-2: #2B2D31;  /* Secondary background */
+  --discord-dark-3: #313338;  /* Tertiary background */
+  --discord-dark-4: #383A40;  /* Hover state */
+  --discord-dark-border: #26272B;  /* Borders */
   
   /* Text Colors */
-  --text-primary: #FFFFFF;
-  --text-secondary: #B9BBBE;
-  --text-muted: #72767D;
-  --text-disabled: #4E5058;
+  --discord-text-primary: #F2F3F5;
+  --discord-text-secondary: #B5BAC1;
+  --discord-text-muted: #949BA4;
+  --discord-text-link: #00AFF4;
   
-  /* Status Colors */
-  --success: #3BA55D;
-  --warning: #FAA81A;
-  --error: #ED4245;
-  --info: #00AFF4;
-  
-  /* Accent Colors */
-  --purple: #7289DA;
-  --green: #43B581;
-  --yellow: #FEE75C;
-  --red: #F04747;
-  --orange: #FF6B6B;
-  --cyan: #4ECDC4;
-  
-  /* Border & Shadow */
-  --border-color: #2E3338;
-  --border-light: #3E4349;
+  /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.16);
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.24);
   --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.32);
   
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-  --spacing-3xl: 4rem;
-  
-  /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-  --radius-full: 9999px;
-  
   /* Transitions */
   --transition-fast: 150ms;
   --transition-base: 200ms;
   --transition-slow: 300ms;
-  --transition-slower: 500ms;
-  
-  /* Z-index Layers */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
 }
 
-/* Dark Theme Enhancements */
-.dark {
-  color-scheme: dark;
-}
-
-/* Body Styles - MEE6 Theme */
+/* Body Styles - Discord Theme */
 body {
-  color: rgb(var(--foreground-rgb));
-  background: #23272A;
+  color: var(--discord-text-primary);
+  background: var(--discord-dark-3);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* HTML Styles */
@@ -106,35 +58,45 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Scrollbar Styling - MEE6 Style */
+/* Scrollbar Styling - Discord Style */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 16px;
+  height: 16px;
 }
 
-::-webkit-scrollbar-track {
-  background: #1E1F2E;
+::-webkit-scrollbar-corner {
+  background-color: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2C2F33;
-  border-radius: 10px;
-  border: 2px solid #1E1F2E;
+  background-color: #1A1B1E;
+  border: 4px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #36393F;
+  background-color: #2E3035;
+  border: 4px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+  border: 4px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
 }
 
 /* Selection */
 ::selection {
-  background-color: var(--discord-blue);
-  color: var(--text-primary);
+  background-color: var(--discord-blurple);
+  color: var(--discord-white);
 }
 
 /* Focus States */
 *:focus-visible {
-  outline: 2px solid var(--discord-blue);
+  outline: 2px solid var(--discord-blurple);
   outline-offset: 2px;
 }
 
@@ -187,4 +149,64 @@ html {
 
 .animate-pulse-glow {
   animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Discord Button Styles */
+.discord-button-primary {
+  background-color: var(--discord-blurple);
+  color: var(--discord-white);
+  transition: background-color var(--transition-base);
+}
+
+.discord-button-primary:hover {
+  background-color: var(--discord-blurple-dark);
+}
+
+.discord-button-secondary {
+  background-color: var(--discord-dark-2);
+  color: var(--discord-text-primary);
+  transition: background-color var(--transition-base);
+}
+
+.discord-button-secondary:hover {
+  background-color: var(--discord-dark-4);
+}
+
+/* Discord Card Styles */
+.discord-card {
+  background-color: var(--discord-dark-2);
+  border: 1px solid var(--discord-dark-border);
+  border-radius: 8px;
+  transition: all var(--transition-base);
+}
+
+.discord-card:hover {
+  background-color: var(--discord-dark-4);
+  border-color: rgba(88, 101, 242, 0.3);
+}
+
+/* Discord Input Styles */
+.discord-input {
+  background-color: var(--discord-dark-1);
+  border: 1px solid transparent;
+  color: var(--discord-text-primary);
+  border-radius: 4px;
+  padding: 10px;
+  transition: border-color var(--transition-base);
+}
+
+.discord-input:focus {
+  border-color: var(--discord-blurple);
+  outline: none;
+}
+
+/* Discord Badge */
+.discord-badge {
+  background-color: var(--discord-blurple);
+  color: var(--discord-white);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
 }
