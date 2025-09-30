@@ -1,0 +1,23 @@
+# ==========================================
+# NeuroViaBot Backend - Configuration
+# ==========================================
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3001
+
+# Discord OAuth (Backend Passport.js)
+DISCORD_CLIENT_ID=773539215098249246
+DISCORD_CLIENT_SECRET=UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk
+DISCORD_CALLBACK_URL=http://localhost:5000/api/auth/callback
+
+# Session Secret
+SESSION_SECRET=neuroviabot-backend-secret-key-change-in-production
+
+# ==========================================
+# NOTE:
+# ==========================================
+# This backend auth is for legacy/backup purposes
+# Main auth is handled by NextAuth in frontend
+# ==========================================

@@ -1,0 +1,97 @@
+# ==========================================
+# 🤖 NeuroViaBot Discord Bot Configuration
+# ==========================================
+
+# Discord Bot Settings (Required)
+DISCORD_TOKEN=NzczNTM5MjE1MDk4MjQ5MjQ2.GpTMDe.WArQmgqTCJX_xWhHREZ75EKTKEN_DqMbUW6_ys
+DISCORD_CLIENT_ID=773539215098249246
+DISCORD_CLIENT_SECRET=UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk
+
+# Backend API Configuration
+PORT=5000
+FRONTEND_URL=http://localhost:3001
+
+# Discord OAuth2 Settings (Backend)
+DISCORD_CALLBACK_URL=http://localhost:5000/api/auth/callback
+SESSION_SECRET=neuroviabot-secret-key-change-in-production-minimum-32-chars
+
+# Bot Display Settings
+EMBED_COLOR=#0099ff
+DEFAULT_VOLUME=50
+MAX_QUEUE_SIZE=100
+
+# Spotify Configuration (Optional - Müzik komutları için)
+SPOTIFY_CLIENT_ID=your_spotify_client_id_here
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
+
+# Economy System Settings
+DAILY_AMOUNT=100
+WORK_AMOUNT=50
+CRIME_AMOUNT=200
+MAX_BET=1000
+MIN_BET=10
+
+# Moderation System Settings
+AUTO_MOD=false
+MAX_WARNS=3
+MUTE_DURATION=3600000
+
+# Premium Features (Optional)
+PREMIUM_ENABLED=false
+PREMIUM_TIER1=500
+PREMIUM_TIER2=1000
+PREMIUM_TIER3=2000
+
+# Logging Configuration
+LOGGING_ENABLED=true
+LOG_LEVEL=info
+FILE_LOGGING=true
+
+# System Configuration
+MAX_RETRIES=3
+TIMEOUT=30000
+RATE_LIMIT_MESSAGES=5
+RATE_LIMIT_TIME=60000
+
+# Feature Flags (true/false - Özellikleri açma/kapama)
+FEATURE_MUSIC=true
+FEATURE_ECONOMY=true
+FEATURE_MODERATION=true
+FEATURE_LEVELING=true
+FEATURE_TICKETS=true
+FEATURE_GIVEAWAYS=true
+
+# Development Settings
+NODE_ENV=production
+
+# ==========================================
+# 📝 KULLANIM KILAVUZU:
+# ==========================================
+#
+# 🔑 GEREKLİ AYARLAR:
+# - DISCORD_TOKEN: Bot token'ınızı buraya girin
+# - DISCORD_CLIENT_ID: Bot'un Client ID'sini buraya girin
+# - DISCORD_CLIENT_SECRET: Discord OAuth için gerekli
+#
+# 🎵 SPOTİFY (İsteğe Bağlı):
+# - Spotify Developer Console'dan Client ID ve Secret alın
+# - Müzik komutları için gerekli
+#
+# 💰 EKONOMİ SİSTEMİ:
+# - DAILY_AMOUNT: Günlük coin miktarı
+# - WORK_AMOUNT: Çalışarak kazanılan coin
+# - CRIME_AMOUNT: Suçla kazanılan coin (risk var)
+#
+# 🛡️ MODERASYON:
+# - AUTO_MOD: Otomatik moderasyon açık/kapalı
+# - MAX_WARNS: Maksimum uyarı sayısı
+# - MUTE_DURATION: Susturma süresi (ms)
+#
+# 🎛️ ÖZELLİK KONTROLLARI:
+# - FEATURE_*: Her özelliği ayrı ayrı açıp kapatabilirsiniz
+#
+# ⚙️ SİSTEM AYARLARI:
+# - TIMEOUT: Komut zaman aşımı (ms)
+# - RATE_LIMIT_*: Spam koruması ayarları
+#
+# ==========================================
