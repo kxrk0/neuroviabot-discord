@@ -1,7 +1,6 @@
 'use client';
 
 import { Fragment } from 'react';
-import { signOut, useSession } from 'next-auth/react';
 import { Menu, Transition } from '@headlessui/react';
 import { 
   UserIcon, 
@@ -10,15 +9,14 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import { getDiscordAvatarUrl } from '@/lib/utils';
+import { useUser } from '@/hooks/useUser';
 import Image from 'next/image';
 
 export default function UserAvatar() {
-  const { data: session } = useSession();
+  const { user, logout } = useUser();
   
-  if (!session?.user) return null;
-  
-  const user = session.user as any;
-  const avatarUrl = getDiscordAvatarUrl(user.discordId, user.avatar);
+  if (!user) return null;
+  const avatarUrl = getDiscordAvatarUrl(user.id, user.avatar);
   
   return (
     <Menu as="div" className="relative">
@@ -96,7 +94,7 @@ export default function UserAvatar() {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                  onClick={logout}
                   className={`${
                     active ? 'bg-red-950/50' : ''
                   } group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-400 transition`}

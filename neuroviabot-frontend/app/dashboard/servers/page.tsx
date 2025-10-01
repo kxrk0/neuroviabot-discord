@@ -1,8 +1,7 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,6 +10,7 @@ import Loading from '@/components/ui/Loading';
 import Badge from '@/components/ui/Badge';
 import { getDiscordGuildIconUrl } from '@/lib/utils';
 import { fetchUserGuilds, checkBotInGuilds, getBotInviteUrl } from '@/lib/api';
+import { useUser } from '@/hooks/useUser';
 import {
   ServerIcon,
   UsersIcon,
@@ -31,31 +31,33 @@ interface ServerData {
 }
 
 export default function ServersPage() {
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { user, loading: userLoading } = useUser();
   const [servers, setServers] = useState<ServerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      redirect('/login');
+    if (!userLoading && !user) {
+      router.push('/');
+      return;
     }
 
-    if (status === 'authenticated' && session?.user) {
+    if (user) {
       fetchServers();
     }
-  }, [status, session]);
+  }, [user, userLoading, router]);
 
   const fetchServers = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const accessToken = (session?.user as any)?.accessToken;
-      
-      if (!accessToken) {
+      if (!user?.accessToken) {
         throw new Error('No access token available');
       }
+      
+      const accessToken = user.accessToken;
 
       // Fetch user's Discord guilds
       const guilds = await fetchUserGuilds(accessToken);
