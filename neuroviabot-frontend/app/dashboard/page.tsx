@@ -34,7 +34,8 @@ export default function DashboardPage() {
   const fetchUser = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/auth/user', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/auth/user`, {
         credentials: 'include',
       });
       
@@ -75,7 +76,8 @@ export default function DashboardPage() {
       );
 
       // Check which guilds have the bot
-      const botResponse = await fetch('http://localhost:5000/api/bot/stats', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const botResponse = await fetch(`${API_URL}/api/bot/stats`, {
         credentials: 'include',
       });
       
