@@ -29,12 +29,13 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk',
   resave: false,
   saveUninitialized: false,
+  proxy: process.env.NODE_ENV === 'production', // Trust nginx proxy
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    domain: process.env.NODE_ENV === 'production' ? '.neuroviabot.xyz' : undefined,
+    // Don't set domain - let browser handle it automatically
   },
 }));
 
