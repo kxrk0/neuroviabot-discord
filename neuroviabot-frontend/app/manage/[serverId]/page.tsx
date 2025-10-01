@@ -225,7 +225,20 @@ export default function ServerDashboard() {
   const toggleFeature = async (category: string, featureId: string, currentValue: boolean) => {
     try {
       const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings/${category}`, {
+      
+      // Map frontend categories to backend categories
+      const categoryMap: any = {
+        'welcome': 'welcome',
+        'roles': 'autorole',
+        'moderation': 'moderation',
+        'leveling': 'leveling',
+        'automation': 'autorole',
+        'general': 'general'
+      };
+      
+      const backendCategory = categoryMap[category] || category;
+      
+      const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings/${backendCategory}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -237,17 +250,45 @@ export default function ServerDashboard() {
       });
       
       if (response.ok) {
-        // Update local state
-        setSettings((prev: any) => ({
-          ...prev,
-          [category]: {
-            ...prev[category],
-            [featureId]: !currentValue
-          }
-        }));
+        // Refresh settings to get latest from server
+        await fetchGuildSettings();
       }
     } catch (error) {
       console.error('Failed to toggle feature:', error);
+    }
+  };
+  
+  const updateSetting = async (category: string, key: string, value: any) => {
+    try {
+      const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      const categoryMap: any = {
+        'welcome': 'welcome',
+        'roles': 'autorole',
+        'moderation': 'moderation',
+        'leveling': 'leveling',
+        'automation': 'autorole',
+        'general': 'general'
+      };
+      
+      const backendCategory = categoryMap[category] || category;
+      
+      const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings/${backendCategory}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          [key]: value
+        }),
+      });
+      
+      if (response.ok) {
+        await fetchGuildSettings();
+      }
+    } catch (error) {
+      console.error('Failed to update setting:', error);
     }
   };
 
@@ -438,7 +479,18 @@ export default function ServerDashboard() {
               {/* Features */}
               <div className="space-y-4">
                 {currentCategory?.features.map((feature) => {
-                  const isEnabled = settings[activeCategory]?.[feature.id] !== false;
+                  // Map categories to backend format
+                  const categoryMap: any = {
+                    'welcome': 'welcome',
+                    'roles': 'autorole',
+                    'moderation': 'moderation',
+                    'leveling': 'leveling',
+                    'automation': 'autorole',
+                    'general': 'general'
+                  };
+                  
+                  const backendCategory = categoryMap[activeCategory] || activeCategory;
+                  const isEnabled = settings[backendCategory]?.enabled !== false && settings[backendCategory]?.[feature.id] !== false;
                   const isExpanded = expandedFeature === feature.id;
 
                   return (
