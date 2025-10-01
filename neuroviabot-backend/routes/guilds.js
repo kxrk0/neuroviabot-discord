@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fetch = require('node-fetch');
 
 // For production, use actual database model:
 // const GuildSettings = require('../../src/models/GuildSettings');
@@ -14,6 +15,53 @@ const requireAuth = (req, res, next) => {
   }
   next();
 };
+
+// Get user guilds with bot presence
+router.get('/user', requireAuth, async (req, res) => {
+  try {
+    const accessToken = req.user.accessToken;
+    
+    // Fetch user's guilds from Discord API
+    const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    
+    if (!guildsResponse.ok) {
+      return res.status(guildsResponse.status).json({ error: 'Failed to fetch guilds' });
+    }
+    
+    const guilds = await guildsResponse.json();
+    
+    // Filter guilds where user has ADMINISTRATOR permission (0x8)
+    const adminGuilds = guilds.filter(guild => {
+      const permissions = BigInt(guild.permissions);
+      return guild.owner || (permissions & BigInt(0x8)) === BigInt(0x8);
+    });
+    
+    // TODO: Check which guilds the bot is in by accessing the Discord bot client
+    // For now, mark all as botPresent: false
+    // In production: const botGuildIds = client.guilds.cache.map(g => g.id);
+    const botGuildIds = []; // Replace with actual bot guild IDs
+    
+    // Enhance guild data with bot presence
+    const enhancedGuilds = adminGuilds.map(guild => ({
+      id: guild.id,
+      name: guild.name,
+      icon: guild.icon,
+      owner: guild.owner,
+      permissions: guild.permissions,
+      botPresent: botGuildIds.includes(guild.id),
+      memberCount: null, // Will be populated when bot is in guild
+    }));
+    
+    res.json(enhancedGuilds);
+  } catch (error) {
+    console.error('Error fetching user guilds:', error);
+    res.status(500).json({ error: 'Failed to fetch user guilds' });
+  }
+});
 
 // Get guild info
 router.get('/:guildId', requireAuth, async (req, res) => {

@@ -25,8 +25,8 @@ router.get('/callback',
           return res.status(500).json({ error: 'Login failed', details: loginErr.message });
         }
         
-        // Redirect to frontend dashboard
-        return res.redirect('https://neuroviabot.xyz/dashboard');
+        // Redirect to frontend dashboard overview
+        return res.redirect('https://neuroviabot.xyz/dashboard/overview');
       });
     })(req, res, next);
   }
