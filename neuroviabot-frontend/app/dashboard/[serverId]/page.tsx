@@ -55,7 +55,7 @@ export default function ServerSettingsPage() {
 
   const fetchGuildData = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       const response = await fetch(`${API_URL}/api/guilds/${serverId}`, {
         credentials: 'include',
       });
