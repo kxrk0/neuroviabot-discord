@@ -72,7 +72,7 @@ export default function ServerSettingsPage() {
   const fetchGuildSettings = async () => {
     try {
       setLoading(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings`, {
         credentials: 'include',
       });
@@ -93,7 +93,7 @@ export default function ServerSettingsPage() {
       setSaving(true);
       setSaveStatus('idle');
       
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings/${category}`, {
         method: 'PUT',
         headers: {
