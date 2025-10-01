@@ -80,8 +80,8 @@ export default function OverviewPage() {
   };
 
   const handleAddBot = (guildId: string) => {
-    // Bot invite URL - pure bot invite without OAuth code grant
-    const inviteUrl = `https://discord.com/oauth2/authorize?client_id=773539215098249246&scope=bot%20applications.commands&permissions=8&guild_id=${guildId}&disable_guild_select=true`;
+    // Bot invite URL - with integration_type=0 to avoid code grant requirement
+    const inviteUrl = `https://discord.com/oauth2/authorize?client_id=773539215098249246&permissions=8&integration_type=0&scope=bot+applications.commands&guild_id=${guildId}&disable_guild_select=true`;
     
     // Open invite in new tab
     const popup = window.open(inviteUrl, '_blank');
