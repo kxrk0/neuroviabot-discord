@@ -6,10 +6,31 @@ const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const http = require('http');
 const { Server } = require('socket.io');
+const { Client, GatewayIntentBits } = require('discord.js');
 
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Discord Bot Client (for reading guild data, not for bot commands)
+const botClient = new Client({
+  intents: [GatewayIntentBits.Guilds],
+});
+
+// Login to Discord with bot token (use DISCORD_TOKEN if DISCORD_BOT_TOKEN is not set)
+const botToken = process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_TOKEN;
+if (botToken) {
+  botClient.login(botToken).then(() => {
+    console.log('[Backend] Bot client connected for guild data access');
+  }).catch(err => {
+    console.error('[Backend] Failed to connect bot client:', err.message);
+  });
+} else {
+  console.warn('[Backend] No bot token found, bot guild data will not be available');
+}
+
+// Make bot client available to routes
+app.set('botClient', botClient);
 
 // Socket.IO setup
 const io = new Server(server, {

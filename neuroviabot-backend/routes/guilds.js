@@ -22,6 +22,7 @@ const requireAuth = (req, res, next) => {
 router.get('/user', requireAuth, async (req, res) => {
   try {
     const accessToken = req.user.accessToken;
+    const botClient = req.app.get('botClient');
     
     // Fetch user's guilds from Discord API
     const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
@@ -42,26 +43,52 @@ router.get('/user', requireAuth, async (req, res) => {
       return guild.owner || (permissions & BigInt(0x8)) === BigInt(0x8);
     });
     
-    // TODO: Check which guilds the bot is in by accessing the Discord bot client
-    // For now, mark all as botPresent: false
-    // In production: const botGuildIds = client.guilds.cache.map(g => g.id);
-    const botGuildIds = []; // Replace with actual bot guild IDs
+    // Get bot guild IDs from Discord bot client
+    const botGuildIds = botClient && botClient.guilds 
+      ? Array.from(botClient.guilds.cache.keys())
+      : [];
+    
+    console.log('[Guilds] Bot is in', botGuildIds.length, 'guilds');
     
     // Enhance guild data with bot presence
-    const enhancedGuilds = adminGuilds.map(guild => ({
-      id: guild.id,
-      name: guild.name,
-      icon: guild.icon,
-      owner: guild.owner,
-      permissions: guild.permissions,
-      botPresent: botGuildIds.includes(guild.id),
-      memberCount: null, // Will be populated when bot is in guild
-    }));
+    const enhancedGuilds = adminGuilds.map(guild => {
+      const botGuild = botClient?.guilds?.cache.get(guild.id);
+      return {
+        id: guild.id,
+        name: guild.name,
+        icon: guild.icon,
+        owner: guild.owner,
+        permissions: guild.permissions,
+        botPresent: botGuildIds.includes(guild.id),
+        memberCount: botGuild?.memberCount || null,
+      };
+    });
     
     res.json(enhancedGuilds);
   } catch (error) {
     console.error('Error fetching user guilds:', error);
     res.status(500).json({ error: 'Failed to fetch user guilds' });
+  }
+});
+
+// Get guild stats
+router.get('/:guildId/stats', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  
+  try {
+    // TODO: Fetch from actual Discord bot client
+    // const guild = client.guilds.cache.get(guildId);
+    // Return real stats when bot is in guild
+    
+    res.json({
+      memberCount: 0,
+      onlineMembers: 0,
+      totalCommands: 0,
+      dailyMessages: 0,
+    });
+  } catch (error) {
+    console.error('Error fetching guild stats:', error);
+    res.status(500).json({ error: 'Failed to fetch guild stats' });
   }
 });
 

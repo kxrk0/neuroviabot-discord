@@ -1,32 +1,31 @@
 const express = require('express');
 const router = express.Router();
 
-// Mock bot client (will be replaced with actual Discord.js client)
-const getBotClient = () => {
-  // This should connect to your actual bot
-  // For now, returning mock data
-  return {
-    guilds: { cache: { size: 66 } },
-    users: { cache: { size: 59032 } },
-    uptime: 86400000,
-  };
-};
-
 // Get bot stats
 router.get('/stats', (req, res) => {
   try {
-    const client = getBotClient();
+    const botClient = req.app.get('botClient');
     
-    // TODO: Get actual guild IDs from bot client
-    // const guildIds = Array.from(client.guilds.cache.keys());
-    const guildIds = []; // Will be populated from actual bot
+    if (!botClient || !botClient.user) {
+      return res.json({
+        guilds: 0,
+        users: 0,
+        commands: 43,
+        uptime: 0,
+        ping: 0,
+        memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024,
+        guildIds: [],
+      });
+    }
+    
+    const guildIds = Array.from(botClient.guilds.cache.keys());
     
     res.json({
-      guilds: client.guilds.cache.size,
-      users: client.users.cache.size,
+      guilds: botClient.guilds.cache.size,
+      users: botClient.users.cache.size,
       commands: 43,
-      uptime: client.uptime,
-      ping: 45,
+      uptime: botClient.uptime,
+      ping: botClient.ws.ping,
       memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
       guildIds: guildIds, // List of guild IDs where bot is present
     });
@@ -60,21 +59,16 @@ router.get('/check-guild/:guildId', (req, res) => {
   const { guildId } = req.params;
   
   try {
-    const client = getBotClient();
-    // TODO: Replace with actual check when bot client is connected
-    // const guild = client.guilds.cache.get(guildId);
-    // const isPresent = !!guild;
-    
-    // Mock response for now
-    const mockGuilds = ['1', '2']; // Mock guild IDs where bot is present
-    const isPresent = mockGuilds.includes(guildId);
+    const botClient = req.app.get('botClient');
+    const guild = botClient?.guilds?.cache.get(guildId);
+    const isPresent = !!guild;
     
     res.json({
       guildId,
       botPresent: isPresent,
       ...(isPresent && {
-        memberCount: 1234,
-        name: 'Test Server',
+        memberCount: guild.memberCount,
+        name: guild.name,
       }),
     });
   } catch (error) {
@@ -92,13 +86,15 @@ router.post('/check-guilds', (req, res) => {
   }
   
   try {
-    // TODO: Replace with actual checks when bot client is connected
-    const mockGuilds = ['1', '2']; // Mock guild IDs where bot is present
+    const botClient = req.app.get('botClient');
     
-    const results = guildIds.map(guildId => ({
-      guildId,
-      botPresent: mockGuilds.includes(guildId),
-    }));
+    const results = guildIds.map(guildId => {
+      const guild = botClient?.guilds?.cache.get(guildId);
+      return {
+        guildId,
+        botPresent: !!guild,
+      };
+    });
     
     res.json({ results });
   } catch (error) {
