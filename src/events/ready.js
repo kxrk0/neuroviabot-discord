@@ -21,7 +21,7 @@ module.exports = {
                 const totalServers = client.guilds.cache.size;
                 
                 // Format: "90,876 User | 66 Server"
-                const activityText = `${totalUsers.toLocaleString()} User | ${totalServers} Server | TikTok: swaffval`;
+                const activityText = `${totalUsers.toLocaleString()} User | ${totalServers} Server`;
                 client.user.setActivity(activityText, { 
                     type: ActivityType.Streaming,
                     url: 'https://www.twitch.tv/swaffval'

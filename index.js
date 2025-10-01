@@ -214,7 +214,7 @@ client.once('ready', async () => {
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
     // Bot durumunu ayarlama - Streaming badge için (Twitch URL gerekli)
-    client.user.setActivity('NeuroViaBot | /help | TikTok: swaffval', { 
+    client.user.setActivity('NeuroViaBot | /help', { 
         type: ActivityType.Streaming,
         url: 'https://www.twitch.tv/swaffval'
     });

@@ -7,10 +7,28 @@ router.get('/discord', passport.authenticate('discord'));
 
 // Discord OAuth callback
 router.get('/callback',
-  passport.authenticate('discord', { failureRedirect: '/login' }),
-  (req, res) => {
-    // Redirect to frontend dashboard
-    res.redirect('https://neuroviabot.xyz/dashboard');
+  (req, res, next) => {
+    passport.authenticate('discord', (err, user, info) => {
+      if (err) {
+        console.error('Discord OAuth error:', err);
+        return res.status(500).json({ error: 'Authentication failed', details: err.message });
+      }
+      
+      if (!user) {
+        console.error('Discord OAuth: No user returned', info);
+        return res.status(401).json({ error: 'Authentication failed', details: 'No user data' });
+      }
+      
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error('Login error:', loginErr);
+          return res.status(500).json({ error: 'Login failed', details: loginErr.message });
+        }
+        
+        // Redirect to frontend dashboard
+        return res.redirect('https://neuroviabot.xyz/dashboard');
+      });
+    })(req, res, next);
   }
 );
 
