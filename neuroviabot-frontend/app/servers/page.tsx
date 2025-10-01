@@ -76,7 +76,7 @@ export default function OverviewPage() {
   };
 
   const handleManageServer = (guildId: string) => {
-    router.push(`/dashboard/${guildId}`);
+    router.push(`/manage/${guildId}`);
   };
 
   const handleAddBot = (guildId: string) => {
@@ -86,7 +86,7 @@ export default function OverviewPage() {
     
     // Redirect after a short delay
     setTimeout(() => {
-      router.push(`/dashboard/${guildId}`);
+      router.push(`/manage/${guildId}`);
     }, 2000);
   };
 
