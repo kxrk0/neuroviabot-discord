@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const fetch = require('node-fetch');
+
+// Node.js 18+ has native fetch, older versions need node-fetch
+const fetch = globalThis.fetch || require('node-fetch');
 
 // For production, use actual database model:
 // const GuildSettings = require('../../src/models/GuildSettings');

@@ -8,22 +8,28 @@ router.get('/discord', passport.authenticate('discord'));
 // Discord OAuth callback
 router.get('/callback',
   (req, res, next) => {
+    console.log('[OAuth] Callback received');
     passport.authenticate('discord', (err, user, info) => {
       if (err) {
-        console.error('Discord OAuth error:', err);
+        console.error('[OAuth] Error:', err);
         return res.status(500).json({ error: 'Authentication failed', details: err.message });
       }
       
       if (!user) {
-        console.error('Discord OAuth: No user returned', info);
+        console.error('[OAuth] No user returned', info);
         return res.status(401).json({ error: 'Authentication failed', details: 'No user data' });
       }
       
+      console.log('[OAuth] User authenticated:', user.username);
+      
       req.logIn(user, (loginErr) => {
         if (loginErr) {
-          console.error('Login error:', loginErr);
+          console.error('[OAuth] Login error:', loginErr);
           return res.status(500).json({ error: 'Login failed', details: loginErr.message });
         }
+        
+        console.log('[OAuth] Login successful, session ID:', req.sessionID);
+        console.log('[OAuth] Session cookie:', req.session.cookie);
         
         // Redirect to frontend dashboard overview
         return res.redirect('https://neuroviabot.xyz/dashboard/overview');
@@ -34,7 +40,11 @@ router.get('/callback',
 
 // Get current user
 router.get('/user', (req, res) => {
+  console.log('[Auth] /user called, session ID:', req.sessionID);
+  console.log('[Auth] isAuthenticated:', req.isAuthenticated());
+  
   if (!req.isAuthenticated()) {
+    console.log('[Auth] User not authenticated, session:', req.session);
     return res.status(401).json({ error: 'Not authenticated' });
   }
   
