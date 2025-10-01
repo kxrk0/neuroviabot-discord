@@ -15,6 +15,12 @@ module.exports = {
           bg: '#2C2F33',
           'bg-secondary': '#23272A',
         },
+        neon: {
+          purple: '#A855F7',
+          blue: '#3B82F6',
+          cyan: '#06B6D4',
+          pink: '#EC4899',
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out',

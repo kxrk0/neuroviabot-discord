@@ -17,6 +17,10 @@ router.get('/stats', (req, res) => {
   try {
     const client = getBotClient();
     
+    // TODO: Get actual guild IDs from bot client
+    // const guildIds = Array.from(client.guilds.cache.keys());
+    const guildIds = []; // Will be populated from actual bot
+    
     res.json({
       guilds: client.guilds.cache.size,
       users: client.users.cache.size,
@@ -24,6 +28,7 @@ router.get('/stats', (req, res) => {
       uptime: client.uptime,
       ping: 45,
       memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
+      guildIds: guildIds, // List of guild IDs where bot is present
     });
   } catch (error) {
     console.error('Error fetching bot stats:', error);

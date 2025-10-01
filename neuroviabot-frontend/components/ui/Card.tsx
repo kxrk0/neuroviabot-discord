@@ -1,110 +1,127 @@
 'use client';
 
-import { HTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/lib/utils';
+import React from 'react';
+import { motion } from 'framer-motion';
+import clsx from 'clsx';
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
+interface CardProps {
+  variant?: 'default' | 'glass' | 'elevated' | 'gradient-border' | 'interactive' | '3d';
   hover?: boolean;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  glow?: boolean;
+  className?: string;
+  children: React.ReactNode;
 }
 
-const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ children, hover = false, padding = 'md', className, ...props }, ref) => {
-    const paddings = {
-      none: '',
-      sm: 'p-4',
-      md: 'p-6',
-      lg: 'p-8',
-    };
-    
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700',
-          hover && 'transition-all duration-200 hover:border-discord hover:shadow-lg hover:shadow-discord/20',
-          paddings[padding],
-          className
-        )}
-        {...props}
-      >
-        {children}
+export function Card({
+  variant = 'default',
+  hover = false,
+  glow = false,
+  className,
+  children,
+}: CardProps) {
+  const variantClasses = {
+    default: 'card',
+    glass: 'card card-glass',
+    elevated: 'card card-elevated',
+    'gradient-border': 'card card-gradient-border',
+    interactive: 'card card-interactive',
+    '3d': 'card card-3d',
+  };
+
+  const classes = clsx(
+    variantClasses[variant],
+    {
+      'card-hover': hover,
+      'card-glow': glow,
+    },
+    className
+  );
+
+  return (
+    <motion.div
+      className={classes}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={clsx('card-header', className)}>{children}</div>;
+}
+
+export function CardBody({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={clsx('card-body', className)}>{children}</div>;
+}
+
+export function CardFooter({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={clsx('card-footer', className)}>{children}</div>;
+}
+
+export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <h3 className={clsx('card-title', className)}>{children}</h3>;
+}
+
+export function CardDescription({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <p className={clsx('card-description', className)}>{children}</p>;
+}
+
+// Feature Card Component
+export function FeatureCard({
+  icon,
+  title,
+  description,
+  className,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      className={clsx('feature-card', className)}
+      whileHover={{ y: -8 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+    >
+      <div className="feature-card-icon">
+        {icon}
       </div>
-    );
-  }
-);
+      <h3 className="feature-title">{title}</h3>
+      <p className="feature-description">{description}</p>
+    </motion.div>
+  );
+}
 
-Card.displayName = 'Card';
-
-// Sub-components
-export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ children, className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('mb-4', className)}
-      {...props}
-    >
-      {children}
+// Stat Card Component
+export function StatCard({
+  value,
+  label,
+  trend,
+  className,
+}: {
+  value: string | number;
+  label: string;
+  trend?: {
+    value: number;
+    positive: boolean;
+  };
+  className?: string;
+}) {
+  return (
+    <div className={clsx('stat-card', className)}>
+      <div className="stat-card-value">{value}</div>
+      <div className="stat-card-label">{label}</div>
+      {trend && (
+        <div className={clsx('stat-card-trend', trend.positive ? 'positive' : 'negative')}>
+          {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
+        </div>
+      )}
     </div>
-  )
-);
-
-CardHeader.displayName = 'CardHeader';
-
-export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ children, className, ...props }, ref) => (
-    <h3
-      ref={ref}
-      className={cn('text-xl font-bold text-white', className)}
-      {...props}
-    >
-      {children}
-    </h3>
-  )
-);
-
-CardTitle.displayName = 'CardTitle';
-
-export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
-  ({ children, className, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={cn('text-gray-400 text-sm', className)}
-      {...props}
-    >
-      {children}
-    </p>
-  )
-);
-
-CardDescription.displayName = 'CardDescription';
-
-export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ children, className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  )
-);
-
-CardContent.displayName = 'CardContent';
-
-export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ children, className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('mt-4 pt-4 border-t border-gray-700', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  )
-);
-
-CardFooter.displayName = 'CardFooter';
-
-export default Card;
+  );
+}

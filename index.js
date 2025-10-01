@@ -214,7 +214,10 @@ client.once('ready', async () => {
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
     // Bot durumunu ayarlama
-    client.user.setActivity('NeuroViaBot | /help', { type: 'PLAYING' });
+    client.user.setActivity('NeuroViaBot | /help', { 
+        type: 'STREAMING',
+        url: 'https://www.tiktok.com/@swaffval'
+    });
     
     // Slash komutları kaydet
     await registerSlashCommands();

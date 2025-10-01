@@ -113,7 +113,7 @@ interface ConfirmModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'danger' | 'warning' | 'primary';
+  variant?: 'danger' | 'primary' | 'success';
   isLoading?: boolean;
 }
 
@@ -140,7 +140,7 @@ export function ConfirmModal({
           <Button variant="ghost" onClick={onClose} disabled={isLoading}>
             {cancelText}
           </Button>
-          <Button variant={variant} onClick={onConfirm} isLoading={isLoading}>
+          <Button variant={variant} onClick={onConfirm} loading={isLoading}>
             {confirmText}
           </Button>
         </>

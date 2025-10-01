@@ -9,7 +9,8 @@ router.get('/discord', passport.authenticate('discord'));
 router.get('/callback',
   passport.authenticate('discord', { failureRedirect: '/login' }),
   (req, res) => {
-    res.redirect(process.env.FRONTEND_URL || 'http://localhost:3001/dashboard');
+    // Redirect to frontend dashboard
+    res.redirect('http://localhost:3000/dashboard');
   }
 );
 

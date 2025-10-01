@@ -194,7 +194,7 @@ export default function ServerDetailPage() {
             <Button
               variant="primary"
               onClick={handleSave}
-              isLoading={saving}
+              loading={saving}
               className="px-8"
             >
               Save Settings

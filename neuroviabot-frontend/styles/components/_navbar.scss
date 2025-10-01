@@ -1,0 +1,239 @@
+// ==========================================
+// 🎨 NeuroViaBot - Navbar Component
+// ==========================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+@use 'sass:map';
+
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: map.get($z-indices, 'sticky');
+  background: rgba($color-bg-primary, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid $color-border-primary;
+  transition: all map.get($transition-speeds, 'base') map.get($transition-easings, 'smooth');
+  
+  // Scrolled state
+  &.scrolled {
+    background: rgba($color-bg-primary, 0.95);
+    box-shadow: map.get($shadows, 'lg');
+  }
+  
+  &-container {
+    @include flex-between;
+    max-width: map.get($container-max-widths, '2xl');
+    margin: 0 auto;
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    
+    @include respond-below('md') {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    }
+  }
+  
+  &-brand {
+    @include flex-center;
+    gap: map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'xl');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    transition: transform map.get($transition-speeds, 'base') map.get($transition-easings, 'smooth');
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+    
+    &-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: map.get($radius, 'xl');
+      background: $gradient-cyber;
+      @include flex-center;
+      transition: all map.get($transition-speeds, 'medium') map.get($transition-easings, 'bounce');
+      
+      &:hover {
+        transform: rotate(360deg);
+        @include glow($color-primary, 0.6);
+      }
+    }
+  }
+  
+  &-menu {
+    @include flex-center;
+    gap: map.get($spacing, 'md');
+    
+    @include respond-below('md') {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 280px;
+      height: 100vh;
+      flex-direction: column;
+      background: $color-bg-secondary;
+      padding: map.get($spacing, '2xl');
+      box-shadow: map.get($shadows, '2xl');
+      transition: right map.get($transition-speeds, 'medium') map.get($transition-easings, 'smooth');
+      
+      &.open {
+        right: 0;
+      }
+    }
+  }
+  
+  &-link {
+    position: relative;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-secondary;
+    border-radius: map.get($radius, 'md');
+    transition: all map.get($transition-speeds, 'base') map.get($transition-easings, 'smooth');
+    
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: $gradient-cyber;
+      transition: width map.get($transition-speeds, 'medium') map.get($transition-easings, 'smooth');
+    }
+    
+    &:hover {
+      color: $color-text-primary;
+      background: rgba(255, 255, 255, 0.05);
+      
+      &::before {
+        width: 80%;
+      }
+    }
+    
+    &.active {
+      color: $color-text-primary;
+      background: rgba($color-primary, 0.1);
+      
+      &::before {
+        width: 80%;
+      }
+    }
+  }
+  
+  &-actions {
+    @include flex-center;
+    gap: map.get($spacing, 'md');
+  }
+  
+  &-toggle {
+    @include reset-button;
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    border-radius: map.get($radius, 'md');
+    background: transparent;
+    color: $color-text-primary;
+    transition: all map.get($transition-speeds, 'base') map.get($transition-easings, 'smooth');
+    
+    @include respond-to('md') {
+      display: none;
+    }
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// Notification badge
+.nav-notification {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background: $color-accent-red;
+    border: 2px solid $color-bg-primary;
+    border-radius: map.get($radius, 'full');
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+}
+
+// User dropdown
+.user-dropdown {
+  position: relative;
+  
+  &-trigger {
+    @include flex-center;
+    gap: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border-radius: map.get($radius, 'full');
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all map.get($transition-speeds, 'base') map.get($transition-easings, 'smooth');
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: $color-border-primary;
+    }
+  }
+  
+  &-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: map.get($radius, 'full');
+    border: 2px solid $color-primary;
+    object-fit: cover;
+  }
+  
+  &-menu {
+    position: absolute;
+    top: calc(100% + map.get($spacing, 'sm'));
+    right: 0;
+    min-width: 200px;
+    background: $color-bg-elevated;
+    border: 1px solid $color-border-primary;
+    border-radius: map.get($radius, 'lg');
+    box-shadow: map.get($shadows, 'xl');
+    padding: map.get($spacing, 'sm');
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all map.get($transition-speeds, 'base') map.get($transition-easings, 'smooth');
+    
+    .user-dropdown.open & {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+  }
+  
+  &-item {
+    @include flex-center;
+    gap: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    border-radius: map.get($radius, 'md');
+    color: $color-text-primary;
+    transition: all map.get($transition-speeds, 'base') map.get($transition-easings, 'smooth');
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: $color-primary;
+    }
+  }
+}
+
+

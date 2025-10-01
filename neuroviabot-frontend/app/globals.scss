@@ -1,0 +1,23 @@
+// ==========================================
+// 🎨 NeuroViaBot - Global Styles
+// Main Entry Point
+// ==========================================
+
+// Import Main SCSS
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+@use '../styles/abstracts/animations';
+@use '../styles/base/reset';
+@use '../styles/base/typography';
+@use '../styles/base/global';
+@use '../styles/components/buttons';
+@use '../styles/components/cards';
+@use '../styles/components/navbar';
+@use '../styles/components/forms';
+@use '../styles/pages/home';
+
+// Tailwind directives
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+

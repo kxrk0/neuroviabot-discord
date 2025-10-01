@@ -1,101 +1,167 @@
 'use client';
 
-import { InputHTMLAttributes, forwardRef, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import React from 'react';
+import clsx from 'clsx';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+  icon?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
-  (
-    {
-      label,
-      error,
-      helperText,
-      leftIcon,
-      rightIcon,
-      type = 'text',
-      className,
-      ...props
-    },
-    ref
-  ) => {
-    const [showPassword, setShowPassword] = useState(false);
-    const isPassword = type === 'password';
-    const inputType = isPassword && showPassword ? 'text' : type;
-    
-    return (
-      <div className="w-full">
-        {label && (
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
-          </label>
+export default function Input({
+  label,
+  error,
+  helperText,
+  icon,
+  fullWidth = false,
+  className,
+  ...props
+}: InputProps) {
+  return (
+    <div className={clsx('input-wrapper', { 'w-full': fullWidth })}>
+      {label && (
+        <label className="input-label">
+          {label}
+          {props.required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      
+      <div className="input-container">
+        {icon && (
+          <div className="input-icon">
+            {icon}
+          </div>
         )}
         
-        <div className="relative">
-          {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              {leftIcon}
-            </div>
+        <input
+          className={clsx(
+            'input-base',
+            {
+              'input-error': error,
+              'input-with-icon': icon,
+            },
+            className
           )}
-          
-          <input
-            ref={ref}
-            type={inputType}
-            className={cn(
-              'w-full px-4 py-2 bg-gray-900 border rounded-lg text-white placeholder-gray-500',
-              'focus:outline-none focus:ring-2 focus:ring-discord focus:border-transparent',
-              'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              error && 'border-red-500 focus:ring-red-500',
-              !error && 'border-gray-700',
-              leftIcon && 'pl-10',
-              (rightIcon || isPassword) && 'pr-10',
-              className
-            )}
-            {...props}
-          />
-          
-          {isPassword && (
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition"
-            >
-              {showPassword ? (
-                <EyeSlashIcon className="w-5 h-5" />
-              ) : (
-                <EyeIcon className="w-5 h-5" />
-              )}
-            </button>
-          )}
-          
-          {rightIcon && !isPassword && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-              {rightIcon}
-            </div>
-          )}
-        </div>
-        
-        {error && (
-          <p className="mt-1 text-sm text-red-500">{error}</p>
-        )}
-        
-        {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-400">{helperText}</p>
-        )}
+          {...props}
+        />
       </div>
-    );
-  }
-);
+      
+      {error && (
+        <p className="input-error-text">
+          {error}
+        </p>
+      )}
+      
+      {helperText && !error && (
+        <p className="input-helper-text">
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+}
 
-Input.displayName = 'Input';
+// Textarea Component
+export function Textarea({
+  label,
+  error,
+  helperText,
+  fullWidth = false,
+  className,
+  ...props
+}: Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'icon'> & {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  fullWidth?: boolean;
+}) {
+  return (
+    <div className={clsx('input-wrapper', { 'w-full': fullWidth })}>
+      {label && (
+        <label className="input-label">
+          {label}
+          {props.required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      
+      <textarea
+        className={clsx(
+          'input-base',
+          {
+            'input-error': error,
+          },
+          'min-h-[120px] resize-y',
+          className
+        )}
+        {...props}
+      />
+      
+      {error && (
+        <p className="input-error-text">
+          {error}
+        </p>
+      )}
+      
+      {helperText && !error && (
+        <p className="input-helper-text">
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+}
 
-export default Input;
+// Select Component
+export function Select({
+  label,
+  error,
+  helperText,
+  fullWidth = false,
+  children,
+  className,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  fullWidth?: boolean;
+}) {
+  return (
+    <div className={clsx('input-wrapper', { 'w-full': fullWidth })}>
+      {label && (
+        <label className="input-label">
+          {label}
+          {props.required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      
+      <select
+        className={clsx(
+          'input-base',
+          {
+            'input-error': error,
+          },
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      
+      {error && (
+        <p className="input-error-text">
+          {error}
+        </p>
+      )}
+      
+      {helperText && !error && (
+        <p className="input-helper-text">
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+}

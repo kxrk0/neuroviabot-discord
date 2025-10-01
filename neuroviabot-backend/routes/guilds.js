@@ -1,148 +1,199 @@
 const express = require('express');
-const axios = require('axios');
 const router = express.Router();
 
-// Middleware to check authentication
+// For production, use actual database model:
+// const GuildSettings = require('../../src/models/GuildSettings');
+
+// Mock database - Replace with actual MongoDB/database
+const guildSettings = new Map();
+
+// Auth middleware
 const requireAuth = (req, res, next) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: 'Not authenticated' });
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
   next();
 };
 
-// Get user guilds from Discord with bot status
-router.get('/user', requireAuth, async (req, res) => {
+// Get guild info
+router.get('/:guildId', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  
   try {
-    const response = await axios.get('https://discord.com/api/v10/users/@me/guilds', {
-      headers: {
-        Authorization: `Bearer ${req.user.accessToken}`,
-      },
+    // TODO: Fetch from actual Discord bot client
+    // const guild = client.guilds.cache.get(guildId);
+    
+    res.json({
+      id: guildId,
+      name: 'Test Server',
+      icon: null,
+      memberCount: 1234,
     });
-    
-    // Filter guilds where user has MANAGE_GUILD permission
-    const managedGuilds = response.data.filter(guild => {
-      const permissions = BigInt(guild.permissions);
-      const MANAGE_GUILD = BigInt(0x00000020);
-      const ADMINISTRATOR = BigInt(0x00000008);
-      return (permissions & MANAGE_GUILD) === MANAGE_GUILD || (permissions & ADMINISTRATOR) === ADMINISTRATOR;
-    });
-    
-    // TODO: Check bot presence in each guild from Discord bot client
-    // For now, return guilds with botPresent flag
-    const guildsWithBotStatus = managedGuilds.map(guild => ({
-      ...guild,
-      botPresent: false, // Will be checked from bot client
-    }));
-    
-    res.json(guildsWithBotStatus);
   } catch (error) {
-    console.error('Error fetching user guilds:', error);
-    res.status(500).json({ error: 'Failed to fetch guilds' });
+    console.error('Error fetching guild:', error);
+    res.status(500).json({ error: 'Failed to fetch guild' });
   }
 });
 
-// Generate bot invite URL
-router.get('/invite-url', (req, res) => {
-  const { guildId } = req.query;
-  const clientId = process.env.DISCORD_CLIENT_ID;
-  
-  const permissions = '8'; // ADMINISTRATOR permission
-  const scopes = 'bot applications.commands';
-  
-  let inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=${permissions}&scope=${encodeURIComponent(scopes)}`;
-  
-  if (guildId) {
-    inviteUrl += `&guild_id=${guildId}&disable_guild_select=true`;
-  }
-  
-  res.json({ inviteUrl });
-});
-
-// Get guild settings
+// Get all guild settings
 router.get('/:guildId/settings', requireAuth, async (req, res) => {
   const { guildId } = req.params;
   
   try {
-    // TODO: Fetch from database
-    // For now, return mock data
-    res.json({
-      guildId,
-      prefix: '!',
-      language: 'en',
-      musicEnabled: true,
-      moderationEnabled: true,
-      economyEnabled: true,
-      levelingEnabled: true,
-      welcomeEnabled: false,
-      welcomeChannel: null,
-      welcomeMessage: 'Welcome {user}!',
-    });
-  } catch (error) {
-    console.error('Error fetching guild settings:', error);
-    res.status(500).json({ error: 'Failed to fetch guild settings' });
-  }
-});
-
-// Update guild settings
-router.patch('/:guildId/settings', requireAuth, async (req, res) => {
-  const { guildId } = req.params;
-  const settings = req.body;
-  
-  try {
-    // TODO: Save to database
-    console.log(`Updating settings for guild ${guildId}:`, settings);
+    // Get settings from storage or use defaults
+    let settings = guildSettings.get(guildId);
     
-    res.json({
-      success: true,
-      guildId,
-      settings,
-    });
+    if (!settings) {
+      // Default settings
+      settings = {
+        music: {
+          enabled: true,
+          defaultVolume: 50,
+          maxQueueSize: 100,
+          djRoleId: null,
+          allowFilters: true,
+        },
+        moderation: {
+          enabled: true,
+          autoMod: true,
+          spamProtection: true,
+          logChannelId: null,
+          muteRoleId: null,
+        },
+        economy: {
+          enabled: true,
+          startingBalance: 1000,
+          dailyReward: 100,
+          workReward: 50,
+        },
+        leveling: {
+          enabled: true,
+          xpPerMessage: 15,
+          xpCooldown: 60,
+          levelUpMessage: true,
+        },
+        welcome: {
+          enabled: true,
+          channelId: null,
+          message: 'Hoş geldin {user}! Sunucumuza katıldığın için teşekkürler! 🎉',
+        },
+        general: {
+          prefix: '!',
+          language: 'tr',
+        },
+      };
+      
+      guildSettings.set(guildId, settings);
+    }
+    
+    res.json(settings);
   } catch (error) {
-    console.error('Error updating guild settings:', error);
-    res.status(500).json({ error: 'Failed to update guild settings' });
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ error: 'Failed to fetch settings' });
   }
 });
 
-// Get guild stats
-router.get('/:guildId/stats', requireAuth, async (req, res) => {
-  const { guildId } = req.params;
+// Update specific category settings
+router.put('/:guildId/settings/:category', requireAuth, async (req, res) => {
+  const { guildId, category } = req.params;
+  const updates = req.body;
   
   try {
-    // TODO: Fetch from bot/database
-    res.json({
-      guildId,
-      memberCount: 1234,
-      onlineCount: 567,
-      commands: {
-        music: 'Active',
-        moderation: 12,
-        economy: 45200,
-        leveling: 234,
-      },
-    });
+    // Get current settings
+    let settings = guildSettings.get(guildId) || {};
+    
+    // Update specific category
+    settings[category] = {
+      ...settings[category],
+      ...updates,
+    };
+    
+    // Save to storage
+    guildSettings.set(guildId, settings);
+    
+    // TODO: Save to database
+    // await GuildSettings.findOneAndUpdate(
+    //   { guildId },
+    //   { $set: { [category]: settings[category] } },
+    //   { upsert: true, new: true }
+    // );
+    
+    // TODO: Emit real-time update via WebSocket
+    // io.to(guildId).emit('settings_updated', { category, settings: settings[category] });
+    
+    res.json({ [category]: settings[category] });
   } catch (error) {
-    console.error('Error fetching guild stats:', error);
-    res.status(500).json({ error: 'Failed to fetch guild stats' });
+    console.error('Error updating settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
   }
 });
 
-// Get guild members
-router.get('/:guildId/members', requireAuth, async (req, res) => {
-  const { guildId } = req.params;
-  const { page = 1, limit = 50 } = req.query;
+// Get specific category settings
+router.get('/:guildId/settings/:category', requireAuth, async (req, res) => {
+  const { guildId, category } = req.params;
   
   try {
-    // TODO: Fetch from bot
-    res.json({
-      data: [],
-      page: parseInt(page),
-      limit: parseInt(limit),
-      total: 0,
-      hasMore: false,
-    });
+    const settings = guildSettings.get(guildId) || {};
+    const categorySettings = settings[category];
+    
+    if (!categorySettings) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    
+    res.json(categorySettings);
   } catch (error) {
-    console.error('Error fetching guild members:', error);
-    res.status(500).json({ error: 'Failed to fetch guild members' });
+    console.error('Error fetching category settings:', error);
+    res.status(500).json({ error: 'Failed to fetch category settings' });
+  }
+});
+
+// Bulk update settings
+router.put('/:guildId/settings', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  const updates = req.body;
+  
+  try {
+    // Get current settings
+    let settings = guildSettings.get(guildId) || {};
+    
+    // Merge updates
+    settings = {
+      ...settings,
+      ...updates,
+    };
+    
+    // Save to storage
+    guildSettings.set(guildId, settings);
+    
+    // TODO: Save to database
+    // await GuildSettings.findOneAndUpdate(
+    //   { guildId },
+    //   { $set: updates },
+    //   { upsert: true, new: true }
+    // );
+    
+    res.json(settings);
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// Reset settings to defaults
+router.post('/:guildId/settings/reset', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  
+  try {
+    // Remove from storage
+    guildSettings.delete(guildId);
+    
+    // TODO: Delete from database
+    // await GuildSettings.findOneAndDelete({ guildId });
+    
+    res.json({ success: true, message: 'Settings reset to defaults' });
+  } catch (error) {
+    console.error('Error resetting settings:', error);
+    res.status(500).json({ error: 'Failed to reset settings' });
   }
 });
 
