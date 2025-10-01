@@ -26,28 +26,37 @@ module.exports = {
         // Komut bulunamadıysa
         if (!command) {
             logger.error(`Komut bulunamadı: ${interaction.commandName}`);
-            return await interaction.reply({
-                content: '❌ Bu komut bulunamadı veya geçici olarak devre dışı!',
-                ephemeral: true
-            });
+            if (!interaction.replied && !interaction.deferred) {
+                return await interaction.reply({
+                    content: '❌ Bu komut bulunamadı veya geçici olarak devre dışı!',
+                    flags: 64 // Ephemeral
+                }).catch(() => {});
+            }
+            return;
         }
 
         // Cooldown kontrolü
         const cooldownResult = checkCooldown(interaction, command);
         if (cooldownResult) {
-            return await interaction.reply({
-                content: cooldownResult,
-                ephemeral: true
-            });
+            if (!interaction.replied && !interaction.deferred) {
+                return await interaction.reply({
+                    content: cooldownResult,
+                    flags: 64 // Ephemeral
+                }).catch(() => {});
+            }
+            return;
         }
 
         // Feature kontrolü
         const featureCheck = checkFeatureEnabled(command);
         if (!featureCheck.enabled) {
-            return await interaction.reply({
-                content: `❌ ${featureCheck.message}`,
-                ephemeral: true
-            });
+            if (!interaction.replied && !interaction.deferred) {
+                return await interaction.reply({
+                    content: `❌ ${featureCheck.message}`,
+                    flags: 64 // Ephemeral
+                }).catch(() => {});
+            }
+            return;
         }
 
         // Permission kontrolü (guild komutları için)
@@ -153,17 +162,19 @@ module.exports = {
 
             const errorMessage = {
                 content: `❌ Komut çalıştırılırken bir hata oluştu!\n\`\`\`Hata ID: ${errorId}\`\`\``,
-                ephemeral: true
+                flags: 64 // Ephemeral
             };
 
             try {
-                if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp(errorMessage);
-                } else {
-                    await interaction.reply(errorMessage);
+                // Check if interaction is still valid and not expired
+                if (!interaction.replied && !interaction.deferred) {
+                    await interaction.reply(errorMessage).catch(() => {});
+                } else if (interaction.deferred || interaction.replied) {
+                    await interaction.followUp(errorMessage).catch(() => {});
                 }
             } catch (replyError) {
-                logger.error('Reply hatası', replyError);
+                // Silently fail if interaction expired (3 second timeout)
+                logger.debug('Could not send error message (interaction expired)');
             }
         }
     }
