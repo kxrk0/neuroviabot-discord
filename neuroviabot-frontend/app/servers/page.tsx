@@ -80,7 +80,8 @@ export default function OverviewPage() {
   };
 
   const handleAddBot = (guildId: string) => {
-    const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=773539215098249246&permissions=8&scope=bot%20applications.commands&guild_id=${guildId}`;
+    // Fixed bot invite URL - removed code grant issue
+    const inviteUrl = `https://discord.com/oauth2/authorize?client_id=773539215098249246&permissions=8&scope=bot%20applications.commands&guild_id=${guildId}&disable_guild_select=true`;
     window.open(inviteUrl, '_blank');
     
     // Redirect after a short delay
@@ -180,7 +181,9 @@ export default function OverviewPage() {
                   <div className="absolute right-0 mt-2 w-56 rounded-xl bg-gray-900 border border-white/10 shadow-2xl z-50 overflow-hidden">
                     <div className="p-4 border-b border-white/10">
                       <p className="text-white font-semibold">{user?.username}</p>
-                      <p className="text-gray-400 text-sm">#{user?.discriminator}</p>
+                      {user?.discriminator && user.discriminator !== '0' && (
+                        <p className="text-gray-400 text-sm">#{user.discriminator}</p>
+                      )}
                     </div>
                     <div className="p-2">
                       <Link
