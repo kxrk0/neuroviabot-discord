@@ -1,14 +1,10 @@
 const express = require('express');
 const router = express.Router();
-
-// Node.js 18+ has native fetch, older versions need node-fetch
 const fetch = globalThis.fetch || require('node-fetch');
+const { getDatabase } = require('../database/simple-db');
 
-// For production, use actual database model:
-// const GuildSettings = require('../../src/models/GuildSettings');
-
-// Mock database - Replace with actual MongoDB/database
-const guildSettings = new Map();
+// Get shared database instance (same as bot uses)
+const db = getDatabase();
 
 // Auth middleware
 const requireAuth = (req, res, next) => {
@@ -126,52 +122,8 @@ router.get('/:guildId/settings', requireAuth, async (req, res) => {
   const { guildId } = req.params;
   
   try {
-    // Get settings from storage or use defaults
-    let settings = guildSettings.get(guildId);
-    
-    if (!settings) {
-      // Default settings
-      settings = {
-        music: {
-          enabled: true,
-          defaultVolume: 50,
-          maxQueueSize: 100,
-          djRoleId: null,
-          allowFilters: true,
-        },
-        moderation: {
-          enabled: true,
-          autoMod: true,
-          spamProtection: true,
-          logChannelId: null,
-          muteRoleId: null,
-        },
-        economy: {
-          enabled: true,
-          startingBalance: 1000,
-          dailyReward: 100,
-          workReward: 50,
-        },
-        leveling: {
-          enabled: true,
-          xpPerMessage: 15,
-          xpCooldown: 60,
-          levelUpMessage: true,
-        },
-        welcome: {
-          enabled: true,
-          channelId: null,
-          message: 'Hoş geldin {user}! Sunucumuza katıldığın için teşekkürler! 🎉',
-        },
-        general: {
-          prefix: '!',
-          language: 'tr',
-        },
-      };
-      
-      guildSettings.set(guildId, settings);
-    }
-    
+    // Get settings from bot database
+    const settings = db.getGuildSettings(guildId);
     res.json(settings);
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -185,27 +137,19 @@ router.put('/:guildId/settings/:category', requireAuth, async (req, res) => {
   const updates = req.body;
   
   try {
-    // Get current settings
-    let settings = guildSettings.get(guildId) || {};
+    // Update in bot database
+    const settings = db.updateGuildSettingsCategory(guildId, category, updates);
     
-    // Update specific category
-    settings[category] = {
-      ...settings[category],
-      ...updates,
-    };
-    
-    // Save to storage
-    guildSettings.set(guildId, settings);
-    
-    // TODO: Save to database
-    // await GuildSettings.findOneAndUpdate(
-    //   { guildId },
-    //   { $set: { [category]: settings[category] } },
-    //   { upsert: true, new: true }
-    // );
-    
-    // TODO: Emit real-time update via WebSocket
-    // io.to(guildId).emit('settings_updated', { category, settings: settings[category] });
+    // Emit real-time update via WebSocket
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`guild_${guildId}`).emit('settings_changed', {
+        guildId,
+        category,
+        settings: settings[category],
+        timestamp: new Date().toISOString(),
+      });
+    }
     
     res.json({ [category]: settings[category] });
   } catch (error) {
@@ -239,24 +183,18 @@ router.put('/:guildId/settings', requireAuth, async (req, res) => {
   const updates = req.body;
   
   try {
-    // Get current settings
-    let settings = guildSettings.get(guildId) || {};
+    // Update in bot database
+    const settings = db.updateGuildSettings(guildId, updates);
     
-    // Merge updates
-    settings = {
-      ...settings,
-      ...updates,
-    };
-    
-    // Save to storage
-    guildSettings.set(guildId, settings);
-    
-    // TODO: Save to database
-    // await GuildSettings.findOneAndUpdate(
-    //   { guildId },
-    //   { $set: updates },
-    //   { upsert: true, new: true }
-    // );
+    // Emit real-time update via WebSocket
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`guild_${guildId}`).emit('settings_changed', {
+        guildId,
+        settings,
+        timestamp: new Date().toISOString(),
+      });
+    }
     
     res.json(settings);
   } catch (error) {
