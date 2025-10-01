@@ -81,7 +81,7 @@ export default function OverviewPage() {
 
   const handleAddBot = (guildId: string) => {
     // Bot invite URL - only bot permissions, no OAuth
-    const inviteUrl = `https://discord.com/oauth2/authorize?client_id=773539215098249246&permissions=8&scope=bot%20applications.commands&guild_id=${guildId}&disable_guild_select=true`;
+    const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=773539215098249246&permissions=8&scope=bot+applications.commands&guild_id=${guildId}&disable_guild_select=true`;
     
     // Open invite in new tab
     const popup = window.open(inviteUrl, '_blank');
