@@ -278,7 +278,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <a href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds%20applications.commands%20connections&client_id=773539215098249246" className="inline-flex items-center gap-3 px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300">
+                <a href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246" className="inline-flex items-center gap-3 px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300">
                   <RocketLaunchIcon className="w-7 h-7" />
                   Şimdi Başla
                   <BoltIcon className="w-7 h-7" />
