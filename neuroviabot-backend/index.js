@@ -51,8 +51,8 @@ passport.deserializeUser((obj, done) => {
 passport.use(new DiscordStrategy({
     clientID: process.env.DISCORD_CLIENT_ID || '773539215098249246',
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    callbackURL: process.env.DISCORD_CALLBACK_URL || 'http://localhost:5000/api/auth/callback',
-    scope: ['identify', 'email', 'guilds', 'applications.commands', 'connections'],
+    callbackURL: process.env.DISCORD_CALLBACK_URL || 'https://neuroviabot.xyz/api/auth/callback',
+    scope: ['identify', 'email', 'guilds'],
   },
   (accessToken, refreshToken, profile, done) => {
     profile.accessToken = accessToken;

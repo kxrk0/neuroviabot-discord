@@ -10,7 +10,7 @@ router.get('/callback',
   passport.authenticate('discord', { failureRedirect: '/login' }),
   (req, res) => {
     // Redirect to frontend dashboard
-    res.redirect('http://localhost:3000/dashboard');
+    res.redirect('https://neuroviabot.xyz/dashboard');
   }
 );
 
