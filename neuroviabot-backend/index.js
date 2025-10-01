@@ -14,14 +14,14 @@ const PORT = process.env.PORT || 5000;
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'https://neuroviabot.xyz',
     credentials: true,
   },
 });
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'https://neuroviabot.xyz',
   credentials: true,
 }));
 app.use(express.json());
@@ -33,6 +33,8 @@ app.use(session({
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    domain: process.env.NODE_ENV === 'production' ? '.neuroviabot.xyz' : undefined,
   },
 }));
 

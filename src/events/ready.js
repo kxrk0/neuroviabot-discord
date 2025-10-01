@@ -21,10 +21,10 @@ module.exports = {
                 const totalServers = client.guilds.cache.size;
                 
                 // Format: "90,876 User | 66 Server"
-                const activityText = `${totalUsers.toLocaleString()} User | ${totalServers} Server`;
+                const activityText = `${totalUsers.toLocaleString()} User | ${totalServers} Server | TikTok: swaffval`;
                 client.user.setActivity(activityText, { 
                     type: ActivityType.Streaming,
-                    url: 'https://www.tiktok.com/@swaffval'
+                    url: 'https://www.twitch.tv/swaffval'
                 });
                 
                 // Activity updated silently - no debug logs needed

@@ -213,10 +213,10 @@ client.once('ready', async () => {
     log(`Guilds: ${client.guilds.cache.size}`, 'INFO');
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
-    // Bot durumunu ayarlama - Streaming badge için
-    client.user.setActivity('NeuroViaBot | /help', { 
+    // Bot durumunu ayarlama - Streaming badge için (Twitch URL gerekli)
+    client.user.setActivity('NeuroViaBot | /help | TikTok: swaffval', { 
         type: ActivityType.Streaming,
-        url: 'https://www.tiktok.com/@swaffval'
+        url: 'https://www.twitch.tv/swaffval'
     });
     
     // Slash komutları kaydet
