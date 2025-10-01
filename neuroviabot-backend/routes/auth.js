@@ -31,8 +31,8 @@ router.get('/callback',
         console.log('[OAuth] Login successful, session ID:', req.sessionID);
         console.log('[OAuth] Session cookie:', req.session.cookie);
         
-        // Redirect to frontend dashboard overview
-        return res.redirect('https://neuroviabot.xyz/dashboard/overview');
+        // Redirect to frontend servers page
+        return res.redirect('https://neuroviabot.xyz/servers');
       });
     })(req, res, next);
   }
