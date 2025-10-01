@@ -80,14 +80,39 @@ export default function OverviewPage() {
   };
 
   const handleAddBot = (guildId: string) => {
-    // Fixed bot invite URL - removed code grant issue
+    // Bot invite URL - only bot permissions, no OAuth
     const inviteUrl = `https://discord.com/oauth2/authorize?client_id=773539215098249246&permissions=8&scope=bot%20applications.commands&guild_id=${guildId}&disable_guild_select=true`;
-    window.open(inviteUrl, '_blank');
     
-    // Redirect after a short delay
+    // Open invite in new tab
+    const popup = window.open(inviteUrl, '_blank');
+    
+    // Optional: Poll for bot being added (check every 3 seconds)
+    const checkInterval = setInterval(async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+        const response = await fetch(`${API_URL}/api/guilds/user`, {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const updatedGuild = data.find((g: any) => g.id === guildId);
+          
+          // If bot is now present, redirect
+          if (updatedGuild?.botPresent) {
+            clearInterval(checkInterval);
+            router.push(`/manage/${guildId}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking bot status:', error);
+      }
+    }, 3000);
+    
+    // Stop checking after 30 seconds
     setTimeout(() => {
-      router.push(`/manage/${guildId}`);
-    }, 2000);
+      clearInterval(checkInterval);
+    }, 30000);
   };
 
   const handleLogout = async () => {
