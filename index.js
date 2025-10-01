@@ -4,7 +4,7 @@
 
 // Environment variables yükleme
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -213,9 +213,9 @@ client.once('ready', async () => {
     log(`Guilds: ${client.guilds.cache.size}`, 'INFO');
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
-    // Bot durumunu ayarlama
+    // Bot durumunu ayarlama - Streaming badge için
     client.user.setActivity('NeuroViaBot | /help', { 
-        type: 'STREAMING',
+        type: ActivityType.Streaming,
         url: 'https://www.tiktok.com/@swaffval'
     });
     
