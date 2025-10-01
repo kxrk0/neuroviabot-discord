@@ -97,14 +97,23 @@ router.get('/:guildId', requireAuth, async (req, res) => {
   const { guildId } = req.params;
   
   try {
-    // TODO: Fetch from actual Discord bot client
-    // const guild = client.guilds.cache.get(guildId);
+    const botClient = req.app.get('botClient');
+    const guild = botClient?.guilds?.cache.get(guildId);
+    
+    if (!guild) {
+      return res.status(404).json({ 
+        error: 'Guild not found',
+        message: 'Bot is not in this guild'
+      });
+    }
     
     res.json({
-      id: guildId,
-      name: 'Test Server',
-      icon: null,
-      memberCount: 1234,
+      id: guild.id,
+      name: guild.name,
+      icon: guild.icon,
+      memberCount: guild.memberCount,
+      ownerId: guild.ownerId,
+      description: guild.description,
     });
   } catch (error) {
     console.error('Error fetching guild:', error);
