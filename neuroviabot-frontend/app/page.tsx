@@ -23,38 +23,20 @@ import {
 export default function Home() {
   const [stats, setStats] = useState({ guilds: 66, users: 59032, commands: 43 });
   const [mounted, setMounted] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     setMounted(true);
     fetchBotStats()
       .then(data => setStats(data))
       .catch(() => setStats({ guilds: 66, users: 59032, commands: 43 }));
-
-    // Paralax mouse tracking
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20
-      });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
-      {/* Animated Background with Paralax */}
-      <motion.div 
-        className="fixed inset-0 z-0"
-        style={{
-          x: mousePosition.x,
-          y: mousePosition.y
-        }}
-        transition={{ type: "spring", stiffness: 100, damping: 30 }}
-      >
+      {/* Animated Background - Fixed */}
+      <div className="fixed inset-0 z-0">
         {/* Gradient Orbs with stagger animation */}
         <motion.div 
           className="absolute top-0 -left-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
@@ -125,7 +107,7 @@ export default function Home() {
           backgroundSize: '60px 60px',
           maskImage: 'radial-gradient(ellipse 80% 50% at 50% 50%, black 40%, transparent 100%)'
         }}></div>
-      </motion.div>
+      </div>
 
       {/* Modern Navbar */}
       <nav className="navbar scrolled relative z-50 animate-slide-down">
