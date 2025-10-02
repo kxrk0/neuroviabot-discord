@@ -397,9 +397,24 @@ export default function Home() {
       </motion.nav>
 
       {/* Hero Section - Enhanced MEE6 Style */}
-      <section className="relative z-1 min-h-[calc(100vh-20%)] flex overflow-hidden" style={{
-        background: 'linear-gradient(rgb(19, 21, 31) -4.84%, rgb(29, 28, 47) 34.9%, rgb(33, 32, 54) 48.6%, rgb(51, 40, 62) 66.41%, rgb(98, 61, 83) 103.41%, rgb(140, 81, 102) 132.18%)'
-      }}>
+      <section className="relative z-1 min-h-[calc(100vh-20%)] flex overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/wallpaper.jpg)',
+            filter: 'brightness(0.7) contrast(1.1)'
+          }}
+        />
+        
+        {/* Gradient Overlay for better text visibility */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(19, 21, 31, 0.7) 0%, rgba(29, 28, 47, 0.8) 50%, rgba(33, 32, 54, 0.9) 100%)'
+          }}
+        />
+        
         {/* Animated Background Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Gradient Orbs */}
