@@ -479,7 +479,7 @@ export default function ServerDashboard() {
             )}
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       <div className="flex pt-16 relative z-10">
         {/* Sidebar with smooth animations */}
