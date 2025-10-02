@@ -569,14 +569,15 @@ export default function Home() {
             style={{ willChange: 'transform, opacity' }}
           >
             {[
-              { icon: '🎵', value: '43+', label: 'Komut' },
-              { icon: '🏆', value: stats.guilds || '66', label: 'Sunucu' },
-              { icon: '👥', value: stats.users.toLocaleString(), label: 'Kullanıcı' }
+              { icon: '🎵', value: '43+', label: 'Komut', color: 'purple' },
+              { icon: '🏆', value: stats.guilds || '66', label: 'Sunucu', color: 'yellow' },
+              { icon: '👥', value: stats.users.toLocaleString(), label: 'Kullanıcı', color: 'blue' }
             ].map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
+                whileHover={{ scale: 1.05 }}
                 transition={{ 
                   duration: 0.5, 
                   delay: 0.45 + index * 0.1,
@@ -584,7 +585,13 @@ export default function Home() {
                   stiffness: 200,
                   damping: 15
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10"
+                className={`flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border transition-all duration-300 ${
+                  stat.color === 'purple' 
+                    ? 'border-purple-500/30 hover:border-purple-500/60 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]'
+                    : stat.color === 'yellow'
+                    ? 'border-yellow-500/30 hover:border-yellow-500/60 shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)]'
+                    : 'border-blue-500/30 hover:border-blue-500/60 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]'
+                }`}
               >
                 <span className="text-2xl">{stat.icon}</span>
                 <div>
