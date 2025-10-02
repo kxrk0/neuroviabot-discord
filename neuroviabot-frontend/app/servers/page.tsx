@@ -248,32 +248,107 @@ export default function OverviewPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-8 flex items-center gap-3">
-            <ServerIcon className="w-10 h-10 text-purple-500" />
-            Sunucularım
-          </h1>
-
-          {guilds.length === 0 ? (
-            <div className="text-center py-20">
-              <ServerIcon className="w-20 h-20 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg">Henüz bir sunucun yok</p>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
+          >
+            <div className="flex items-center gap-4 mb-3">
+              <div className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+              <h1 className="text-5xl font-black text-white">
+                Sunucu{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400 bg-[length:200%_auto] animate-gradient-x">
+                  Yönetimi
+                </span>
+              </h1>
             </div>
+            <p className="text-gray-400 text-lg ml-16">
+              {loading ? 'Sunucular yükleniyor...' : `${guilds.length} sunucu bulundu`}
+            </p>
+          </motion.div>
+
+          {loading ? (
+            // Skeleton loading
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.08 }}
+                >
+                  <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 h-full">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-16 h-16 rounded-2xl bg-gray-800 animate-pulse"></div>
+                      <div className="flex-1">
+                        <div className="h-5 bg-gray-800 rounded-lg mb-2 animate-pulse"></div>
+                        <div className="h-4 w-24 bg-gray-800 rounded animate-pulse"></div>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 mb-4">
+                      <div className="h-4 w-20 bg-gray-800 rounded animate-pulse"></div>
+                      <div className="h-4 w-20 bg-gray-800 rounded animate-pulse"></div>
+                    </div>
+                    <div className="h-12 bg-gray-800 rounded-xl animate-pulse"></div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : guilds.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center py-20"
+            >
+              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-purple-500/10 mb-6">
+                <ServerIcon className="w-12 h-12 text-purple-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Sunucu Bulunamadı</h2>
+              <p className="text-gray-400 text-lg mb-6">Yönetici olduğun sunucu bulunamadı.</p>
+              <p className="text-gray-500 text-sm max-w-md mx-auto">Discord'da bir sunucuya yönetici izni aldığında burada görünecektir.</p>
+            </motion.div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {guilds.map((guild, index) => (
                 <motion.div
                   key={guild.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                  whileHover={{ scale: 1.02, y: -5 }}
-                  className="group relative"
+                  initial={{ opacity: 0, y: 30, rotateX: -15 }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: index * 0.08,
+                    type: "spring",
+                    stiffness: 120
+                  }}
+                  whileHover={{ 
+                    scale: 1.03, 
+                    y: -8,
+                    rotateY: 2,
+                    transition: { type: "spring", stiffness: 400, damping: 17 }
+                  }}
+                  className="group relative perspective-1000"
                 >
-                  {/* Gradient border effect */}
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300"></div>
+                  {/* Animated gradient border */}
+                  <motion.div 
+                    className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-500"
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                    style={{ backgroundSize: '200% 200%' }}
+                  />
+                  
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-pink-500/0 group-hover:from-purple-500/5 group-hover:via-blue-500/5 group-hover:to-pink-500/5 rounded-2xl blur-2xl transition-all duration-500"></div>
                   
                   {/* Card content */}
-                  <div className="relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 h-full flex flex-col">
+                  <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-900/80 backdrop-blur-2xl border-2 border-white/10 group-hover:border-purple-500/30 rounded-2xl p-6 h-full flex flex-col shadow-xl group-hover:shadow-2xl group-hover:shadow-purple-500/20 transition-all duration-500">
                     {/* Server Icon & Info */}
                     <div className="flex items-start gap-4 mb-4">
                       <div className="relative">
