@@ -1216,20 +1216,28 @@ export default function Home() {
                 © 2025 <span className="font-bold text-white">Neurovia</span>. Tüm hakları saklıdır.
               </motion.p>
               <div className="flex items-center gap-6">
-                {["Gizlilik Politikası", "Kullanım Şartları", "Çerezler"].map((item, i) => (
-                  <motion.a
-                    key={i}
-                    href="#"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.7 + i * 0.1 }}
-                    whileHover={{ y: -2 }}
-                    className="text-gray-300 hover:text-white transition-all text-sm"
-                  >
-                    {item}
-                  </motion.a>
-                ))}
+                <motion.a
+                  href="/privacy"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.7 }}
+                  whileHover={{ y: -2 }}
+                  className="text-gray-300 hover:text-white transition-all text-sm"
+                >
+                  Gizlilik Politikası
+                </motion.a>
+                <motion.a
+                  href="/terms"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.8 }}
+                  whileHover={{ y: -2 }}
+                  className="text-gray-300 hover:text-white transition-all text-sm"
+                >
+                  Kullanım Şartları
+                </motion.a>
               </div>
             </div>
           </motion.div>
