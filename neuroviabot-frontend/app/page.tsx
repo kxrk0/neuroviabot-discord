@@ -29,20 +29,34 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-    fetchBotStats()
-      .then(data => {
-        console.log('Bot stats fetched:', data);
+    
+    const loadStats = async () => {
+      try {
+        console.log('🔄 Starting to fetch bot stats...');
+        const data = await fetchBotStats();
+        console.log('✅ Bot stats received:', data);
+        console.log('📊 Users value:', data.users, 'Type:', typeof data.users);
+        
         // Eğer users 0 veya geçersizse, fallback kullan
-        setStats({
+        const finalStats = {
           guilds: data.guilds || 66,
           users: (data.users && data.users > 0) ? data.users : 59032,
           commands: data.commands || 43
-        });
-      })
-      .catch((error) => {
-        console.error('Failed to fetch bot stats:', error);
+        };
+        
+        console.log('💾 Setting stats to:', finalStats);
+        setStats(finalStats);
+      } catch (error) {
+        console.error('❌ Failed to fetch bot stats:', error);
         setStats({ guilds: 66, users: 59032, commands: 43 });
-      });
+      }
+    };
+    
+    loadStats();
+    
+    // Her 30 saniyede bir güncelle
+    const interval = setInterval(loadStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const t = {

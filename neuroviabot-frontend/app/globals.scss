@@ -25,14 +25,14 @@
 // 🎯 Custom Cursor - Theme Styled (Minimal Dot)
 // ==========================================
 * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewport='0 0 16 16'><circle cx='8' cy='8' r='3' fill='%23a855f7'/></svg>") 8 8, auto !important;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewport='0 0 16 16'><circle cx='8' cy='8' r='3' fill='%23ffffff'/></svg>") 8 8, auto !important;
 }
 
 a, button, [role="button"] {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewport='0 0 20 20'><circle cx='10' cy='10' r='4' fill='%2360a5fa'/></svg>") 10 10, pointer !important;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewport='0 0 20 20'><circle cx='10' cy='10' r='4' fill='%23ffffff'/></svg>") 10 10, pointer !important;
 }
 
 input, textarea {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='20' viewport='0 0 2 20'><rect x='0' y='0' width='2' height='20' fill='%23a855f7'/></svg>") 1 10, text !important;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='20' viewport='0 0 2 20'><rect x='0' y='0' width='2' height='20' fill='%23ffffff'/></svg>") 1 10, text !important;
 }
 
