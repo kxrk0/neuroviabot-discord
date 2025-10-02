@@ -146,90 +146,206 @@ export default function Home() {
         <div className="max-w-[1240px] mx-auto px-6 lg:px-10">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href="/" className="flex items-center gap-3 group">
               <motion.div 
                 whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.6 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center"
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg"
               >
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-              </svg>
+                <motion.svg 
+                  className="w-6 h-6 text-white" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                </motion.svg>
               </motion.div>
-              <span className="text-xl font-black text-white">NeuroViaBot</span>
+              <motion.span 
+                className="text-xl font-black"
+                initial={{ backgroundPosition: "0% 50%" }}
+                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                style={{
+                  background: "linear-gradient(90deg, #fff 0%, #a855f7 25%, #3b82f6 50%, #a855f7 75%, #fff 100%)",
+                  backgroundSize: "200% auto",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text"
+                }}
+              >
+                Neurovia
+              </motion.span>
             </Link>
 
             {/* Center Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {/* Features Dropdown */}
+              {/* Features Dropdown - MEE6 Style */}
               <div className="relative">
                 <button 
-                  onClick={() => setFeaturesOpen(!featuresOpen)}
+                  onClick={() => {
+                    setFeaturesOpen(!featuresOpen);
+                    setResourcesOpen(false);
+                    setLanguageOpen(false);
+                  }}
                   className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all"
                 >
                   {t[language].features}
-                  <ChevronDownIcon className="w-4 h-4" />
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform ${featuresOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {featuresOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setFeaturesOpen(false)} />
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-[#1a1c2e] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-                      <div className="p-2">
-                        <a href="#features" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                          <MusicalNoteIcon className="w-5 h-5 text-purple-400" />
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 mt-2 w-80 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                    >
+                      <div className="p-3">
+                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
+                            <ShieldCheckIcon className="w-5 h-5 text-purple-400" />
+                          </div>
                           <div>
-                            <div className="font-semibold text-sm">Müzik Sistemi</div>
-                            <div className="text-xs text-gray-500">YouTube, Spotify desteği</div>
+                            <div className="font-bold text-sm mb-1">Moderasyon & Sunucu Yönetimi</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Karşılama, Özel Komutlar, Tepki Rol, Moderatör...</div>
                           </div>
                         </a>
-                        <a href="#features" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                          <ShieldCheckIcon className="w-5 h-5 text-blue-400" />
+                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                            <CommandLineIcon className="w-5 h-5 text-blue-400" />
+                          </div>
                           <div>
-                            <div className="font-semibold text-sm">Moderasyon</div>
-                            <div className="text-xs text-gray-500">Otomatik koruma</div>
+                            <div className="font-bold text-sm mb-1">Araçlar</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Gömülü mesajlar, Arama, Kayıt, Zamanlayıcı, İstatistik...</div>
                           </div>
                         </a>
-                        <a href="#features" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                          <CurrencyDollarIcon className="w-5 h-5 text-green-400" />
+                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
+                            <BoltIcon className="w-5 h-5 text-pink-400" />
+                          </div>
                           <div>
-                            <div className="font-semibold text-sm">Ekonomi</div>
-                            <div className="text-xs text-gray-500">Sanal para sistemi</div>
+                            <div className="font-bold text-sm mb-1">Sosyal Medya Bildirimleri</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Twitch, YouTube, Twitter, RSS, Reddit bildirimleri...</div>
+                          </div>
+                        </a>
+                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                            <MusicalNoteIcon className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Katılım ve Eğlence</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Seviye, Doğum Günü, Çekilişler, Müzik, Ekonomi...</div>
+                          </div>
+                        </a>
+                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
+                            <SparklesIcon className="w-5 h-5 text-cyan-400" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Bot Kişiselleştirici</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Avatar, isim, yapay zeka tabanlı kişiselleştirme...</div>
+                          </div>
+                        </a>
+                        <a href="#premium" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500/20 transition-colors">
+                            <span className="text-xl">👑</span>
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Premium Abonelik</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Tüm özelliklere erişim için Premium'a yükseltin</div>
                           </div>
                         </a>
                       </div>
-                    </div>
+                    </motion.div>
                   </>
                 )}
               </div>
 
-              {/* Resources Dropdown */}
+              {/* Resources Dropdown - MEE6 Style */}
               <div className="relative">
                 <button 
-                  onClick={() => setResourcesOpen(!resourcesOpen)}
+                  onClick={() => {
+                    setResourcesOpen(!resourcesOpen);
+                    setFeaturesOpen(false);
+                    setLanguageOpen(false);
+                  }}
                   className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all"
                 >
                   {t[language].resources}
-                  <ChevronDownIcon className="w-4 h-4" />
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform ${resourcesOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {resourcesOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setResourcesOpen(false)} />
-                    <div className="absolute top-full left-0 mt-2 w-56 bg-[#1a1c2e] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-                      <div className="p-2">
-                        <a href="/servers" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                          <ServerIcon className="w-5 h-5 text-purple-400" />
-                          <span className="font-medium text-sm">Sunucularım</span>
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 mt-2 w-80 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                    >
+                      <div className="p-3">
+                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
+                            <span className="text-xl">📚</span>
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Öğretici</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Discord'da Neurovia'nın nasıl kullanılacağı hakkında daha fazla bilgi</div>
+                          </div>
                         </a>
-                        <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                          <CommandLineIcon className="w-5 h-5 text-blue-400" />
-                          <span className="font-medium text-sm">Komutlar</span>
+                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                            <span className="text-xl">📖</span>
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Destek Portalı</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Bilgi bankası ve yardımcı materyaller avucunuzun içinde</div>
+                          </div>
                         </a>
-                        <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                          <SparklesIcon className="w-5 h-5 text-yellow-400" />
-                          <span className="font-medium text-sm">Yardım</span>
+                        <a href="https://discord.gg/neurovia" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
+                            <ServerIcon className="w-5 h-5 text-indigo-400" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Discord Sunucusu</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">İhtiyacınız olabilecek tüm yardımları almak için katılın</div>
+                          </div>
+                        </a>
+                        <a href="/servers" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                            <span className="text-xl">💼</span>
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1 flex items-center gap-2">
+                              Kariyer
+                              <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">İşe alıyoruz!</span>
+                            </div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Neurovia'ya katılın ve harika topluluklar için araçlar oluşturun</div>
+                          </div>
+                        </a>
+                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
+                            <span className="text-xl">🐛</span>
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Hata Ödül Programı</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Bazı güzel ödüllere giden yolu hackleyin</div>
+                          </div>
+                        </a>
+                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
+                            <span className="text-xl">✉️</span>
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm mb-1">Bize ulaşın</div>
+                            <div className="text-xs text-gray-400 leading-relaxed">Biz güzeliz ve arkadaş canlısıyız!</div>
+                          </div>
                         </a>
                       </div>
-                    </div>
+                    </motion.div>
                   </>
                 )}
               </div>
@@ -237,20 +353,29 @@ export default function Home() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              {/* Language Selector */}
+              {/* Language Selector - Emoji Only */}
               <div className="relative">
-                <button 
-                  onClick={() => setLanguageOpen(!languageOpen)}
-                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                <motion.button 
+                  onClick={() => {
+                    setLanguageOpen(!languageOpen);
+                    setFeaturesOpen(false);
+                    setResourcesOpen(false);
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="hidden md:flex items-center justify-center w-10 h-10 text-2xl hover:bg-white/5 rounded-lg transition-all"
                 >
-                  <span className="text-base">{language === 'tr' ? '🇹🇷' : '🇬🇧'}</span>
-                  <span>{language.toUpperCase()}</span>
-                  <ChevronDownIcon className="w-3.5 h-3.5" />
-                </button>
+                  {language === 'tr' ? '🇹🇷' : '🇬🇧'}
+                </motion.button>
                 {languageOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setLanguageOpen(false)} />
-                    <div className="absolute top-full right-0 mt-2 w-40 bg-[#1a1c2e] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-40 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+                    >
                       <div className="p-1">
                         <button
                           onClick={() => {
@@ -277,7 +402,7 @@ export default function Home() {
                           English
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   </>
                 )}
               </div>
@@ -301,8 +426,8 @@ export default function Home() {
                 className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-[#5865F2] hover:bg-[#4752C4] rounded-lg transition-all shadow-lg"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                </svg>
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
                 <span className="hidden sm:inline">{t[language].login}</span>
               </motion.a>
             </div>
