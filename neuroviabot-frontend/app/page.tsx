@@ -441,7 +441,7 @@ export default function Home() {
             style={{ willChange: 'transform, opacity' }}
           />
           
-          {/* Floating Particles - Enhanced */}
+          {/* Floating Particles - Enhanced & Continuous Movement */}
           {[...Array(25)].map((_, i) => {
             const colors = [
               'rgba(168, 85, 247, 0.6)',   // Purple
@@ -452,23 +452,45 @@ export default function Home() {
               'rgba(219, 39, 119, 0.4)',   // Hot Pink
             ];
             const size = 2 + (i % 4);
-            const duration = 5 + (i % 8);
-            const delay = (i * 0.3) % 4;
+            const baseDuration = 8 + (i % 6);
+            const delay = (i * 0.2) % 3;
+            const xRange = 60 + (i % 40);
+            const yRange = 100 + (i % 80);
             
             return (
               <motion.div
                 key={i}
                 animate={{
-                  y: [0, -150 - (i % 50), 0],
-                  x: [0, Math.sin(i) * 80, 0],
-                  opacity: [0, 0.8, 0],
-                  scale: [0, 1, 0]
+                  y: [
+                    0, 
+                    -yRange * 0.3, 
+                    -yRange * 0.7, 
+                    -yRange, 
+                    -yRange * 1.2, 
+                    -yRange * 0.8, 
+                    -yRange * 0.4, 
+                    0
+                  ],
+                  x: [
+                    0, 
+                    xRange * 0.3, 
+                    xRange * 0.7, 
+                    xRange, 
+                    xRange * 0.6, 
+                    -xRange * 0.3, 
+                    -xRange * 0.1, 
+                    0
+                  ],
+                  opacity: [0, 0.3, 0.6, 0.8, 0.9, 0.7, 0.4, 0],
+                  scale: [0, 0.5, 0.8, 1, 1.1, 0.9, 0.6, 0],
+                  rotate: [0, 45, 90, 135, 180, 225, 270, 360]
                 }}
                 transition={{
-                  duration,
+                  duration: baseDuration,
                   repeat: Infinity,
                   delay,
-                  ease: "easeInOut"
+                  ease: [0.45, 0.05, 0.55, 0.95],
+                  times: [0, 0.15, 0.3, 0.5, 0.65, 0.8, 0.9, 1]
                 }}
                 className="absolute"
                 style={{
@@ -479,42 +501,49 @@ export default function Home() {
                   borderRadius: '50%',
                   background: colors[i % colors.length],
                   willChange: 'transform, opacity',
-                  boxShadow: `0 0 ${size * 2}px ${colors[i % colors.length]}`
+                  boxShadow: `0 0 ${size * 3}px ${colors[i % colors.length]}, 0 0 ${size * 6}px ${colors[i % colors.length].replace('0.6', '0.3')}`
                 }}
               />
             );
           })}
           
-          {/* Additional Decorative Stars */}
-          {[...Array(15)].map((_, i) => (
-            <motion.div
-              key={`star-${i}`}
-              animate={{
-                opacity: [0.2, 1, 0.2],
-                scale: [0.8, 1.2, 0.8],
-                rotate: [0, 180, 360]
-              }}
-              transition={{
-                duration: 3 + (i % 4),
-                repeat: Infinity,
-                delay: i * 0.4,
-                ease: "easeInOut"
-              }}
-              className="absolute"
-              style={{
-                left: `${(i * 6) % 95}%`,
-                top: `${(i * 5) % 90}%`,
-                width: '6px',
-                height: '6px',
-                willChange: 'transform, opacity'
-              }}
-            >
-              <div className="relative w-full h-full">
-                <div className="absolute inset-0 bg-white/60 rounded-full blur-sm" />
-                <div className="absolute inset-0.5 bg-purple-300/80 rounded-full" />
-              </div>
-            </motion.div>
-          ))}
+          {/* Additional Decorative Stars - Enhanced Movement */}
+          {[...Array(15)].map((_, i) => {
+            const xMove = 20 + (i % 15);
+            const yMove = 20 + (i % 20);
+            
+            return (
+              <motion.div
+                key={`star-${i}`}
+                animate={{
+                  x: [0, xMove, -xMove, xMove * 0.5, -xMove * 0.3, 0],
+                  y: [0, -yMove, yMove * 0.5, -yMove * 0.7, yMove, 0],
+                  opacity: [0.2, 0.6, 1, 0.7, 0.4, 0.2],
+                  scale: [0.8, 1, 1.2, 1.1, 0.9, 0.8],
+                  rotate: [0, 60, 120, 180, 240, 300, 360]
+                }}
+                transition={{
+                  duration: 4 + (i % 5),
+                  repeat: Infinity,
+                  delay: i * 0.3,
+                  ease: [0.45, 0.05, 0.55, 0.95]
+                }}
+                className="absolute"
+                style={{
+                  left: `${(i * 6) % 95}%`,
+                  top: `${(i * 5) % 90}%`,
+                  width: '6px',
+                  height: '6px',
+                  willChange: 'transform, opacity'
+                }}
+              >
+                <div className="relative w-full h-full">
+                  <div className="absolute inset-0 bg-white/60 rounded-full blur-sm" />
+                  <div className="absolute inset-0.5 bg-purple-300/80 rounded-full" />
+                </div>
+              </motion.div>
+            );
+          })}
           
           {/* Decorative Circles */}
           <motion.div
@@ -621,16 +650,18 @@ export default function Home() {
             ].map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                transition={{ 
-                  duration: 0.5, 
-                  delay: 0.45 + index * 0.1,
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 15
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                whileHover={{ 
+                  scale: 1.05,
+                  transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] }
                 }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: 0.45 + index * 0.1,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                style={{ willChange: 'transform, opacity' }}
                 className={`flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border transition-all duration-300 ${
                   stat.color === 'purple' 
                     ? 'border-purple-500/30 hover:border-purple-500/60 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]'
