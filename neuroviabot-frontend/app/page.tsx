@@ -182,83 +182,64 @@ export default function Home() {
             <SparklesIcon className="w-4 h-4 text-purple-400" />
           </motion.div>
 
-          {/* Main Title with 3D effect */}
+          {/* Main Title - Simplified */}
           <motion.h1
-            initial={{ opacity: 0, y: 30, rotateX: -20 }}
-            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.8, 
+              duration: 0.6, 
               delay: 0.3,
-              type: "spring",
-              stiffness: 100
+              ease: "easeOut"
             }}
-            className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 leading-tight perspective-1000"
-            style={{
-              textShadow: '0 0 80px rgba(139, 92, 246, 0.5)',
-            }}
+            className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight"
           >
-            <motion.span 
-              className="text-white block"
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              Discord İçin
-            </motion.span>
-            <motion.span 
+            <span className="text-white block mb-2">
+              Discord Sunucun İçin
+            </span>
+            <span 
               className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-[length:200%_auto] animate-gradient-x block"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              style={{
-                filter: 'drop-shadow(0 0 30px rgba(168, 85, 247, 0.4))',
-              }}
             >
-              En Gelişmiş Bot
-            </motion.span>
+              Her Şey Bir Arada
+            </span>
           </motion.h1>
 
-          {/* Description */}
+          {/* Description - More friendly */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Müzik, moderasyon, ekonomi, seviye sistemi ve daha fazlası. 
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-semibold"> 40+ güçlü özellik</span> ile sunucunuzu bir üst seviyeye taşıyın.
+            Müzik çal, sunucunu yönet, üyelerini eğlendir!
+            <br />
+            <span className="text-purple-400 font-semibold">Ücretsiz</span> ve <span className="text-blue-400 font-semibold">kolay kurulum</span> ile hemen başla.
           </motion.p>
 
-          {/* CTA Buttons with enhanced effects */}
+          {/* CTA Buttons - Simplified */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20"
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
           >
-            <motion.div
-              whileHover={{ scale: 1.08, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            <motion.a
+              href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="group relative inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl overflow-hidden shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50 transition-all duration-300"
             >
-              <a href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246" className="group relative inline-flex items-center gap-3 px-10 py-5 text-lg font-bold text-white bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 rounded-2xl overflow-hidden transition-all duration-500 shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/60">
-                {/* Animated background */}
-                <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-                {/* Shine effect */}
-                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></span>
-                <RocketLaunchIcon className="w-6 h-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-                <span className="relative z-10">Hemen Başla</span>
-                <BoltIcon className="w-6 h-6 relative z-10 group-hover:rotate-45 transition-transform duration-300" />
-              </a>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.08, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              <RocketLaunchIcon className="w-5 h-5" />
+              <span>Şimdi Dene - Ücretsiz</span>
+            </motion.a>
+            <motion.a
+              href="#features"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl backdrop-blur-xl transition-all duration-300"
             >
-              <Link href="#features" className="group inline-flex items-center gap-3 px-10 py-5 text-lg font-bold text-white bg-white/5 hover:bg-white/10 border-2 border-white/10 hover:border-purple-500/50 rounded-2xl backdrop-blur-2xl transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-purple-500/20">
-                <SparklesIcon className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
-                Özellikleri Keşfet
-              </Link>
-            </motion.div>
+              <SparklesIcon className="w-5 h-5" />
+              Neler Yapabilir?
+            </motion.a>
           </motion.div>
 
           {/* Animated Stats */}
@@ -293,63 +274,63 @@ export default function Home() {
       {/* Features Section - Modern Cards */}
       <section id="features" className="relative z-10 py-32 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Section Header */}
+          {/* Section Header - Simplified */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-20"
+            className="text-center mb-16"
           >
-            <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-              Güçlü <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Özellikler</span>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
+              Neler <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Yapabilirsin?</span>
             </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Sunucunuzu yönetmek ve büyütmek için ihtiyacınız olan her şey
+            <p className="text-lg text-gray-400 max-w-xl mx-auto">
+              Sunucunu yönetmek ve eğlenceli hale getirmek için her şey burada
             </p>
           </motion.div>
 
-          {/* Feature Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Feature Grid - Simplified descriptions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               icon={<MusicalNoteIcon />}
-              title="Müzik Oynatıcı"
-              description="YouTube ve Spotify'dan kristal kalitede müzik. Gelişmiş sıra yönetimi ve kontroller."
+              title="🎵 Müzik Çal"
+              description="YouTube ve Spotify'dan dilediğin şarkıyı çal. Sıra yönetimi, ses kontrolü hepsi dahil!"
               gradient="from-purple-500 to-blue-500"
               delay={0}
             />
             <FeatureCard
               icon={<ShieldCheckIcon />}
-              title="Akıllı Moderasyon"
-              description="AI destekli oto-moderasyon, spam koruması ve kapsamlı admin araçları."
+              title="🛡️ Sunucunu Koru"
+              description="Spam, küfür ve zararlı içerikleri otomatik engelle. Sunucun güvende!"
               gradient="from-blue-500 to-cyan-500"
               delay={0.1}
             />
             <FeatureCard
               icon={<CurrencyDollarIcon />}
-              title="Ekonomi Sistemi"
-              description="Sanal para, özel mağaza ve casino oyunları ile üyelerinizi ödüllendirin."
+              title="💰 Ekonomi Oluştur"
+              description="Üyelerine sanal para kazan, alışveriş yap ve casino oyunları oyna!"
               gradient="from-cyan-500 to-teal-500"
               delay={0.2}
             />
             <FeatureCard
               icon={<ChartBarIcon />}
-              title="Seviye Sistemi"
-              description="XP, seviye ve otomatik rol ilerlemesi ile aktif üyeleri motive edin."
+              title="⭐ Seviye Sistemi"
+              description="Aktif üyeler XP kazanıp seviye atlasın. Otomatik roller ver!"
               gradient="from-teal-500 to-green-500"
               delay={0.3}
             />
             <FeatureCard
               icon={<TicketIcon />}
-              title="Destek Sistemi"
-              description="Profesyonel destek bileti sistemi, kategori yönetimi ve kayıt."
+              title="🎫 Destek Al"
+              description="Üyelerine destek sistemini kur. Ticket aç, yönet, kaydet."
               gradient="from-green-500 to-lime-500"
               delay={0.4}
             />
             <FeatureCard
               icon={<GiftIcon />}
-              title="Çekilişler"
-              description="Otomatik kazanan seçimi ve bildirimlerle kolay çekiliş yönetimi."
+              title="🎁 Çekiliş Yap"
+              description="Kolayca çekiliş başlat. Otomatik kazanan seç, herkes mutlu!"
               gradient="from-pink-500 to-rose-500"
               delay={0.5}
             />
