@@ -206,18 +206,14 @@ async function registerSlashCommands() {
     }
 }
 
-// Bot hazır olduğunda
-client.once('ready', async () => {
+// Bot hazır olduğunda (Discord.js v14+ için clientReady event)
+client.once('clientReady', async () => {
     log(`Bot logged in as ${client.user.tag}`, 'SUCCESS');
     log(`Bot ID: ${client.user.id}`, 'INFO');
     log(`Guilds: ${client.guilds.cache.size}`, 'INFO');
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
-    // Bot durumunu ayarlama - Streaming badge için (Twitch URL gerekli)
-    client.user.setActivity('NeuroViaBot | /help', { 
-        type: ActivityType.Streaming,
-        url: 'https://www.twitch.tv/swaffval'
-    });
+    // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
     
     // Slash komutları kaydet
     await registerSlashCommands();
