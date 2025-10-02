@@ -6,6 +6,9 @@ node_modules/
 .env.local
 .env.production
 
+# Sessions
+sessions/
+
 # Logs
 *.log
 npm-debug.log*

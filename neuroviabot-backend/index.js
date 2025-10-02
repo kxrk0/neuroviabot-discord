@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const http = require('http');
@@ -50,6 +51,12 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(session({
+  store: new FileStore({
+    path: './sessions',
+    ttl: 7 * 24 * 60 * 60, // 7 days in seconds
+    retries: 2,
+    secret: process.env.SESSION_SECRET || 'UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk',
+  }),
   secret: process.env.SESSION_SECRET || 'UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk',
   resave: false,
   saveUninitialized: false,
