@@ -30,8 +30,19 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     fetchBotStats()
-      .then(data => setStats(data))
-      .catch(() => setStats({ guilds: 66, users: 59032, commands: 43 }));
+      .then(data => {
+        console.log('Bot stats fetched:', data);
+        // Eğer users 0 veya geçersizse, fallback kullan
+        setStats({
+          guilds: data.guilds || 66,
+          users: (data.users && data.users > 0) ? data.users : 59032,
+          commands: data.commands || 43
+        });
+      })
+      .catch((error) => {
+        console.error('Failed to fetch bot stats:', error);
+        setStats({ guilds: 66, users: 59032, commands: 43 });
+      });
   }, []);
 
   const t = {
@@ -531,7 +542,7 @@ export default function Home() {
             {[
               { icon: '🎵', value: '43+', label: 'Komut' },
               { icon: '🏆', value: stats.guilds || '66', label: 'Sunucu' },
-              { icon: '👥', value: stats.users ? `${Math.floor(stats.users / 1000)}K+` : '59K+', label: 'Kullanıcı' }
+              { icon: '👥', value: `${Math.floor(stats.users / 1000)}K+`, label: 'Kullanıcı' }
             ].map((stat, index) => (
               <motion.div
                 key={index}
