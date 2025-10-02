@@ -45,7 +45,6 @@ export default function Home() {
       contact: 'Bize Ulaşın',
       feedback: 'Geri Bildirim',
       resources: 'Kaynaklar',
-      premium: 'Premium',
       login: 'Giriş Yap',
       whatCanYouDo: 'Neler Yapabilirsin?',
       whatCanYouDoDesc: 'Sunucunu yönetmek ve eğlenceli hale getirmek için her şey burada',
@@ -60,7 +59,6 @@ export default function Home() {
       contact: 'Contact Us',
       feedback: 'Feedback',
       resources: 'Resources',
-      premium: 'Premium',
       login: 'Login',
       whatCanYouDo: 'What Can You Do?',
       whatCanYouDoDesc: 'Everything you need to manage and make your server fun',
@@ -264,7 +262,7 @@ export default function Home() {
                 className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
               >
                 {t[language].feedback}
-              </Link>
+            </Link>
             </div>
 
             {/* Right Actions */}
@@ -327,26 +325,6 @@ export default function Home() {
                 )}
                 </AnimatePresence>
               </div>
-
-              {/* Premium Button - Clean */}
-              <a
-                href="#premium"
-                className="hidden md:flex relative group items-center gap-2 px-5 py-2.5 text-sm font-bold overflow-hidden rounded-xl transition-all"
-              >
-                {/* Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-amber-400/20 to-orange-400/20 group-hover:from-yellow-400/30 group-hover:via-amber-400/30 group-hover:to-orange-400/30 transition-all duration-300"></div>
-                
-                {/* Border */}
-                <div className="absolute inset-0 border-2 border-yellow-400/30 group-hover:border-yellow-400/50 rounded-xl transition-all"></div>
-                
-                {/* Content */}
-                <div className="relative flex items-center gap-2">
-                  <span className="text-xl">👑</span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 group-hover:from-yellow-200 group-hover:via-amber-200 group-hover:to-orange-200 transition-all">
-                    {t[language].premium}
-            </span>
-                </div>
-              </a>
 
               {/* Discord Login - Clean */}
               <a
@@ -831,7 +809,7 @@ export default function Home() {
             >
               <h3 className="text-white font-bold text-lg mb-4">Ürün</h3>
               <ul className="space-y-3">
-                {["Özellikler", "Premium", "Sunucularım", "Botu Ekle"].map((item, i) => (
+                {["Özellikler", "Sunucularım", "Botu Ekle"].map((item, i) => (
                   <motion.li
                     key={i}
                     initial={{ opacity: 0, x: -10 }}
@@ -840,7 +818,7 @@ export default function Home() {
                     transition={{ duration: 0.4, delay: 0.2 + i * 0.05 }}
                   >
                     <a 
-                      href={i === 0 ? "#features" : i === 1 ? "#premium" : i === 2 ? "/servers" : "https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"} 
+                      href={i === 0 ? "/ozellikler" : i === 1 ? "/servers" : "https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"} 
                       className="text-gray-200 hover:text-white transition-all text-sm hover:translate-x-1 inline-block"
                     >
                       {item}
