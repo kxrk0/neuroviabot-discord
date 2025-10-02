@@ -573,7 +573,7 @@ export default function ServerDashboard() {
               <span className="font-semibold text-sm">Sunuculara Dön</span>
             </Link>
           </div>
-        </aside>
+        </motion.aside>
 
         {/* Main Content */}
         <main className="flex-1 ml-64 p-8">
