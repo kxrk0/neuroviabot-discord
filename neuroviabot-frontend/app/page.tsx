@@ -403,7 +403,7 @@ export default function Home() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: 'url(/wallpaper.jpg)',
-            filter: 'brightness(0.7) contrast(1.1)'
+            filter: 'brightness(0.6) contrast(1.1)'
           }}
         />
         
@@ -411,7 +411,7 @@ export default function Home() {
         <div 
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(to bottom, rgba(19, 21, 31, 0.7) 0%, rgba(29, 28, 47, 0.8) 50%, rgba(33, 32, 54, 0.9) 100%)'
+            background: 'linear-gradient(to bottom, rgba(19, 21, 31, 0.85) 0%, rgba(29, 28, 47, 0.9) 50%, rgba(33, 32, 54, 0.95) 100%)'
           }}
         />
         
@@ -1134,9 +1134,24 @@ export default function Home() {
       </section>
 
       {/* Footer - Smooth Animated & Hero-Style */}
-      <footer className="relative z-10 overflow-hidden" style={{
-        background: 'linear-gradient(rgb(33, 32, 54) 0%, rgb(51, 40, 62) 30%, rgb(98, 61, 83) 60%, rgb(140, 81, 102) 100%)'
-      }}>
+      <footer className="relative z-10 overflow-hidden">
+        {/* Background Image - Same as Hero */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/wallpaper.jpg)',
+            filter: 'brightness(0.5) contrast(1.1)'
+          }}
+        />
+        
+        {/* Gradient Overlay */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(33, 32, 54, 0.95) 0%, rgba(51, 40, 62, 0.95) 50%, rgba(98, 61, 83, 0.95) 100%)'
+          }}
+        />
+        
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div 
