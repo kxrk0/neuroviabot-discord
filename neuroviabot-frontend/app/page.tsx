@@ -441,33 +441,79 @@ export default function Home() {
             style={{ willChange: 'transform, opacity' }}
           />
           
-          {/* Floating Particles */}
-          {[...Array(8)].map((_, i) => (
+          {/* Floating Particles - Enhanced */}
+          {[...Array(25)].map((_, i) => {
+            const colors = [
+              'rgba(168, 85, 247, 0.6)',   // Purple
+              'rgba(139, 92, 246, 0.5)',   // Violet
+              'rgba(59, 130, 246, 0.6)',   // Blue
+              'rgba(96, 165, 250, 0.5)',   // Light Blue
+              'rgba(236, 72, 153, 0.5)',   // Pink
+              'rgba(219, 39, 119, 0.4)',   // Hot Pink
+            ];
+            const size = 2 + (i % 4);
+            const duration = 5 + (i % 8);
+            const delay = (i * 0.3) % 4;
+            
+            return (
+              <motion.div
+                key={i}
+                animate={{
+                  y: [0, -150 - (i % 50), 0],
+                  x: [0, Math.sin(i) * 80, 0],
+                  opacity: [0, 0.8, 0],
+                  scale: [0, 1, 0]
+                }}
+                transition={{
+                  duration,
+                  repeat: Infinity,
+                  delay,
+                  ease: "easeInOut"
+                }}
+                className="absolute"
+                style={{
+                  left: `${(i * 4) % 100}%`,
+                  top: `${10 + (i % 7) * 12}%`,
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  borderRadius: '50%',
+                  background: colors[i % colors.length],
+                  willChange: 'transform, opacity',
+                  boxShadow: `0 0 ${size * 2}px ${colors[i % colors.length]}`
+                }}
+              />
+            );
+          })}
+          
+          {/* Additional Decorative Stars */}
+          {[...Array(15)].map((_, i) => (
             <motion.div
-              key={i}
+              key={`star-${i}`}
               animate={{
-                y: [0, -100, 0],
-                x: [0, Math.sin(i) * 50, 0],
-                opacity: [0, 0.6, 0],
-                scale: [0, 1, 0]
+                opacity: [0.2, 1, 0.2],
+                scale: [0.8, 1.2, 0.8],
+                rotate: [0, 180, 360]
               }}
               transition={{
-                duration: 4 + i * 0.5,
+                duration: 3 + (i % 4),
                 repeat: Infinity,
-                delay: i * 0.8,
+                delay: i * 0.4,
                 ease: "easeInOut"
               }}
               className="absolute"
               style={{
-                left: `${10 + i * 10}%`,
-                top: `${30 + (i % 3) * 20}%`,
-                width: '4px',
-                height: '4px',
-                borderRadius: '50%',
-                background: `rgba(${168 + i * 10}, ${85 + i * 5}, 247, 0.8)`,
+                left: `${(i * 6) % 95}%`,
+                top: `${(i * 5) % 90}%`,
+                width: '6px',
+                height: '6px',
                 willChange: 'transform, opacity'
               }}
-            />
+            >
+              <div className="relative w-full h-full">
+                <div className="absolute inset-0 bg-white/60 rounded-full blur-sm" />
+                <div className="absolute inset-0.5 bg-purple-300/80 rounded-full" />
+              </div>
+            </motion.div>
           ))}
           
           {/* Decorative Circles */}
