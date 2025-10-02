@@ -20,9 +20,15 @@ router.get('/stats', (req, res) => {
     
     const guildIds = Array.from(botClient.guilds.cache.keys());
     
+    // REAL-TIME kullanıcı sayısı hesaplama - Bot streaming activity'si ile senkronize
+    // Her guild'den gerçek member count al (bot streaming'de gösterilen ile aynı)
+    const totalUsers = botClient.guilds.cache.reduce((acc, guild) => {
+      return acc + (guild.memberCount || 0);
+    }, 0);
+    
     res.json({
       guilds: botClient.guilds.cache.size,
-      users: botClient.users.cache.size,
+      users: totalUsers, // ✅ Artık streaming activity ile aynı değer
       commands: 43,
       uptime: botClient.uptime,
       ping: botClient.ws.ping,
