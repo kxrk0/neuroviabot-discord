@@ -21,6 +21,24 @@ module.exports = {
           cyan: '#06B6D4',
           pink: '#EC4899',
         },
+        // MEE6 Dark Color System
+        dark: {
+          100: '#ffffff',  // Hover white
+          200: '#e4e4e7',  // Light gray (text)
+          300: '#a1a1aa',  // Medium gray (labels)
+          400: '#71717a',  // Dark gray (descriptions)
+          600: '#52525b',  // Scrollbar thumb
+          700: '#3f3f46',  // Borders
+          800: '#27272a',  // Backgrounds
+          900: '#18181b',  // Darker backgrounds
+        },
+        brand: {
+          default: '#60D1F6',  // Primary brand color
+          hover: '#7dd3f8',    // Hover state
+        },
+        premium: {
+          default: '#FFCB39',  // Premium gold
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out',
