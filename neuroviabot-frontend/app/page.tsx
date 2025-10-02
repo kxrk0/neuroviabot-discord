@@ -234,7 +234,7 @@ export default function Home() {
                 className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
               >
                 {t[language].features}
-              </Link>
+            </Link>
             </div>
 
             {/* Right Actions */}
@@ -242,11 +242,7 @@ export default function Home() {
               {/* Language Selector - Emoji Only */}
               <div className="relative">
                 <motion.button 
-                  onClick={() => {
-                    setLanguageOpen(!languageOpen);
-                    setFeaturesOpen(false);
-                    setResourcesOpen(false);
-                  }}
+                  onClick={() => setLanguageOpen(!languageOpen)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   className="hidden md:flex items-center justify-center w-10 h-10 text-2xl hover:bg-white/5 rounded-lg transition-all"
