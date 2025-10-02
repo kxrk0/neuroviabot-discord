@@ -197,62 +197,56 @@ export default function Home() {
                 {featuresOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setFeaturesOpen(false)} />
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="bg-[#1a1c2e] w-screen absolute left-0 top-[calc(100%+1px)] z-50 shadow-lg"
-                    >
+                    <div className="bg-dark-800 w-screen absolute left-0 top-[calc(100%+1px)] z-10 shadow-lg">
                       <div className="px-10 mx-auto max-w-[1240px] grid grid-cols-5">
                         {/* Left Side - Features (3 columns) */}
-                        <div className="col-span-3 pt-8 pb-9 pr-8 grid grid-cols-2 gap-8">
+                        <div className="w-full h-full col-span-3 pt-8 pb-9 pr-8 grid grid-cols-2 gap-8">
                           <div>
                             <ul className="grid grid-cols-1 gap-6 mt-5 pl-2">
-                              <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <ShieldCheckIcon className="w-5 min-w-[1.25rem] text-gray-400 group-hover:text-gray-200 transition-all" />
+                              <a href="/plugins/management" onClick={() => setFeaturesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <ShieldCheckIcon className="text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]" />
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Moderasyon & Sunucu Yönetimi</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Karşılama, Özel Komutlar, Tepki Rol, Moderatör...</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Moderasyon & Sunucu Yönetimi</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Karşılama, Özel Komutlar, Tepki Rol, Moderatör...</p>
                                 </div>
                               </a>
-                              <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <CommandLineIcon className="w-5 min-w-[1.25rem] text-gray-400 group-hover:text-gray-200 transition-all" />
+                              <a href="/plugins/utilities" onClick={() => setFeaturesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <CommandLineIcon className="text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]" />
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Araçlar</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Gömülü mesajlar, Arama, Kayıt, Zamanlayıcı, İstatistik...</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Araçlar</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Gömülü mesajlar, Arama, Kayıt, Zamanlayıcı, İstatistik, Geçici Kanallar...</p>
                                 </div>
                               </a>
-                              <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <BoltIcon className="w-5 min-w-[1.25rem] text-gray-400 group-hover:text-gray-200 transition-all" />
+                              <a href="/plugins/social" onClick={() => setFeaturesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <BoltIcon className="text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]" />
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Sosyal Medya Bildirimleri</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Twitch, YouTube, Twitter, RSS, Reddit bildirimleri...</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Sosyal Medya Bildirimleri</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Sunucunuz için Twitch, X, YouTube, RSS, Reddit bildirimleri</p>
                                 </div>
                               </a>
-                              <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <MusicalNoteIcon className="w-5 min-w-[1.25rem] text-gray-400 group-hover:text-gray-200 transition-all" />
+                              <a href="/plugins/engagement" onClick={() => setFeaturesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <MusicalNoteIcon className="text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]" />
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Katılım ve Eğlence</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Seviye, Doğum Günü, Çekilişler, Müzik, Ekonomi...</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Katılım ve Eğlence</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Seviye, Doğum Günü, Çekilişler, Müzik ve Ekonomi özelliği</p>
                                 </div>
                               </a>
                             </ul>
                           </div>
                           <div>
                             <ul className="grid grid-cols-1 gap-6 mt-5 pl-2">
-                              <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <SparklesIcon className="w-5 min-w-[1.25rem] text-gray-400 group-hover:text-gray-200 transition-all" />
+                              <a href="/custom-bot" onClick={() => setFeaturesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <SparklesIcon className="text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]" />
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Bot Kişiselleştirici</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Avatar, isim, yapay zeka tabanlı kişiselleştirme...</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Bot Kişiselleştirici</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Adını, avatarını, yapay zeka tabanlı geçmişini ve etkinliğini değiştirerek botunuzu özelleştirin</p>
                                 </div>
                               </a>
-                              <a href="#premium" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <span className="text-xl min-w-[1.25rem]">👑</span>
+                              <a href="/premium" onClick={() => setFeaturesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <span className="text-xl text-dark-200 group-hover:text-dark-100 min-w-[1.25rem]">👑</span>
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Premium Abonelik</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Tüm özelliklere erişim için Premium'a yükseltin</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Premium Abonelik</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Sunucunuzda tüm Neurovia özelliklerine sahip olmak için Premium'a yükseltin</p>
                                 </div>
                               </a>
                             </ul>
@@ -260,44 +254,40 @@ export default function Home() {
                         </div>
 
                         {/* Right Side - Spotlight (2 columns) */}
-                        <div className="col-span-2 h-full w-full relative pt-8 pb-9 pl-8 z-10">
-                          <p className="text-gray-300 text-sm font-medium">Spotlight</p>
+                        <div className="col-span-2 h-full w-full relative pt-8 pb-9 ltr:pl-8 rtl:pr-8 z-1">
+                          <p className="text-dark-300 text-sm font-medium">Spotlight</p>
                           <section className="grid grid-cols-1 gap-6 mt-5">
-                            <a href="#" className="flex items-start gap-5 group">
-                              <figure className="max-w-[176px] min-w-[176px] w-full h-24 rounded-lg bg-gradient-to-br from-purple-600/20 to-blue-600/20 flex items-center justify-center text-4xl">
-                                🎵
-                              </figure>
+                            <a className="flex items-start justify-start gap-5 group" href="/tutorials/music-system">
+                              <figure className="max-w-[176px] min-w-[176px] w-full h-full rounded-lg bg-cover bg-left bg-gradient-to-br from-purple-600/30 to-blue-600/30"></figure>
                               <div>
-                                <p className="text-gray-200 font-semibold text-base group-hover:text-gray-100 transition-all">Müzik Sistemi Nasıl Kullanılır?</p>
-                                <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Neurovia müzik botunu kullanarak YouTube ve Spotify'dan...</p>
-                                <button className="bg-transparent flex items-center gap-2 text-purple-400 mt-1 group-hover:text-purple-300 transition-all text-sm">
-                                  Makaleyi oku
-                                  <svg className="w-3" viewBox="0 0 24 24" fill="none"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                <p className="text-dark-200 font-semibold text-base group-hover:text-dark-100 transition-all duration-200">Müzik Sistemi Nasıl Kullanılır?</p>
+                                <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Neurovia müzik botunu kullanarak YouTube ve Spotify'dan müzik çalın...</p>
+                                <button className="bg-transparent flex items-center justify-start gap-3 text-brand-hover mt-1 group-hover:text-brand-default transition-all duration-200">
+                                  Read article
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3 text-brand-hover group-hover:text-brand-default transition-all duration-200"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                                 </button>
                               </div>
                             </a>
-                            <a href="#" className="flex items-start gap-5 group">
-                              <figure className="max-w-[176px] min-w-[176px] w-full h-24 rounded-lg bg-gradient-to-br from-blue-600/20 to-cyan-600/20 flex items-center justify-center text-4xl">
-                                🛡️
-                              </figure>
+                            <a className="flex items-start justify-start gap-5 group" href="/tutorials/moderation-tools">
+                              <figure className="max-w-[176px] min-w-[176px] w-full h-full rounded-lg bg-cover bg-left bg-gradient-to-br from-blue-600/30 to-cyan-600/30"></figure>
                               <div>
-                                <p className="text-gray-200 font-semibold text-base group-hover:text-gray-100 transition-all">Moderasyon Araçları Kurulumu</p>
-                                <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Neurovia moderasyon sistemi ile sunucunuzu koruyun...</p>
-                                <button className="bg-transparent flex items-center gap-2 text-purple-400 mt-1 group-hover:text-purple-300 transition-all text-sm">
-                                  Makaleyi oku
-                                  <svg className="w-3" viewBox="0 0 24 24" fill="none"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                <p className="text-dark-200 font-semibold text-base group-hover:text-dark-100 transition-all duration-200">Moderasyon Araçları Nasıl Kullanılır?</p>
+                                <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Neurovia moderasyon eklentisi Discord topluluğunuz için olmazsa olmaz bir araçtır...</p>
+                                <button className="bg-transparent flex items-center justify-start gap-3 text-brand-hover mt-1 group-hover:text-brand-default transition-all duration-200">
+                                  Read article
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3 text-brand-hover group-hover:text-brand-default transition-all duration-200"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                                 </button>
                               </div>
                             </a>
-                            <a href="#" className="text-purple-400 text-base flex items-center gap-2">
+                            <a className="text-brand-default text-base flex items-center justify-start gap-2" href="/tutorials">
                               Tüm öğreticiler
-                              <svg className="w-5" viewBox="0 0 24 24" fill="none"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                             </a>
                           </section>
-                          <div className="absolute top-0 left-0 w-screen h-full bg-[#13151f] -z-10"></div>
+                          <div className="absolute top-0 ltr:left-0 rtl:right-0 w-screen h-full bg-dark-900 -z-1"></div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   </>
                 )}
               </div>
@@ -318,67 +308,61 @@ export default function Home() {
                 {resourcesOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setResourcesOpen(false)} />
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="bg-[#1a1c2e] w-screen absolute left-0 top-[calc(100%+1px)] z-50 shadow-lg"
-                    >
+                    <div className="bg-dark-800 w-screen absolute left-0 top-[calc(100%+1px)] z-10 shadow-lg">
                       <div className="px-10 mx-auto max-w-[1240px] grid grid-cols-5">
                         {/* Left Side - Resources (3 columns) */}
-                        <div className="col-span-3 pt-8 pb-9 pr-8 grid grid-cols-2 gap-8">
+                        <div className="w-full h-full col-span-3 pt-8 pb-9 pr-8 grid grid-cols-2 gap-8">
                           <div>
-                            <p className="text-gray-300 text-sm font-medium">Destek</p>
+                            <p className="text-dark-300 text-sm font-medium">Destek</p>
                             <ul className="grid grid-cols-1 gap-6 mt-5 pl-2">
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <span className="text-xl min-w-[1.25rem] text-gray-400 group-hover:text-gray-200">📚</span>
+                              <a href="/tutorials" onClick={() => setResourcesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <span className="text-xl text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]">📚</span>
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Öğretici</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Discord'da Neurovia'nın nasıl kullanılacağı hakkında daha fazla bilgi</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Öğretici</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Discord'da Neurovia'nın nasıl kullanılacağı hakkında daha fazla bilgi almak için belgelerimize bakın</p>
                                 </div>
                               </a>
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <span className="text-xl min-w-[1.25rem] text-gray-400 group-hover:text-gray-200">📖</span>
+                              <a href="https://help.neurovia.xyz/" target="_blank" onClick={() => setResourcesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <span className="text-xl text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]">📖</span>
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Destek Portalı</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Bilgi bankası ve yardımcı materyaller avucunuzun içinde</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Destek Portalı</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Bilgi bankası ve yardımcı materyaller avucunuzun içinde</p>
                                 </div>
                               </a>
-                              <a href="https://discord.gg/neurovia" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <ServerIcon className="w-5 min-w-[1.25rem] text-gray-400 group-hover:text-gray-200 transition-all" />
+                              <a href="https://discord.gg/neurovia" target="_blank" onClick={() => setResourcesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <ServerIcon className="text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]" />
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Discord Sunucusu</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">İhtiyacınız olabilecek tüm yardımları almak için katılın</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Discord Sunucusu</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">İhtiyacınız olabilecek tüm yardımları almak için Discord Sunucumuza katılın</p>
                                 </div>
                               </a>
                             </ul>
                           </div>
                           <div>
-                            <p className="text-gray-300 text-sm font-medium">Şirket</p>
+                            <p className="text-dark-300 text-sm font-medium">Şirket</p>
                             <ul className="grid grid-cols-1 gap-6 mt-5 pl-2">
-                              <a href="/servers" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <span className="text-xl min-w-[1.25rem] text-gray-400 group-hover:text-gray-200">💼</span>
+                              <a href="/careers" onClick={() => setResourcesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <span className="text-xl text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]">💼</span>
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">
                                     Kariyer
-                                    <span className="inline-block ml-2 text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded font-medium">İşe alıyoruz!</span>
+                                    <div className="inline-block relative rounded-full transition-all duration-200 bg-brand-default bg-opacity-20 text-brand-default ltr:ml-2 rtl:mr-2 text-xs px-2 py-0.5 font-medium"><div className="max-w-max flex items-center justify-start whitespace-nowrap">İşe alıyoruz!</div></div>
                                   </div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Neurovia'ya katılın ve harika topluluklar için araçlar oluşturun</p>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Neurovia'ya katılın ve dünya çapında harika toplulukları yönetmek için araçlar oluşturun</p>
                                 </div>
                               </a>
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <span className="text-xl min-w-[1.25rem] text-gray-400 group-hover:text-gray-200">🐛</span>
+                              <a href="https://neurovia.notion.site/Bug-bounty-program" target="_blank" onClick={() => setResourcesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <span className="text-xl text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]">🐛</span>
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Hata Ödül Programı</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Bazı güzel ödüllere giden yolu hackleyin</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Hata Ödül Programı</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Bazı güzel ödüllere giden yolu hackleyin</p>
                                 </div>
                               </a>
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 cursor-pointer group transition-all duration-200">
-                                <span className="text-xl min-w-[1.25rem] text-gray-400 group-hover:text-gray-200">✉️</span>
+                              <a href="mailto:hi@neurovia.xyz" onClick={() => setResourcesOpen(false)} className="flex items-start justify-start gap-3 cursor-pointer group transition-all duration-200">
+                                <span className="text-xl text-dark-200 group-hover:text-dark-100 transition-all duration-200 w-5 min-w-[1.25rem]">✉️</span>
                                 <div>
-                                  <div className="text-gray-200 text-base font-semibold group-hover:text-gray-100 transition-all">Bize ulaşın</div>
-                                  <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Biz güzeliz ve arkadaş canlısıyız!</p>
+                                  <div className="text-dark-200 text-base font-semibold group-hover:text-dark-100 transition-all duration-200">Bize ulaşın</div>
+                                  <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Biz güzeliz ve arkadaş canlısıyız!</p>
                                 </div>
                               </a>
                             </ul>
@@ -386,44 +370,40 @@ export default function Home() {
                         </div>
 
                         {/* Right Side - Spotlight (2 columns) */}
-                        <div className="col-span-2 h-full w-full relative pt-8 pb-9 pl-8 z-10">
-                          <p className="text-gray-300 text-sm font-medium">Spotlight</p>
+                        <div className="col-span-2 h-full w-full relative pt-8 pb-9 ltr:pl-8 rtl:pr-8 z-1">
+                          <p className="text-dark-300 text-sm font-medium">Spotlight</p>
                           <section className="grid grid-cols-1 gap-6 mt-5">
-                            <a href="#" className="flex items-start gap-5 group">
-                              <figure className="max-w-[176px] min-w-[176px] w-full h-24 rounded-lg bg-gradient-to-br from-purple-600/20 to-blue-600/20 flex items-center justify-center text-4xl">
-                                🎵
-                              </figure>
+                            <a className="flex items-start justify-start gap-5 group" href="/tutorials/music-system">
+                              <figure className="max-w-[176px] min-w-[176px] w-full h-full rounded-lg bg-cover bg-left bg-gradient-to-br from-purple-600/30 to-blue-600/30"></figure>
                               <div>
-                                <p className="text-gray-200 font-semibold text-base group-hover:text-gray-100 transition-all">Müzik Sistemi Nasıl Kullanılır?</p>
-                                <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Neurovia müzik botunu kullanarak YouTube ve Spotify'dan...</p>
-                                <button className="bg-transparent flex items-center gap-2 text-purple-400 mt-1 group-hover:text-purple-300 transition-all text-sm">
-                                  Makaleyi oku
-                                  <svg className="w-3" viewBox="0 0 24 24" fill="none"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                <p className="text-dark-200 font-semibold text-base group-hover:text-dark-100 transition-all duration-200">Müzik Sistemi Nasıl Kullanılır?</p>
+                                <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Neurovia müzik botunu kullanarak YouTube ve Spotify'dan müzik çalın...</p>
+                                <button className="bg-transparent flex items-center justify-start gap-3 text-brand-hover mt-1 group-hover:text-brand-default transition-all duration-200">
+                                  Read article
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3 text-brand-hover group-hover:text-brand-default transition-all duration-200"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                                 </button>
                               </div>
                             </a>
-                            <a href="#" className="flex items-start gap-5 group">
-                              <figure className="max-w-[176px] min-w-[176px] w-full h-24 rounded-lg bg-gradient-to-br from-blue-600/20 to-cyan-600/20 flex items-center justify-center text-4xl">
-                                🛡️
-                              </figure>
+                            <a className="flex items-start justify-start gap-5 group" href="/tutorials/moderation-tools">
+                              <figure className="max-w-[176px] min-w-[176px] w-full h-full rounded-lg bg-cover bg-left bg-gradient-to-br from-blue-600/30 to-cyan-600/30"></figure>
                               <div>
-                                <p className="text-gray-200 font-semibold text-base group-hover:text-gray-100 transition-all">Moderasyon Araçları Kurulumu</p>
-                                <p className="text-sm font-medium text-gray-400 mt-1 group-hover:text-gray-300 transition-all">Neurovia moderasyon sistemi ile sunucunuzu koruyun...</p>
-                                <button className="bg-transparent flex items-center gap-2 text-purple-400 mt-1 group-hover:text-purple-300 transition-all text-sm">
-                                  Makaleyi oku
-                                  <svg className="w-3" viewBox="0 0 24 24" fill="none"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                <p className="text-dark-200 font-semibold text-base group-hover:text-dark-100 transition-all duration-200">Moderasyon Araçları Nasıl Kullanılır?</p>
+                                <p className="text-sm font-medium text-dark-400 mt-1 group-hover:text-dark-300 transition-all duration-200">Neurovia moderasyon eklentisi Discord topluluğunuz için olmazsa olmaz bir araçtır...</p>
+                                <button className="bg-transparent flex items-center justify-start gap-3 text-brand-hover mt-1 group-hover:text-brand-default transition-all duration-200">
+                                  Read article
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3 text-brand-hover group-hover:text-brand-default transition-all duration-200"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                                 </button>
                               </div>
                             </a>
-                            <a href="#" className="text-purple-400 text-base flex items-center gap-2">
+                            <a className="text-brand-default text-base flex items-center justify-start gap-2" href="/tutorials">
                               Tüm öğreticiler
-                              <svg className="w-5" viewBox="0 0 24 24" fill="none"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5"><path d="M9.5 7l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                             </a>
                           </section>
-                          <div className="absolute top-0 left-0 w-screen h-full bg-[#13151f] -z-10"></div>
+                          <div className="absolute top-0 ltr:left-0 rtl:right-0 w-screen h-full bg-dark-900 -z-1"></div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   </>
                 )}
               </div>
