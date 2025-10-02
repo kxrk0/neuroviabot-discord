@@ -765,21 +765,21 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Music Feature - Compact */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
               transition={{ 
-                duration: 0.5,
+                duration: 0.4,
                 delay: 0,
-                ease: "easeOut"
+                ease: [0.16, 1, 0.3, 1]
               }}
               whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
+                scale: 1.03,
+                transition: { duration: 0.15, ease: "easeOut" }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/40 transition-all duration-150"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-200"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/10 group-hover:to-blue-500/10 transition-all duration-200"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:to-blue-500/5 transition-all duration-300"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -803,21 +803,21 @@ export default function Home() {
 
             {/* Moderation Feature - Compact */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
               transition={{ 
-                duration: 0.5,
+                duration: 0.4,
                 delay: 0.1,
-                ease: "easeOut"
+                ease: [0.16, 1, 0.3, 1]
               }}
               whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
+                scale: 1.03,
+                transition: { duration: 0.15, ease: "easeOut" }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/40 transition-all duration-150"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all duration-200"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-200"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 transition-all duration-300"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: -5 }}
@@ -841,21 +841,21 @@ export default function Home() {
 
             {/* Economy Feature - Compact */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-50px" }}
           transition={{ 
-            duration: 0.5,
+            duration: 0.4,
             delay: 0.2,
-            ease: "easeOut"
+            ease: [0.16, 1, 0.3, 1]
           }}
           whileHover={{ 
-            y: -8,
-            transition: { duration: 0.2 }
+            scale: 1.03,
+            transition: { duration: 0.15, ease: "easeOut" }
           }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/40 transition-all duration-150"
+          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/50 hover:shadow-[0_0_30px_rgba(34,197,94,0.15)] transition-all duration-200"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all duration-200"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/5 group-hover:to-emerald-500/5 transition-all duration-300"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -879,21 +879,21 @@ export default function Home() {
 
             {/* Leveling Feature - Compact */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
               transition={{ 
-                duration: 0.5,
+                duration: 0.4,
                 delay: 0,
-                ease: "easeOut"
+                ease: [0.16, 1, 0.3, 1]
               }}
               whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
+                scale: 1.03,
+                transition: { duration: 0.15, ease: "easeOut" }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/40 transition-all duration-150"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_30px_rgba(234,179,8,0.15)] transition-all duration-200"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/10 group-hover:to-orange-500/10 transition-all duration-200"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/5 group-hover:to-orange-500/5 transition-all duration-300"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: -5 }}
@@ -917,21 +917,21 @@ export default function Home() {
 
             {/* Social Media - Compact */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
               transition={{ 
-                duration: 0.5,
+                duration: 0.4,
                 delay: 0.1,
-                ease: "easeOut"
+                ease: [0.16, 1, 0.3, 1]
               }}
               whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
+                scale: 1.03,
+                transition: { duration: 0.15, ease: "easeOut" }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/40 transition-all duration-150"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/50 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] transition-all duration-200"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/10 group-hover:to-rose-500/10 transition-all duration-200"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/5 group-hover:to-rose-500/5 transition-all duration-300"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -955,21 +955,21 @@ export default function Home() {
 
             {/* AI & Custom - Compact */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-50px" }}
           transition={{ 
-            duration: 0.5,
+            duration: 0.4,
             delay: 0.2,
-            ease: "easeOut"
+            ease: [0.16, 1, 0.3, 1]
           }}
           whileHover={{ 
-            y: -8,
-            transition: { duration: 0.2 }
+            scale: 1.03,
+            transition: { duration: 0.15, ease: "easeOut" }
           }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/40 transition-all duration-150"
+          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all duration-200"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/10 group-hover:to-teal-500/10 transition-all duration-200"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/5 group-hover:to-teal-500/5 transition-all duration-300"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: -5 }}
@@ -1038,7 +1038,7 @@ export default function Home() {
 
       {/* Footer - Smooth Animated & Hero-Style */}
       <footer className="relative z-10 overflow-hidden" style={{
-        background: 'linear-gradient(rgb(140, 81, 102) 0%, rgb(98, 61, 83) 30%, rgb(51, 40, 62) 60%, rgb(33, 32, 54) 100%)'
+        background: 'linear-gradient(rgb(33, 32, 54) 0%, rgb(51, 40, 62) 30%, rgb(98, 61, 83) 60%, rgb(140, 81, 102) 100%)'
       }}>
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
