@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fetchBotStats } from '@/lib/api';
 import {
   MusicalNoteIcon,
