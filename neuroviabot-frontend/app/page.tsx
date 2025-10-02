@@ -531,7 +531,7 @@ export default function Home() {
             {[
               { icon: '🎵', value: '43+', label: 'Komut' },
               { icon: '🏆', value: stats.guilds || '66', label: 'Sunucu' },
-              { icon: '👥', value: stats.users ? `${Math.floor(stats.users / 1000)}K+` : '59K+', label: 'Kullanıcı' }
+              { icon: '👥', value: (stats.users && stats.users > 0) ? `${Math.floor(stats.users / 1000)}K+` : '59K+', label: 'Kullanıcı' }
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -730,76 +730,62 @@ export default function Home() {
       </section>
 
       {/* Features Section - Compact Hero Style */}
-      <section id="features" className="relative z-1 py-20 lg:py-28" style={{
-        background: 'linear-gradient(rgb(33, 32, 54) 0%, rgb(51, 40, 62) 30%, rgb(98, 61, 83) 60%, rgb(140, 81, 102) 100%)'
+      <section id="features" className="relative z-1 py-20 lg:py-28 overflow-hidden" style={{
+        background: 'linear-gradient(180deg, rgb(51, 40, 62) 0%, rgb(69, 50, 75) 25%, rgb(88, 60, 88) 50%, rgb(107, 70, 98) 75%, rgb(126, 80, 105) 100%)'
       }}>
-        {/* Forest Bottom */}
-        <div className="absolute w-full h-full left-0 pointer-events-none overflow-hidden">
-          <svg className="w-full absolute bottom-0" viewBox="0 0 1920 400" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.5">
-            <path d="M0 400V250C150 200 300 180 450 200C600 220 750 180 900 160C1050 140 1200 150 1350 180C1500 210 1650 190 1800 170C1920 155 1920 155 1920 155V400H0Z" fill="#0D0E15" fillOpacity="0.8"/>
-            <path d="M0 400V280C150 250 300 240 450 260C600 280 750 250 900 235C1050 220 1200 230 1350 255C1500 280 1650 265 1800 245C1920 232 1920 232 1920 232V400H0Z" fill="#0D0E15" fillOpacity="0.6"/>
-          </svg>
+        {/* Animated Background Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Gradient Orbs */}
+          <motion.div 
+            className="absolute top-20 left-[10%] w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
+            animate={{ 
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3]
+            }}
+            transition={{ 
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div 
+            className="absolute bottom-20 right-[15%] w-80 h-80 bg-blue-500/15 rounded-full blur-3xl"
+            animate={{ 
+              scale: [1.2, 1, 1.2],
+              opacity: [0.2, 0.4, 0.2]
+            }}
+            transition={{ 
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
         </div>
 
         <div className="relative w-full max-w-[1240px] mx-auto px-6 lg:px-10">
           {/* Section Header - Compact */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ 
-              duration: 0.7,
-              ease: [0.22, 1, 0.36, 1]
-            }}
-            className="text-center mb-16"
-          >
-            <motion.h2 
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ 
-                duration: 0.7,
-                ease: [0.22, 1, 0.36, 1],
-                type: "spring",
-                stiffness: 100,
-                damping: 20
-              }}
-              className="text-white text-4xl md:text-5xl font-bold mb-4 leading-tight"
-            >
-              {t[language].whatCanYouDo}
-          </motion.h2>
-          <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ 
-              duration: 0.7, 
-              delay: 0.15,
-              ease: [0.22, 1, 0.36, 1]
+              duration: 0.4,
+              ease: "easeOut"
             }}
-              className="text-base text-gray-200 max-w-2xl mx-auto"
+            className="text-center mb-16"
           >
+            <h2 className="text-white text-4xl md:text-5xl font-bold mb-4 leading-tight">
+              {t[language].whatCanYouDo}
+            </h2>
+            <p className="text-base text-gray-200 max-w-2xl mx-auto">
               {t[language].whatCanYouDoDesc}
-          </motion.p>
+            </p>
           </motion.div>
 
           {/* Feature Grid - Compact 3-Column */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Music Feature - Compact */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ 
-                duration: 0.5,
-                delay: 0,
-                ease: "easeOut"
-              }}
-              whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
-              }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/40 transition-all duration-300"
+            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/40 transition-all duration-300 hover:-translate-y-2"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/10 group-hover:to-blue-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
@@ -825,23 +811,10 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Lyrics</span>
         </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Moderation Feature - Compact */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ 
-                duration: 0.5,
-                delay: 0.1,
-                ease: "easeOut"
-              }}
-              whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
-              }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/40 transition-all duration-300"
+            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/40 transition-all duration-300 hover:-translate-y-2"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
@@ -867,23 +840,10 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Warn</span>
         </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Economy Feature - Compact */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ 
-            duration: 0.5,
-            delay: 0.2,
-            ease: "easeOut"
-          }}
-          whileHover={{ 
-            y: -8,
-            transition: { duration: 0.2 }
-          }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/40 transition-all duration-300"
+        <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/40 transition-all duration-300 hover:-translate-y-2"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
@@ -909,23 +869,10 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Games</span>
                 </div>
               </div>
-        </motion.div>
+        </div>
 
             {/* Leveling Feature - Compact */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ 
-                duration: 0.5,
-                delay: 0,
-                ease: "easeOut"
-              }}
-              whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
-              }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/40 transition-all duration-300"
+            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/40 transition-all duration-300 hover:-translate-y-2"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/10 group-hover:to-orange-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
@@ -951,23 +898,10 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Giveaway</span>
                 </div>
         </div>
-            </motion.div>
+            </div>
 
             {/* Social Media - Compact */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ 
-                duration: 0.5,
-                delay: 0.1,
-                ease: "easeOut"
-              }}
-              whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
-              }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/40 transition-all duration-300"
+            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/40 transition-all duration-300 hover:-translate-y-2"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/10 group-hover:to-rose-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
@@ -993,27 +927,14 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">RSS</span>
                 </div>
         </div>
-            </motion.div>
+            </div>
 
             {/* AI & Custom - Compact */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ 
-            duration: 0.5,
-            delay: 0.2,
-            ease: "easeOut"
-          }}
-          whileHover={{ 
-            y: -8,
-            transition: { duration: 0.2 }
-          }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/40 transition-all duration-300"
+        <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/40 transition-all duration-300 hover:-translate-y-2"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/10 group-hover:to-teal-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
-                <motion.div 
+        <motion.div
                   whileHover={{ scale: 1.15, rotate: -5 }}
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ 
@@ -1035,7 +956,7 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Brand</span>
                 </div>
               </div>
-        </motion.div>
+        </div>
           </div>
 
           {/* Bottom CTA - Compact */}
