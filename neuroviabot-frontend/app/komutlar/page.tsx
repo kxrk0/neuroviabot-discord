@@ -27,7 +27,7 @@ interface Command {
 interface Category {
   id: string;
   name: string;
-  icon: JSX.Element;
+  icon: React.ReactElement;
   color: string;
   commands: Command[];
 }
