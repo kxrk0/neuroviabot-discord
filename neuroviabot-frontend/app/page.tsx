@@ -359,7 +359,7 @@ export default function Home() {
                     transition={{ duration: 0.5 }}
                   >
                     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                  </motion.svg>
+                  </svg>
                   <span className="hidden sm:inline font-bold tracking-wide drop-shadow-sm">{t[language].login}</span>
                 </div>
                 
@@ -531,7 +531,7 @@ export default function Home() {
             {[
               { icon: '🎵', value: '43+', label: 'Komut' },
               { icon: '🏆', value: stats.guilds || '66', label: 'Sunucu' },
-              { icon: '👥', value: (stats.users && stats.users > 0) ? `${Math.floor(stats.users / 1000)}K+` : '59K+', label: 'Kullanıcı' }
+              { icon: '👥', value: stats.users ? `${Math.floor(stats.users / 1000)}K+` : '59K+', label: 'Kullanıcı' }
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -730,36 +730,15 @@ export default function Home() {
       </section>
 
       {/* Features Section - Compact Hero Style */}
-      <section id="features" className="relative z-1 py-20 lg:py-28 overflow-hidden" style={{
-        background: 'linear-gradient(180deg, rgb(51, 40, 62) 0%, rgb(69, 50, 75) 25%, rgb(88, 60, 88) 50%, rgb(107, 70, 98) 75%, rgb(126, 80, 105) 100%)'
+      <section id="features" className="relative z-1 py-20 lg:py-28" style={{
+        background: 'linear-gradient(rgb(33, 32, 54) 0%, rgb(51, 40, 62) 30%, rgb(98, 61, 83) 60%, rgb(140, 81, 102) 100%)'
       }}>
-        {/* Animated Background Effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Gradient Orbs */}
-          <motion.div 
-            className="absolute top-20 left-[10%] w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
-            animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3]
-            }}
-            transition={{ 
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          <motion.div 
-            className="absolute bottom-20 right-[15%] w-80 h-80 bg-blue-500/15 rounded-full blur-3xl"
-            animate={{ 
-              scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.4, 0.2]
-            }}
-            transition={{ 
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
+        {/* Forest Bottom */}
+        <div className="absolute w-full h-full left-0 pointer-events-none overflow-hidden">
+          <svg className="w-full absolute bottom-0" viewBox="0 0 1920 400" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.5">
+            <path d="M0 400V250C150 200 300 180 450 200C600 220 750 180 900 160C1050 140 1200 150 1350 180C1500 210 1650 190 1800 170C1920 155 1920 155 1920 155V400H0Z" fill="#0D0E15" fillOpacity="0.8"/>
+            <path d="M0 400V280C150 250 300 240 450 260C600 280 750 250 900 235C1050 220 1200 230 1350 255C1500 280 1650 265 1800 245C1920 232 1920 232 1920 232V400H0Z" fill="#0D0E15" fillOpacity="0.6"/>
+          </svg>
         </div>
 
         <div className="relative w-full max-w-[1240px] mx-auto px-6 lg:px-10">
@@ -767,7 +746,7 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-50px" }}
             transition={{ 
               duration: 0.4,
               ease: "easeOut"
@@ -785,17 +764,26 @@ export default function Home() {
           {/* Feature Grid - Compact 3-Column */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Music Feature - Compact */}
-            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/40 transition-all duration-300 hover:-translate-y-2"
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ 
+                duration: 0.5,
+                delay: 0,
+                ease: "easeOut"
+              }}
+              whileHover={{ 
+                y: -8,
+                transition: { duration: 0.2 }
+              }}
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/40 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/10 group-hover:to-blue-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ 
-                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                    whileHover: { type: "spring", stiffness: 400, damping: 15 }
-                  }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.2 }}
                   className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
                 >
                   🎵
@@ -811,20 +799,29 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Lyrics</span>
         </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Moderation Feature - Compact */}
-            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/40 transition-all duration-300 hover:-translate-y-2"
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ 
+                duration: 0.5,
+                delay: 0.1,
+                ease: "easeOut"
+              }}
+              whileHover={{ 
+                y: -8,
+                transition: { duration: 0.2 }
+              }}
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/40 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: -5 }}
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ 
-                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.2 },
-                    whileHover: { type: "spring", stiffness: 400, damping: 15 }
-                  }}
+                  whileHover={{ scale: 1.1, rotate: -5 }}
+                  transition={{ duration: 0.2 }}
                   className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
                 >
                   🛡️
@@ -840,20 +837,29 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Warn</span>
         </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Economy Feature - Compact */}
-        <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/40 transition-all duration-300 hover:-translate-y-2"
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ 
+            duration: 0.5,
+            delay: 0.2,
+            ease: "easeOut"
+          }}
+          whileHover={{ 
+            y: -8,
+            transition: { duration: 0.2 }
+          }}
+          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/40 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ 
-                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.4 },
-                    whileHover: { type: "spring", stiffness: 400, damping: 15 }
-                  }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.2 }}
                   className="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
                 >
                   💰
@@ -869,20 +875,29 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Games</span>
                 </div>
               </div>
-        </div>
+        </motion.div>
 
             {/* Leveling Feature - Compact */}
-            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/40 transition-all duration-300 hover:-translate-y-2"
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ 
+                duration: 0.5,
+                delay: 0,
+                ease: "easeOut"
+              }}
+              whileHover={{ 
+                y: -8,
+                transition: { duration: 0.2 }
+              }}
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/40 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/10 group-hover:to-orange-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: -5 }}
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ 
-                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.6 },
-                    whileHover: { type: "spring", stiffness: 400, damping: 15 }
-                  }}
+                  whileHover={{ scale: 1.1, rotate: -5 }}
+                  transition={{ duration: 0.2 }}
                   className="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
                 >
                   ⭐
@@ -898,20 +913,29 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Giveaway</span>
                 </div>
         </div>
-            </div>
+            </motion.div>
 
             {/* Social Media - Compact */}
-            <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/40 transition-all duration-300 hover:-translate-y-2"
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ 
+                duration: 0.5,
+                delay: 0.1,
+                ease: "easeOut"
+              }}
+              whileHover={{ 
+                y: -8,
+                transition: { duration: 0.2 }
+              }}
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/40 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/10 group-hover:to-rose-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ 
-                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.8 },
-                    whileHover: { type: "spring", stiffness: 400, damping: 15 }
-                  }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.2 }}
                   className="w-16 h-16 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
                 >
                   📱
@@ -927,20 +951,29 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">RSS</span>
                 </div>
         </div>
-            </div>
+            </motion.div>
 
             {/* AI & Custom - Compact */}
-        <div className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/40 transition-all duration-300 hover:-translate-y-2"
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ 
+            duration: 0.5,
+            delay: 0.2,
+            ease: "easeOut"
+          }}
+          whileHover={{ 
+            y: -8,
+            transition: { duration: 0.2 }
+          }}
+          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/40 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/10 group-hover:to-teal-500/10 transition-all duration-500"></div>
               <div className="relative p-6">
-        <motion.div
-                  whileHover={{ scale: 1.15, rotate: -5 }}
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ 
-                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 },
-                    whileHover: { type: "spring", stiffness: 400, damping: 15 }
-                  }}
+                <motion.div 
+                  whileHover={{ scale: 1.1, rotate: -5 }}
+                  transition={{ duration: 0.2 }}
                   className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
                 >
                   ✨
@@ -956,7 +989,7 @@ export default function Home() {
                   <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Brand</span>
                 </div>
               </div>
-        </div>
+        </motion.div>
           </div>
 
           {/* Bottom CTA - Compact */}
@@ -1052,15 +1085,13 @@ export default function Home() {
                   transition={{ type: "spring", stiffness: 200, damping: 10 }}
                   className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-xl"
                 >
-                  <motion.svg 
+                  <svg 
                     className="w-7 h-7 text-white" 
                     fill="currentColor" 
                     viewBox="0 0 24 24"
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   >
                     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                  </motion.svg>
+                  </svg>
                 </motion.div>
                 <span className="text-white font-black text-2xl">Neurovia</span>
               </div>
