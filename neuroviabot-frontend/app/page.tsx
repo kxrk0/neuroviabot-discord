@@ -41,6 +41,9 @@ export default function Home() {
       addToDiscord: "Discord'a Ekle",
       seeFeatures: 'Özellikleri gör',
       features: 'Özellikler',
+      commands: 'Komutlar',
+      contact: 'Bize Ulaşın',
+      feedback: 'Geri Bildirim',
       resources: 'Kaynaklar',
       premium: 'Premium',
       login: 'Giriş Yap',
@@ -53,6 +56,9 @@ export default function Home() {
       addToDiscord: 'Add to Discord',
       seeFeatures: 'See Features',
       features: 'Features',
+      commands: 'Commands',
+      contact: 'Contact Us',
+      feedback: 'Feedback',
       resources: 'Resources',
       premium: 'Premium',
       login: 'Login',
@@ -228,13 +234,37 @@ export default function Home() {
           
             {/* Center Navigation - Hero Style */}
             <div className="hidden lg:flex items-center gap-2">
-              {/* Features Link - Clean */}
+              {/* Features Link */}
               <Link 
                 href="/ozellikler"
                 className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
               >
                 {t[language].features}
-            </Link>
+              </Link>
+
+              {/* Commands Link */}
+              <Link 
+                href="/komutlar"
+                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
+              >
+                {t[language].commands}
+              </Link>
+
+              {/* Contact Link */}
+              <Link 
+                href="/iletisim"
+                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
+              >
+                {t[language].contact}
+              </Link>
+
+              {/* Feedback Link */}
+              <Link 
+                href="/geri-bildirim"
+                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
+              >
+                {t[language].feedback}
+              </Link>
             </div>
 
             {/* Right Actions */}

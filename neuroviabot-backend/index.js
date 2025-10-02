@@ -89,10 +89,14 @@ passport.use(new DiscordStrategy({
 const authRoutes = require('./routes/auth');
 const botRoutes = require('./routes/bot');
 const guildRoutes = require('./routes/guilds');
+const contactRoutes = require('./routes/contact');
+const feedbackRoutes = require('./routes/feedback');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
 app.use('/api/guilds', guildRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
