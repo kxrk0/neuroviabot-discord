@@ -555,285 +555,205 @@ export default function Home() {
             </div>
       </section>
 
-      {/* Features Section - Ultra Modern */}
-      <section id="features" className="relative z-1 min-h-screen flex overflow-hidden" style={{
-        background: 'linear-gradient(180deg, rgb(19, 21, 31) 0%, rgb(24, 25, 38) 30%, rgb(29, 28, 47) 60%, rgb(33, 32, 54) 100%)'
+      {/* Features Section - Hero Style (MEE6-inspired) */}
+      <section id="features" className="relative z-1 min-h-screen flex" style={{
+        background: 'linear-gradient(rgb(33, 32, 54) 0%, rgb(51, 40, 62) 30%, rgb(98, 61, 83) 60%, rgb(140, 81, 102) 100%)'
       }}>
-        {/* Advanced Decorative Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 left-10 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/5 rounded-full blur-3xl"></div>
+        {/* Forest Bottom - Same as Hero */}
+        <div className="absolute w-full h-full left-0 pointer-events-none overflow-hidden">
+          <svg className="w-full absolute bottom-0" viewBox="0 0 1920 400" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.5">
+            <path d="M0 400V250C150 200 300 180 450 200C600 220 750 180 900 160C1050 140 1200 150 1350 180C1500 210 1650 190 1800 170C1920 155 1920 155 1920 155V400H0Z" fill="#0D0E15" fillOpacity="0.8"/>
+            <path d="M0 400V280C150 250 300 240 450 260C600 280 750 250 900 235C1050 220 1200 230 1350 255C1500 280 1650 265 1800 245C1920 232 1920 232 1920 232V400H0Z" fill="#0D0E15" fillOpacity="0.6"/>
+          </svg>
         </div>
 
-        <div className="relative w-full max-w-[1240px] mx-auto px-6 lg:px-10 py-20 lg:py-32">
-          {/* Section Header - Enhanced */}
+        <div className="relative w-full max-w-[1240px] mx-auto px-6 lg:px-10 py-20 lg:py-32 pt-32">
+          {/* Section Header - Hero Style */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-20"
+            className="text-center mb-24"
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="inline-block mb-6"
-            >
-              <span className="px-5 py-2.5 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-bold tracking-wide backdrop-blur-xl shadow-lg">
-                ✨ {t[language].features.toUpperCase()}
-              </span>
-            </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black mb-6 leading-tight"
+              transition={{ duration: 0.6 }}
+              className="text-white text-5xl md:text-7xl font-bold mb-6 leading-tight"
             >
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient-x" style={{ backgroundSize: '200% auto' }}>
-                {t[language].whatCanYouDo}
-              </span>
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              {t[language].whatCanYouDo}
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+              className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed"
             >
               {t[language].whatCanYouDoDesc}
             </motion.p>
           </motion.div>
 
-          {/* Feature Grid - Premium Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Music Feature */}
+          {/* Feature Grid - Hero Style Large Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+            {/* Music Feature - Large */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-500/5 via-purple-500/10 to-blue-500/5 border border-white/10 hover:border-purple-500/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20"
+              transition={{ duration: 0.7 }}
+              className="group relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-1"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-purple-500/10 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="relative p-8">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-4xl shadow-2xl shadow-purple-500/50 mb-6 group-hover:shadow-purple-500/70 transition-shadow"
-                >
-                  🎵
-                </motion.div>
-                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-purple-300 transition-colors">Müzik Çal</h3>
-                <p className="text-purple-400 text-sm font-bold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
-                  YouTube • Spotify • SoundCloud
-                </p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative p-10 lg:p-12">
+                <div className="flex items-start gap-6 mb-8">
+                  <motion.div 
+                    whileHover={{ scale: 1.05, rotate: 3 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-5xl shadow-xl flex-shrink-0"
+                  >
+                    🎵
+                  </motion.div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white mb-3">Müzik Çal</h3>
+                    <p className="text-purple-300 text-base font-semibold">YouTube • Spotify • SoundCloud</p>
+                  </div>
+                </div>
+                <p className="text-gray-200 text-lg leading-relaxed mb-6">
                   Kristal kalitede müzik deneyimi. Gelişmiş sıra yönetimi, ses kontrolü, şarkı sözleri ve daha fazlası.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs font-semibold rounded-full">Sıra Yönetimi</span>
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs font-semibold rounded-full">Filtreler</span>
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs font-semibold rounded-full">Şarkı Sözleri</span>
+                <div className="flex flex-wrap gap-3">
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Sıra Yönetimi</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Ses Filtreler</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Şarkı Sözleri</span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Moderation Feature */}
+            {/* Moderation Feature - Large */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500/5 via-blue-500/10 to-cyan-500/5 border border-white/10 hover:border-blue-500/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/20"
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="group relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-1"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/10 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="relative p-8">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-4xl shadow-2xl shadow-blue-500/50 mb-6 group-hover:shadow-blue-500/70 transition-shadow"
-                >
-                  🛡️
-                </motion.div>
-                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-blue-300 transition-colors">Akıllı Moderasyon</h3>
-                <p className="text-blue-400 text-sm font-bold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-                  Otomatik • Güvenli • Hızlı
-                </p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative p-10 lg:p-12">
+                <div className="flex items-start gap-6 mb-8">
+                  <motion.div 
+                    whileHover={{ scale: 1.05, rotate: -3 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-5xl shadow-xl flex-shrink-0"
+                  >
+                    🛡️
+                  </motion.div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white mb-3">Akıllı Moderasyon</h3>
+                    <p className="text-blue-300 text-base font-semibold">Otomatik • Güvenli • Hızlı</p>
+                  </div>
+                </div>
+                <p className="text-gray-200 text-lg leading-relaxed mb-6">
                   Spam, küfür ve zararlı içerikleri otomatik engelle. Uyarı sistemi, log kayıtları ve daha fazlası.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-semibold rounded-full">Auto-Mod</span>
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-semibold rounded-full">Log Sistemi</span>
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-semibold rounded-full">Uyarılar</span>
+                <div className="flex flex-wrap gap-3">
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Auto-Mod</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Log Sistemi</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Uyarı</span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Economy Feature */}
+            {/* Economy Feature - Large */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-500/5 via-green-500/10 to-emerald-500/5 border border-white/10 hover:border-green-500/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-green-500/20"
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="group relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-1"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 via-green-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="relative p-8">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-4xl shadow-2xl shadow-green-500/50 mb-6 group-hover:shadow-green-500/70 transition-shadow"
-                >
-                  💰
-                </motion.div>
-                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-green-300 transition-colors">Ekonomi Sistemi</h3>
-                <p className="text-green-400 text-sm font-bold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  Para • Mağaza • Casino
-                </p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative p-10 lg:p-12">
+                <div className="flex items-start gap-6 mb-8">
+                  <motion.div 
+                    whileHover={{ scale: 1.05, rotate: 3 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="w-24 h-24 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center text-5xl shadow-xl flex-shrink-0"
+                  >
+                    💰
+                  </motion.div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white mb-3">Ekonomi Sistemi</h3>
+                    <p className="text-green-300 text-base font-semibold">Para • Mağaza • Casino</p>
+                  </div>
+                </div>
+                <p className="text-gray-200 text-lg leading-relaxed mb-6">
                   Sanal para kazandır, özel mağaza kur, casino oyunları ekle. Üyelerini ödüllendir!
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs font-semibold rounded-full">Günlük Ödül</span>
-                  <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs font-semibold rounded-full">Mağaza</span>
-                  <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs font-semibold rounded-full">Oyunlar</span>
+                <div className="flex flex-wrap gap-3">
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Günlük Ödül</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Mağaza</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Oyunlar</span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Leveling Feature */}
+            {/* Leveling Feature - Large */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-yellow-500/5 via-yellow-500/10 to-orange-500/5 border border-white/10 hover:border-yellow-500/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-yellow-500/20"
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="group relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-1"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 via-yellow-500/10 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="relative p-8">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center text-4xl shadow-2xl shadow-yellow-500/50 mb-6 group-hover:shadow-yellow-500/70 transition-shadow"
-                >
-                  ⭐
-                </motion.div>
-                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-yellow-300 transition-colors">Seviye Sistemi</h3>
-                <p className="text-yellow-400 text-sm font-bold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                  XP • Seviye • Roller
-                </p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                  Aktif üyeler XP kazansın, seviye atlasın. Otomatik rol ödülleri ile motive et!
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-semibold rounded-full">XP Sistemi</span>
-                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-semibold rounded-full">Liderlik Tablosu</span>
-                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-semibold rounded-full">Ödüller</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative p-10 lg:p-12">
+                <div className="flex items-start gap-6 mb-8">
+                  <motion.div 
+                    whileHover={{ scale: 1.05, rotate: -3 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="w-24 h-24 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center text-5xl shadow-xl flex-shrink-0"
+                  >
+                    ⭐
+                  </motion.div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white mb-3">Seviye & Çekiliş</h3>
+                    <p className="text-yellow-300 text-base font-semibold">XP • Roller • Giveaway</p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-
-            {/* Tickets Feature */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-pink-500/5 via-pink-500/10 to-rose-500/5 border border-white/10 hover:border-pink-500/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/20"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 via-pink-500/10 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="relative p-8">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-4xl shadow-2xl shadow-pink-500/50 mb-6 group-hover:shadow-pink-500/70 transition-shadow"
-                >
-                  🎫
-                </motion.div>
-                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-pink-300 transition-colors">Destek Sistemi</h3>
-                <p className="text-pink-400 text-sm font-bold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></span>
-                  Ticket • Panel • Transcript
+                <p className="text-gray-200 text-lg leading-relaxed mb-6">
+                  Aktif üyeler XP kazansın, seviye atlasın. Heyecan verici çekilişler düzenle ve topluluğunu motive et!
                 </p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                  Profesyonel ticket sistemi ile üyelerine 7/24 destek sağla. Otomatik kategorilendirme ve arşivleme.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-pink-500/20 text-pink-300 text-xs font-semibold rounded-full">Özel Kategoriler</span>
-                  <span className="px-3 py-1 bg-pink-500/20 text-pink-300 text-xs font-semibold rounded-full">Transcript</span>
-                  <span className="px-3 py-1 bg-pink-500/20 text-pink-300 text-xs font-semibold rounded-full">Yetkilendirme</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Giveaways Feature */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-cyan-500/5 via-cyan-500/10 to-teal-500/5 border border-white/10 hover:border-cyan-500/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/20"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 via-cyan-500/10 to-teal-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="relative p-8">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center text-4xl shadow-2xl shadow-cyan-500/50 mb-6 group-hover:shadow-cyan-500/70 transition-shadow"
-                >
-                  🎁
-                </motion.div>
-                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-cyan-300 transition-colors">Çekiliş & Etkinlik</h3>
-                <p className="text-cyan-400 text-sm font-bold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-                  Çekiliş • Quiz • Polls
-                </p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                  Heyecan verici çekilişler düzenle, interaktif quizler yap. Topluluğunu aktif tut!
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 text-xs font-semibold rounded-full">Otomatik</span>
-                  <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 text-xs font-semibold rounded-full">Gereksinimler</span>
-                  <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 text-xs font-semibold rounded-full">Adil Seçim</span>
+                <div className="flex flex-wrap gap-3">
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Seviye Sistemi</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Liderlik</span>
+                  <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Çekiliş</span>
                 </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Bottom CTA */}
+          {/* Bottom CTA - Hero Style */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-16 text-center"
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="mt-20 text-center"
           >
-            <p className="text-gray-400 text-lg mb-6">Ve daha fazlası! 50+ özellik ile sunucunu yönet.</p>
+            <p className="text-gray-200 text-xl mb-8 font-medium">Ve daha fazlası! <span className="text-white font-bold">50+ özellik</span> ile sunucunu tam kontrol altına al.</p>
             <motion.a
-              href="#"
+              href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-3 px-10 py-5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-lg font-bold rounded-xl shadow-2xl transition-all"
             >
-              <span>Tüm Özellikleri Keşfet</span>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
               </svg>
+              <span>Hemen Başla - Ücretsiz</span>
             </motion.a>
           </motion.div>
         </div>
@@ -842,17 +762,17 @@ export default function Home() {
       {/* CTA Section - Simplified */}
       <section className="relative z-10 py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <motion.div
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
             transition={{ duration: 0.5 }}
             className="relative p-10 rounded-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-xl"
-          >
+        >
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
                 Hadi Başlayalım! 🚀
-              </h2>
+          </h2>
               <p className="text-lg text-gray-300 mb-8">
                 Kurulum 30 saniye sürüyor. Ücretsiz, kredi kartı gerekmez!
               </p>
@@ -862,11 +782,11 @@ export default function Home() {
                 whileTap={{ scale: 0.98 }}
                 className="inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg hover:shadow-xl hover:shadow-purple-500/50 transition-all duration-300"
               >
-                <RocketLaunchIcon className="w-6 h-6" />
+            <RocketLaunchIcon className="w-6 h-6" />
                 <span>Şimdi Dene</span>
               </motion.a>
         </div>
-          </motion.div>
+        </motion.div>
         </div>
       </section>
 
