@@ -269,34 +269,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-          {/* Animated Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto"
-          >
-            <StatCard
-              icon={<ServerIcon className="w-8 h-8" />}
-              value={stats.guilds}
-              label="Aktif Sunucu"
-              gradient="from-blue-500 to-cyan-500"
-            />
-            <StatCard
-              icon={<UserGroupIcon className="w-8 h-8" />}
-              value={stats.users > 1000 ? `${(stats.users / 1000).toFixed(1)}K` : stats.users}
-              label="Mutlu Kullanıcı"
-              gradient="from-purple-500 to-pink-500"
-            />
-            <StatCard
-              icon={<CommandLineIcon className="w-8 h-8" />}
-              value={stats.commands}
-              label="Güçlü Komut"
-              gradient="from-pink-500 to-rose-500"
-            />
-          </motion.div>
-        </div>
       </section>
 
       {/* Features Section - Modern Cards */}
