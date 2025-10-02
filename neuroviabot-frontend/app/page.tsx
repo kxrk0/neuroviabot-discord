@@ -316,8 +316,8 @@ export default function Home() {
                             language === 'en' ? 'bg-purple-500/20 text-white' : 'text-gray-300 hover:bg-white/5'
                           }`}
                         >
-                          <span className="text-base">🇬🇧</span>
-                          EN
+                          <span className="text-base">EN</span>
+                          English
                         </button>
                       </div>
                     </motion.div>
