@@ -360,10 +360,80 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* Hero Section - MEE6 Style */}
-      <section className="relative z-1 min-h-[calc(100vh-20%)] flex" style={{
+      {/* Hero Section - Enhanced MEE6 Style */}
+      <section className="relative z-1 min-h-[calc(100vh-20%)] flex overflow-hidden" style={{
         background: 'linear-gradient(rgb(19, 21, 31) -4.84%, rgb(29, 28, 47) 34.9%, rgb(33, 32, 54) 48.6%, rgb(51, 40, 62) 66.41%, rgb(98, 61, 83) 103.41%, rgb(140, 81, 102) 132.18%)'
       }}>
+        {/* Animated Background Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Gradient Orbs */}
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.15, 0.25, 0.15],
+              x: [0, 50, 0],
+              y: [0, 30, 0]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"
+            style={{ willChange: 'transform, opacity' }}
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.1, 0.2, 0.1],
+              x: [0, -30, 0],
+              y: [0, 50, 0]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl"
+            style={{ willChange: 'transform, opacity' }}
+          />
+          
+          {/* Floating Particles */}
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{
+                y: [0, -100, 0],
+                x: [0, Math.sin(i) * 50, 0],
+                opacity: [0, 0.6, 0],
+                scale: [0, 1, 0]
+              }}
+              transition={{
+                duration: 4 + i * 0.5,
+                repeat: Infinity,
+                delay: i * 0.8,
+                ease: "easeInOut"
+              }}
+              className="absolute"
+              style={{
+                left: `${10 + i * 10}%`,
+                top: `${30 + (i % 3) * 20}%`,
+                width: '4px',
+                height: '4px',
+                borderRadius: '50%',
+                background: `rgba(${168 + i * 10}, ${85 + i * 5}, 247, 0.8)`,
+                willChange: 'transform, opacity'
+              }}
+            />
+          ))}
+          
+          {/* Decorative Circles */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute top-20 right-20 w-32 h-32 border border-purple-500/20 rounded-full"
+            style={{ willChange: 'transform' }}
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute bottom-40 left-40 w-48 h-48 border border-blue-500/15 rounded-full"
+            style={{ willChange: 'transform' }}
+          />
+        </div>
+
         {/* Forest Background */}
         <div className="absolute w-full h-full -z-1 left-0 pointer-events-none overflow-hidden">
           <svg className="w-full absolute bottom-0" viewBox="0 0 1920 400" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -376,25 +446,66 @@ export default function Home() {
         <div className="min-h-full w-full flex items-center justify-start pt-16">
           <div className="mx-auto w-full max-w-[1240px] px-6 lg:px-10 py-6 lg:py-10 pt-10 lg:pt-24 lg:py-36">
             <div className="w-full text-center md:w-3/5 md:mx-auto lg:mx-0 lg:text-left lg:w-2/5">
-              {/* Title */}
+              {/* Badge */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 backdrop-blur-sm"
+                style={{ willChange: 'transform, opacity' }}
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-blue-400"
+                />
+                <span className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-blue-300">
+                  ✨ Yeni Özellikler Eklendi
+                </span>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-1.5 h-1.5 rounded-full bg-green-400"
+                />
+              </motion.div>
+
+              {/* Title with Gradient */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.8, 
-              ease: [0.22, 1, 0.36, 1],
-              type: "spring",
-              stiffness: 80,
-              damping: 20
+              duration: 0.7, 
+              ease: [0.22, 1, 0.36, 1]
             }}
-            className="text-white min-h-[127px] font-bold text-5xl lg:text-7xl mb-7"
+            className="min-h-[127px] font-bold text-5xl lg:text-7xl mb-7 relative"
+            style={{ willChange: 'transform, opacity' }}
           >
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.7, delay: 0.15 }}
+              className="relative inline-block"
             >
-              {t[language].title}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-blue-200">
+                {t[language].title}
+              </span>
+              {/* Shimmer Effect */}
+              <motion.div
+                animate={{
+                  x: ['-100%', '200%']
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                  repeatDelay: 2
+                }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                style={{
+                  maskImage: 'linear-gradient(to right, transparent, black, transparent)',
+                  WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)'
+                }}
+              />
             </motion.span>
           </motion.h1>
 
@@ -403,49 +514,103 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.7, 
-              delay: 0.3,
+              duration: 0.6, 
+              delay: 0.25,
               ease: [0.22, 1, 0.36, 1]
             }}
-            className="text-gray-300 text-base mb-10 whitespace-pre-line"
+            className="text-gray-300 text-base mb-10 whitespace-pre-line leading-relaxed"
+            style={{ willChange: 'transform, opacity' }}
           >
             {t[language].description}
           </motion.p>
+
+          {/* Stats Row */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.6, 
+              delay: 0.35,
+              ease: [0.22, 1, 0.36, 1]
+            }}
+            className="flex flex-wrap gap-6 mb-8 justify-center lg:justify-start"
+            style={{ willChange: 'transform, opacity' }}
+          >
+            {[
+              { icon: '🎵', value: '43+', label: 'Komut' },
+              { icon: '🏆', value: stats.guilds || '66', label: 'Sunucu' },
+              { icon: '👥', value: `${Math.floor((stats.users || 59032) / 1000)}K+`, label: 'Kullanıcı' }
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  duration: 0.5, 
+                  delay: 0.45 + index * 0.1,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10"
+              >
+                <span className="text-2xl">{stat.icon}</span>
+                <div>
+                  <div className="text-lg font-bold text-white">{stat.value}</div>
+                  <div className="text-xs text-gray-400">{stat.label}</div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
 
           {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.7, 
-              delay: 0.5,
+              duration: 0.6, 
+              delay: 0.6,
               ease: [0.22, 1, 0.36, 1]
             }}
             className="flex flex-col md:flex-row justify-center lg:justify-start items-stretch gap-4 max-w-[168px] lg:max-w-none m-auto"
+            style={{ willChange: 'transform, opacity' }}
           >
             <motion.a
               href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
               whileHover={{ 
                 scale: 1.05,
-                boxShadow: "0 20px 40px rgba(88, 101, 242, 0.4)",
-                transition: { duration: 0.3, ease: "easeOut" }
+                boxShadow: "0 20px 40px rgba(88, 101, 242, 0.5)"
               }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              className="relative flex overflow-hidden shrink-0 rounded-lg items-center gap-1.5 bg-[#5865F2] text-white hover:bg-[#4752C4] text-base px-6 py-3 font-bold shadow-lg"
+              whileTap={{ scale: 0.98 }}
+              className="group relative flex overflow-hidden shrink-0 rounded-xl items-center justify-center gap-2 bg-[#5865F2] text-white text-base px-8 py-4 font-bold shadow-xl"
+              style={{ willChange: 'transform' }}
             >
+              {/* Animated shine effect */}
+              <motion.div
+                animate={{
+                  x: ['-200%', '200%']
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 3,
+                  ease: "linear"
+                }}
+                className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+              />
               <motion.svg 
-                width="24" 
-                height="24" 
+                width="20" 
+                height="20" 
                 viewBox="0 0 18 13" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg" 
-                className="w-5"
-                whileHover={{ rotate: [0, -10, 10, 0], transition: { duration: 0.5 } }}
+                className="relative"
+                animate={{ y: [0, -2, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
                 <path d="M15.248 1.089A15.431 15.431 0 0011.534 0a9.533 9.533 0 00-.476.921 14.505 14.505 0 00-4.12 0A9.582 9.582 0 006.461 0a15.54 15.54 0 00-3.717 1.091C.395 4.405-.242 7.636.076 10.821A15.269 15.269 0 004.631 13c.369-.473.695-.974.975-1.499a9.896 9.896 0 01-1.536-.699c.13-.089.255-.18.377-.27 1.424.639 2.979.97 4.553.97 1.574 0 3.129-.331 4.553-.97.123.096.25.188.377.27a9.94 9.94 0 01-1.54.7c.28.525.607 1.026.976 1.498a15.2 15.2 0 004.558-2.178c.373-3.693-.639-6.895-2.676-9.733zM6.01 8.862c-.888 0-1.621-.767-1.621-1.712 0-.944.708-1.718 1.618-1.718.91 0 1.638.774 1.623 1.718-.016.945-.715 1.712-1.62 1.712zm5.98 0c-.889 0-1.62-.767-1.62-1.712 0-.944.708-1.718 1.62-1.718.912 0 1.634.774 1.618 1.718-.015.945-.713 1.712-1.618 1.712z" fill="currentColor"/>
               </motion.svg>
-              {t[language].addToDiscord}
+              <span className="relative">{t[language].addToDiscord}</span>
             </motion.a>
 
             <motion.a
@@ -453,14 +618,19 @@ export default function Home() {
               whileHover={{ 
                 scale: 1.05,
                 backgroundColor: "rgba(255, 255, 255, 0.15)",
-                borderColor: "rgba(255, 255, 255, 0.3)",
-                transition: { duration: 0.3, ease: "easeOut" }
+                borderColor: "rgba(255, 255, 255, 0.4)"
               }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              className="relative flex overflow-hidden shrink-0 rounded-lg items-center gap-1.5 bg-white/10 text-white text-base px-6 py-3 font-semibold border border-white/10"
+              whileTap={{ scale: 0.98 }}
+              className="relative flex overflow-hidden shrink-0 rounded-xl items-center justify-center gap-2 bg-white/5 backdrop-blur-sm text-white text-base px-8 py-4 font-semibold border border-white/10"
+              style={{ willChange: 'transform' }}
             >
-              {t[language].seeFeatures}
+              <span>{t[language].seeFeatures}</span>
+              <motion.span
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                →
+              </motion.span>
             </motion.a>
           </motion.div>
             </div>
@@ -472,43 +642,108 @@ export default function Home() {
                 animate={{ 
                   opacity: 1, 
                   x: 0,
-                  scale: 1,
-                  y: [0, -15, 0]
+                  scale: 1
                 }}
                 transition={{ 
-                  opacity: { duration: 0.8, delay: 0.2 },
-                  x: { duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] },
-                  scale: { duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] },
-                  y: { 
-                    duration: 3,
-                    delay: 1,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                    ease: "easeInOut"
-                  }
+                  duration: 0.7,
+                  delay: 0.3,
+                  ease: [0.22, 1, 0.36, 1]
                 }}
                 className="relative"
+                style={{ willChange: 'transform, opacity' }}
               >
                 <motion.div 
                   className="w-full h-full relative"
-                  whileHover={{ scale: 1.05, rotate: 2 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  animate={{ 
+                    y: [0, -20, 0],
+                    rotate: [0, 1, 0, -1, 0]
+                  }}
+                  transition={{ 
+                    y: { 
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    },
+                    rotate: {
+                      duration: 6,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }
+                  }}
+                  style={{ willChange: 'transform' }}
                 >
                   {/* Placeholder for character image */}
                   <div className="w-[400px] h-[500px] lg:w-[500px] lg:h-[600px] relative">
+                    {/* Multiple Glow Layers for Depth */}
                     <motion.div 
-                      className="absolute inset-0 bg-gradient-to-t from-purple-500/20 to-transparent rounded-full blur-3xl"
+                      className="absolute inset-0 bg-gradient-to-t from-purple-500/30 to-transparent rounded-full blur-3xl"
                       animate={{ 
-                        scale: [1, 1.1, 1],
-                        opacity: [0.2, 0.3, 0.2]
+                        scale: [1, 1.15, 1],
+                        opacity: [0.3, 0.5, 0.3]
+                      }}
+                      transition={{ 
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      style={{ willChange: 'transform, opacity' }}
+                    />
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-t from-blue-500/20 to-transparent rounded-full blur-2xl"
+                      animate={{ 
+                        scale: [1.1, 1, 1.1],
+                        opacity: [0.2, 0.4, 0.2]
                       }}
                       transition={{ 
                         duration: 4,
                         repeat: Infinity,
-                        ease: "easeInOut"
+                        ease: "easeInOut",
+                        delay: 0.5
                       }}
+                      style={{ willChange: 'transform, opacity' }}
                     />
-                    <svg viewBox="0 0 400 600" className="w-full h-full drop-shadow-2xl">
+                    
+                    {/* Orbiting particles */}
+                    {[0, 120, 240].map((angle, i) => (
+                      <motion.div
+                        key={i}
+                        animate={{
+                          rotate: 360
+                        }}
+                        transition={{
+                          duration: 10 + i * 2,
+                          repeat: Infinity,
+                          ease: "linear"
+                        }}
+                        className="absolute inset-0 flex items-center justify-center"
+                        style={{
+                          transformOrigin: 'center',
+                          willChange: 'transform'
+                        }}
+                      >
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.3, 1],
+                            opacity: [0.4, 0.8, 0.4]
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: i * 0.3
+                          }}
+                          className="w-3 h-3 rounded-full bg-purple-400"
+                          style={{
+                            position: 'absolute',
+                            top: '30%',
+                            left: '50%',
+                            transform: `translate(-50%, -50%) translateY(-120px) rotate(${angle}deg) translateX(150px)`
+                          }}
+                        />
+                      </motion.div>
+                    ))}
+                    
+                    <svg viewBox="0 0 400 600" className="w-full h-full drop-shadow-2xl relative z-10">
                       <circle cx="200" cy="150" r="80" fill="#8B5CF6" opacity="0.3"/>
                       <rect x="150" y="230" width="100" height="200" rx="20" fill="#7C3AED" opacity="0.5"/>
                       <rect x="100" y="250" width="60" height="150" rx="15" fill="#6D28D9" opacity="0.4"/>
