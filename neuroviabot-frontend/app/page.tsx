@@ -198,67 +198,76 @@ export default function Home() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setFeaturesOpen(false)} />
                     <motion.div 
-                      initial={{ opacity: 0, scaleX: 0, originX: 0 }}
-                      animate={{ opacity: 1, scaleX: 1 }}
-                      exit={{ opacity: 0, scaleX: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="absolute top-full left-0 mt-2 w-80 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full left-0 mt-2 w-[700px] bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
                     >
-                      <div className="p-3">
-                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
-                            <ShieldCheckIcon className="w-5 h-5 text-purple-400" />
+                      <div className="p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Left Column */}
+                          <div className="space-y-1">
+                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
+                                <ShieldCheckIcon className="w-4 h-4 text-purple-400" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm mb-0.5">Moderasyon & Sunucu Yönetimi</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Karşılama, Özel Komutlar, Tepki Rol, Moderatör...</div>
+                              </div>
+                            </a>
+                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                                <CommandLineIcon className="w-4 h-4 text-blue-400" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm mb-0.5">Araçlar</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Gömülü mesajlar, Arama, Kayıt, Zamanlayıcı...</div>
+                              </div>
+                            </a>
+                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                              <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
+                                <BoltIcon className="w-4 h-4 text-pink-400" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm mb-0.5">Sosyal Medya Bildirimleri</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Twitch, YouTube, Twitter, RSS, Reddit...</div>
+                              </div>
+                            </a>
                           </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Moderasyon & Sunucu Yönetimi</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Karşılama, Özel Komutlar, Tepki Rol, Moderatör...</div>
+
+                          {/* Right Column */}
+                          <div className="space-y-1">
+                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                                <MusicalNoteIcon className="w-4 h-4 text-green-400" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm mb-0.5">Katılım ve Eğlence</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Seviye, Doğum Günü, Çekilişler, Müzik...</div>
+                              </div>
+                            </a>
+                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
+                                <SparklesIcon className="w-4 h-4 text-cyan-400" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm mb-0.5">Bot Kişiselleştirici</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Avatar, isim, yapay zeka tabanlı...</div>
+                              </div>
+                            </a>
+                            <a href="#premium" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500/20 transition-colors">
+                                <span className="text-lg">👑</span>
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm mb-0.5">Premium Abonelik</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Tüm özelliklere erişim için Premium'a yükseltin</div>
+                              </div>
+                            </a>
                           </div>
-                        </a>
-                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
-                            <CommandLineIcon className="w-5 h-5 text-blue-400" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Araçlar</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Gömülü mesajlar, Arama, Kayıt, Zamanlayıcı, İstatistik...</div>
-                          </div>
-                        </a>
-                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
-                            <BoltIcon className="w-5 h-5 text-pink-400" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Sosyal Medya Bildirimleri</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Twitch, YouTube, Twitter, RSS, Reddit bildirimleri...</div>
-                          </div>
-                        </a>
-                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
-                            <MusicalNoteIcon className="w-5 h-5 text-green-400" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Katılım ve Eğlence</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Seviye, Doğum Günü, Çekilişler, Müzik, Ekonomi...</div>
-                          </div>
-                        </a>
-                        <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
-                            <SparklesIcon className="w-5 h-5 text-cyan-400" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Bot Kişiselleştirici</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Avatar, isim, yapay zeka tabanlı kişiselleştirme...</div>
-                          </div>
-                        </a>
-                        <a href="#premium" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500/20 transition-colors">
-                            <span className="text-xl">👑</span>
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Premium Abonelik</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Tüm özelliklere erişim için Premium'a yükseltin</div>
-                          </div>
-                        </a>
+                        </div>
                       </div>
                     </motion.div>
                   </>
@@ -282,70 +291,85 @@ export default function Home() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setResourcesOpen(false)} />
                     <motion.div 
-                      initial={{ opacity: 0, scaleX: 0, originX: 0 }}
-                      animate={{ opacity: 1, scaleX: 1 }}
-                      exit={{ opacity: 0, scaleX: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="absolute top-full left-0 mt-2 w-80 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full left-0 mt-2 w-[700px] bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
                     >
-                      <div className="p-3">
-                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
-                            <span className="text-xl">📚</span>
-                          </div>
+                      <div className="p-4">
+                        <div className="grid grid-cols-2 gap-6">
+                          {/* Left Column - Destek */}
                           <div>
-                            <div className="font-bold text-sm mb-1">Öğretici</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Discord'da Neurovia'nın nasıl kullanılacağı hakkında daha fazla bilgi</div>
-                          </div>
-                        </a>
-                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
-                            <span className="text-xl">📖</span>
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Destek Portalı</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Bilgi bankası ve yardımcı materyaller avucunuzun içinde</div>
-                          </div>
-                        </a>
-                        <a href="https://discord.gg/neurovia" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
-                            <ServerIcon className="w-5 h-5 text-indigo-400" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Discord Sunucusu</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">İhtiyacınız olabilecek tüm yardımları almak için katılın</div>
-                          </div>
-                        </a>
-                        <a href="/servers" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
-                            <span className="text-xl">💼</span>
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1 flex items-center gap-2">
-                              Kariyer
-                              <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">İşe alıyoruz!</span>
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">Destek</h3>
+                            <div className="space-y-1">
+                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                                <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
+                                  <span className="text-lg">📚</span>
+                                </div>
+                                <div>
+                                  <div className="font-bold text-sm mb-0.5">Öğretici</div>
+                                  <div className="text-xs text-gray-400">Discord'da Neurovia'nın nasıl kullanılacağı...</div>
+                                </div>
+                              </a>
+                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                                  <span className="text-lg">📖</span>
+                                </div>
+                                <div>
+                                  <div className="font-bold text-sm mb-0.5">Destek Portalı</div>
+                                  <div className="text-xs text-gray-400">Bilgi bankası ve yardımcı materyaller</div>
+                                </div>
+                              </a>
+                              <a href="https://discord.gg/neurovia" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
+                                  <ServerIcon className="w-4 h-4 text-indigo-400" />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-sm mb-0.5">Discord Sunucusu</div>
+                                  <div className="text-xs text-gray-400">İhtiyacınız olabilecek tüm yardımları alın</div>
+                                </div>
+                              </a>
                             </div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Neurovia'ya katılın ve harika topluluklar için araçlar oluşturun</div>
                           </div>
-                        </a>
-                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
-                            <span className="text-xl">🐛</span>
-                          </div>
+
+                          {/* Right Column - Şirket */}
                           <div>
-                            <div className="font-bold text-sm mb-1">Hata Ödül Programı</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Bazı güzel ödüllere giden yolu hackleyin</div>
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">Şirket</h3>
+                            <div className="space-y-1">
+                              <a href="/servers" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                                  <span className="text-lg">💼</span>
+                                </div>
+                                <div>
+                                  <div className="font-bold text-sm mb-0.5 flex items-center gap-2">
+                                    Kariyer
+                                    <span className="text-[9px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded font-semibold">İşe alıyoruz!</span>
+                                  </div>
+                                  <div className="text-xs text-gray-400">Harika topluluklar için araçlar oluşturun</div>
+                                </div>
+                              </a>
+                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                                <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
+                                  <span className="text-lg">🐛</span>
+                                </div>
+                                <div>
+                                  <div className="font-bold text-sm mb-0.5">Hata Ödül Programı</div>
+                                  <div className="text-xs text-gray-400">Bazı güzel ödüllere giden yolu hackleyin</div>
+                                </div>
+                              </a>
+                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
+                                  <span className="text-lg">✉️</span>
+                                </div>
+                                <div>
+                                  <div className="font-bold text-sm mb-0.5">Bize ulaşın</div>
+                                  <div className="text-xs text-gray-400">Biz güzeliz ve arkadaş canlısıyız!</div>
+                                </div>
+                              </a>
+                            </div>
                           </div>
-                        </a>
-                        <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
-                            <span className="text-xl">✉️</span>
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-1">Bize ulaşın</div>
-                            <div className="text-xs text-gray-400 leading-relaxed">Biz güzeliz ve arkadaş canlısıyız!</div>
-                          </div>
-                        </a>
+                        </div>
                       </div>
                     </motion.div>
                   </>
@@ -373,10 +397,10 @@ export default function Home() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setLanguageOpen(false)} />
                     <motion.div 
-                      initial={{ opacity: 0, scaleX: 0, originX: 1 }}
-                      animate={{ opacity: 1, scaleX: 1 }}
-                      exit={{ opacity: 0, scaleX: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
                       className="absolute top-full right-0 mt-2 w-40 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
                     >
                       <div className="p-1">
