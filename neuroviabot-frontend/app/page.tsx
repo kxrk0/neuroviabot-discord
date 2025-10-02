@@ -587,13 +587,13 @@ export default function Home() {
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed"
-            >
+          >
               {t[language].whatCanYouDoDesc}
-            </motion.p>
+          </motion.p>
           </motion.div>
 
           {/* Feature Grid - Hero Style Large Cards */}
@@ -663,7 +663,7 @@ export default function Home() {
                   <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Log Sistemi</span>
                   <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Uyarı</span>
                 </div>
-              </div>
+        </div>
             </motion.div>
 
             {/* Economy Feature - Large */}
@@ -697,14 +697,14 @@ export default function Home() {
                   <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Mağaza</span>
                   <span className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg">Oyunlar</span>
                 </div>
-              </div>
+        </div>
             </motion.div>
 
             {/* Leveling Feature - Large */}
-            <motion.div
+        <motion.div
               initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.3 }}
               className="group relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-1"
             >
@@ -755,37 +755,6 @@ export default function Home() {
               </svg>
               <span>Hemen Başla - Ücretsiz</span>
             </motion.a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Section - Simplified */}
-      <section className="relative z-10 py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="relative p-10 rounded-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-xl"
-        >
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-                Hadi Başlayalım! 🚀
-          </h2>
-              <p className="text-lg text-gray-300 mb-8">
-                Kurulum 30 saniye sürüyor. Ücretsiz, kredi kartı gerekmez!
-              </p>
-              <motion.a
-                href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg hover:shadow-xl hover:shadow-purple-500/50 transition-all duration-300"
-              >
-            <RocketLaunchIcon className="w-6 h-6" />
-                <span>Şimdi Dene</span>
-              </motion.a>
-        </div>
         </motion.div>
         </div>
       </section>
