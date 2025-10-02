@@ -9,7 +9,8 @@ module.exports = {
         console.log(`📊 ${client.guilds.cache.size} sunucuda aktif`);
         console.log(`👥 ${client.users.cache.size} kullanıcıya hizmet veriyor`);
         
-        // Bot status'unu ayarla - ULTRA REAL-TIME kullanıcı ve sunucu sayısı
+        // Bot status'unu ayarla - Website + ULTRA REAL-TIME kullanıcı ve sunucu sayısı
+        let activityIndex = 0;
         function updateActivity() {
             try {
                 // REAL-TIME veri alma - guild cache'den anlık bilgileri al
@@ -20,8 +21,15 @@ module.exports = {
                 
                 const totalServers = client.guilds.cache.size;
                 
-                // Format: "90,876 User | 66 Server"
-                const activityText = `${totalUsers.toLocaleString()} User | ${totalServers} Server`;
+                // Rotate between website and stats
+                const activities = [
+                    `neuroviabot.xyz 🌐`,
+                    `${totalUsers.toLocaleString()} kullanıcı | ${totalServers} sunucu 📊`
+                ];
+                
+                const activityText = activities[activityIndex];
+                activityIndex = (activityIndex + 1) % activities.length;
+                
                 client.user.setActivity(activityText, { 
                     type: ActivityType.Streaming,
                     url: 'https://www.twitch.tv/swaffval'
@@ -37,10 +45,10 @@ module.exports = {
         // İlk activity'i ayarla
         updateActivity();
         
-        // INSTANT REAL-TIME güncelleme: Her 1 saniyede bir activity güncelle
+        // REAL-TIME güncelleme: Her 10 saniyede bir activity değiştir
         setInterval(() => {
             updateActivity();
-        }, 1000); // 1 saniye
+        }, 10000); // 10 saniye
         
         // Guild join/leave event'lerinde de güncelle (gerçek real-time için)
         client.on('guildCreate', () => {

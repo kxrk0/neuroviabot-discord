@@ -534,112 +534,46 @@ export default function Home() {
                 </AnimatePresence>
               </div>
 
-              {/* Premium Button - Ultra Modern */}
-              <motion.a
+              {/* Premium Button - Clean */}
+              <a
                 href="#premium"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
                 className="hidden md:flex relative group items-center gap-2 px-5 py-2.5 text-sm font-bold overflow-hidden rounded-xl transition-all"
               >
-                {/* Animated Gradient Background */}
+                {/* Gradient Background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-amber-400/20 to-orange-400/20 group-hover:from-yellow-400/30 group-hover:via-amber-400/30 group-hover:to-orange-400/30 transition-all duration-300"></div>
                 
-                {/* Shine Effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  animate={{
-                    x: ['-100%', '200%'],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear",
-                    repeatDelay: 2
-                  }}
-                />
-                
-                {/* Border Glow */}
+                {/* Border */}
                 <div className="absolute inset-0 border-2 border-yellow-400/30 group-hover:border-yellow-400/50 rounded-xl transition-all"></div>
                 
                 {/* Content */}
                 <div className="relative flex items-center gap-2">
-                  <motion.span 
-                    className="text-xl"
-                    animate={{ 
-                      rotate: [0, -10, 10, -10, 0],
-                      scale: [1, 1.1, 1.1, 1.1, 1]
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatDelay: 3
-                    }}
-                  >
-                    👑
-                  </motion.span>
+                  <span className="text-xl">👑</span>
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 group-hover:from-yellow-200 group-hover:via-amber-200 group-hover:to-orange-200 transition-all">
                     {t[language].premium}
                   </span>
-                  
-                  {/* Sparkles */}
-                  <motion.span
-                    className="text-yellow-300 text-xs"
-                    animate={{
-                      opacity: [0, 1, 0],
-                      scale: [0.5, 1, 0.5],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatDelay: 1
-                    }}
-                  >
-                    ✨
-                  </motion.span>
                 </div>
-                
-                {/* Bottom Glow */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-yellow-400/50 to-transparent blur-sm group-hover:h-2 transition-all"></div>
-              </motion.a>
+              </a>
 
-              {/* Discord Login - Ultra Modern */}
-              <motion.a
+              {/* Discord Login - Clean */}
+              <a
                 href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
                 className="relative group flex items-center gap-2 px-5 py-2.5 text-sm font-bold overflow-hidden rounded-xl transition-all"
               >
-                {/* Animated Background */}
+                {/* Background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] via-[#5865F2] to-[#7289DA] group-hover:from-[#4752C4] group-hover:via-[#5865F2] group-hover:to-[#5865F2] transition-all duration-300"></div>
-                
-                {/* Pulse Effect */}
-                <motion.div
-                  className="absolute inset-0 bg-white/20 rounded-xl"
-                  animate={{
-                    scale: [1, 1.05, 1],
-                    opacity: [0, 0.3, 0]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
                 
                 {/* Glow Effect */}
                 <div className="absolute inset-0 shadow-lg group-hover:shadow-[#5865F2]/50 group-hover:shadow-2xl transition-all duration-300"></div>
                 
                 {/* Content */}
                 <div className="relative flex items-center gap-2.5 text-white">
-                  <motion.svg 
+                  <svg 
                     className="w-5 h-5" 
                     fill="currentColor" 
                     viewBox="0 0 24 24"
-                    whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-            transition={{ duration: 0.5 }}
                   >
                     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                  </motion.svg>
+                  </svg>
                   <span className="hidden sm:inline font-bold tracking-wide">{t[language].login}</span>
                 </div>
                 
@@ -648,7 +582,7 @@ export default function Home() {
                 
                 {/* Top Shine */}
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-              </motion.a>
+              </a>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ const config = require('../config.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('help')
+        .setName('yardım')
         .setDescription('❓ Tüm komutları ve bot özelliklerini görüntüle')
         .addStringOption(option =>
             option.setName('kategori')
@@ -24,63 +24,72 @@ module.exports = {
         const category = interaction.options.getString('kategori');
 
         if (!category) {
-            // Ana yardım menüsü
+            // Ana yardım menüsü - Geliştirilmiş
+            const totalUsers = interaction.client.guilds.cache.reduce((a, g) => a + g.memberCount, 0);
             const mainHelpEmbed = new EmbedBuilder()
                 .setColor(config.embedColor)
                 .setTitle('🤖 NeuroViaBot - Gelişmiş Çok Amaçlı Discord Bot')
-                .setDescription('**Modern ve profesyonel Discord botu!** Sunucunuzu bir üst seviyeye taşıyan kapsamlı özelliklerle donatılmıştır. 🚀\n\n**🎯 Bot Hakkında:**\n• **66+** sunucuda aktif olarak hizmet veriyor\n• **59.000+** kullanıcıya güvenilir bot deneyimi sunuyor\n• **41** farklı komut ile zengin özellik seti\n• **7/24** uptime garantisi ile kesintisiz hizmet\n• **Türkçe** dil desteği ile yerli kullanıcı deneyimi\n\n**Aşağıdaki kategorilerden birini seçerek detaylı bilgi alabilirsin:**')
-                .setThumbnail(interaction.client.user.displayAvatarURL())
+                .setDescription('**Modern ve profesyonel Discord botu!** ✨\n\nSunucunuzu bir üst seviyeye taşıyan kapsamlı özelliklerle donatılmıştır. 🚀\n\n**╔═══ 🎯 Bot Hakkında ═══╗**\n```yaml\n👥 Aktif Sunucular: ' + interaction.client.guilds.cache.size + ' sunucu\n📊 Toplam Kullanıcı: ' + totalUsers.toLocaleString() + ' kullanıcı\n⚡ Komut Sayısı: 43+ komut\n🔐 Güvenlik: SSL & Şifreli\n🌍 Dil Desteği: Türkçe\n⏰ Uptime: 7/24 (99.9%)\n📱 Platform: Web & Mobil\n```\n\n**╔═══ 📚 Komut Kategorileri ═══╗**\n*Detaylı bilgi için kategori seçin:*')
+                .setThumbnail(interaction.client.user.displayAvatarURL({ size: 256 }))
+                .setImage('https://i.imgur.com/placeholder.png') // Bot banner placeholder
                 .addFields(
                     {
-                        name: '🎵 **Müzik Sistemi**',
-                        value: '`/help kategori:Müzik Sistemi`\n• YouTube & Spotify desteği\n• Gelişmiş kuyruk yönetimi\n• Kaliteli ses deneyimi',
+                        name: '🎵 Müzik Sistemi',
+                        value: '```fix\n/yardım kategori:Müzik Sistemi\n```\n• 🎧 YouTube & Spotify\n• 📝 Kuyruk yönetimi\n• 🎛️ Gelişmiş kontroller\n• 🔊 Yüksek ses kalitesi',
                         inline: true
                     },
                     {
-                        name: '🎫 **Ticket Sistemi**',
-                        value: '`/help kategori:Ticket Sistemi`\n• Destek talepleri\n• Kategorize ticket\'lar\n• Otomatik transcript',
+                        name: '🎫 Ticket Sistemi',
+                        value: '```fix\n/yardım kategori:Ticket Sistemi\n```\n• 🎟️ Destek talepleri\n• 📂 Kategorize sistem\n• 📄 Otomatik transcript\n• 🔔 Bildirimler',
                         inline: true
                     },
                     {
-                        name: '🛡️ **Moderasyon**',
-                        value: '`/help kategori:Moderasyon`\n• Uyarı sistemi\n• Otomatik moderasyon\n• Ban/Kick/Mute araçları',
+                        name: '🛡️ Moderasyon',
+                        value: '```fix\n/yardım kategori:Moderasyon\n```\n• ⚠️ Uyarı sistemi\n• 🤖 Auto-mod\n• 🔨 Ban/Kick/Mute\n• 📋 Mod logs',
                         inline: true
                     },
                     {
-                        name: '💰 **Ekonomi Sistemi**',
-                        value: '`/help kategori:Ekonomi`\n• Para kazanma\n• Günlük ödüller\n• Seviye sistemi',
+                        name: '💰 Ekonomi Sistemi',
+                        value: '```fix\n/yardım kategori:Ekonomi\n```\n• 💵 Para kazanma\n• 🎁 Günlük ödüller\n• 📊 Seviye sistemi\n• 🏪 Mağaza',
                         inline: true
                     },
                     {
-                        name: '🎉 **Çekiliş & Etkinlik**',
-                        value: '`/help kategori:Çekiliş & Etkinlik`\n• Çekiliş oluşturma\n• Otomatik çekiliş\n• Rol verme sistemi',
+                        name: '🎉 Çekiliş & Etkinlik',
+                        value: '```fix\n/yardım kategori:Çekiliş & Etkinlik\n```\n• 🎁 Çekiliş oluşturma\n• ⏰ Otomatik sistem\n• 🎯 Rol gereksinimleri\n• 🏆 Çoklu ödüller',
                         inline: true
                     },
                     {
-                        name: '⚙️ **Yönetim & Ayarlar**',
-                        value: '`/help kategori:Yönetim & Ayarlar`\n• Sunucu ayarları\n• Rol yönetimi\n• Kanal konfigürasyonu',
+                        name: '⚙️ Yönetim & Ayarlar',
+                        value: '```fix\n/yardım kategori:Yönetim & Ayarlar\n```\n• 🎛️ Sunucu ayarları\n• 👑 Rol yönetimi\n• 📝 Kanal ayarları\n• 💾 Yedekleme',
                         inline: true
                     }
                 )
                 .addFields(
                     {
-                        name: '🌟 **Öne Çıkan Özellikler**',
-                        value: '```yaml\n✨ 7/24 Aktif Bot\n🎵 Yüksek Kalite Müzik\n🔒 Güvenli Moderasyon\n💎 Premium Özellikler\n🌐 Web Dashboard\n📱 Mobil Uyumlu\n🔄 Otomatik Güncellemeler\n```',
+                        name: '╔═══ 🌟 Öne Çıkan Özellikler ═══╗',
+                        value: '```diff\n+ ✨ 7/24 Kesintisiz Hizmet\n+ 🎵 Yüksek Kalite Müzik (320kbps)\n+ 🔒 Gelişmiş Güvenlik & SSL\n+ 💎 Premium Özellikler\n+ 🌐 Gerçek Zamanlı Web Dashboard\n+ 📱 Mobil Uyumlu Arayüz\n+ 🔄 Otomatik Güncellemeler\n+ 🤖 AI Destekli Moderasyon\n+ 📊 Detaylı İstatistikler & Analitik\n+ 🌍 Çoklu Dil Desteği\n```',
                         inline: false
-                    },
+                    }
+                )
+                .addFields(
                     {
-                        name: '📈 **Bot İstatistikleri**',
-                        value: `• **Sunucular:** ${interaction.client.guilds.cache.size}\n• **Kullanıcılar:** ${interaction.client.users.cache.size}\n• **Komutlar:** 50+\n• **Uptime:** 99.9%`,
+                        name: '📈 Bot İstatistikleri',
+                        value: `\`\`\`yaml\nSunucular: ${interaction.client.guilds.cache.size}\nKullanıcılar: ${totalUsers.toLocaleString()}\nKomutlar: 43+\nUptime: 99.9%\nPing: ${interaction.client.ws.ping}ms\n\`\`\``,
                         inline: true
                     },
                     {
-                        name: '🔗 **Bağlantılar**',
-                        value: '• [Web Dashboard](http://localhost:3000)\n• [Destek Sunucusu](https://discord.gg/support)\n• [Bot Davet Et](https://discord.com/invite)',
+                        name: '🔗 Bağlantılar',
+                        value: '🌐 [**Web Dashboard**](https://neuroviabot.xyz)\n💬 [**Destek Sunucusu**](https://discord.gg/neurovia)\n➕ [**Bot Davet Et**](https://discord.com/oauth2/authorize?client_id=773539215098249246&scope=bot%20applications.commands&permissions=8)\n📄 [**Dokümantasyon**](https://docs.neuroviabot.xyz)',
+                        inline: true
+                    },
+                    {
+                        name: '💡 Hızlı Başlangıç',
+                        value: '```fix\n1. /setup - Bot kurulumu\n2. /yardım kategori:... - Kategori seçin\n3. /config - Ayarları düzenleyin\n4. Web Dashboard\'u kullanın\n```',
                         inline: true
                     }
                 )
                 .setFooter({ 
-                    text: `NeuroViaBot v2.0 • ${interaction.client.guilds.cache.size} sunucu • ${interaction.client.guilds.cache.reduce((a, g) => a + g.memberCount, 0).toLocaleString()} kullanıcı`,
+                    text: `NeuroViaBot v2.0 • ${interaction.client.guilds.cache.size} sunucu • ${totalUsers.toLocaleString()} kullanıcı • neuroviabot.xyz`,
                     iconURL: interaction.client.user.displayAvatarURL({ size: 32 })
                 })
                 .setTimestamp();
@@ -260,7 +269,7 @@ module.exports = {
                         },
                         {
                             name: '🌐 **Web Dashboard**',
-                            value: '• Gelişmiş web paneli\n• Grafik ve istatistikler\n• Uzaktan yönetim\n• Mobil uyumlu\n• Gerçek zamanlı güncellemeler',
+                            value: '• **[neuroviabot.xyz](https://neuroviabot.xyz)** - Gelişmiş web paneli\n• Gerçek zamanlı istatistikler ve analitik\n• Uzaktan sunucu yönetimi\n• Mobil uyumlu responsive tasarım\n• Discord OAuth ile güvenli giriş\n• Anlık ayar değişiklikleri',
                             inline: false
                         }
                     );
@@ -289,7 +298,7 @@ module.exports = {
                         },
                         {
                             name: '🎯 **Hızlı Erişim**',
-                            value: '• `/help` - Bu yardım menüsü\n• Web Dashboard: [localhost:3000](http://localhost:3000)\n• Destek: [Discord Sunucusu](https://discord.gg/support)\n• Durum: [Bot Status](http://status.bot.com)',
+                            value: '• `/yardım` - Bu yardım menüsü\n• Web Dashboard: [neuroviabot.xyz](https://neuroviabot.xyz)\n• Destek: [Discord Sunucusu](https://discord.gg/neurovia)\n• Dokümantasyon: [docs.neuroviabot.xyz](https://docs.neuroviabot.xyz)',
                             inline: false
                         }
                     );
@@ -303,7 +312,7 @@ module.exports = {
         }
 
         helpEmbed.setFooter({ 
-            text: 'Ana menüye dönmek için /help komutunu kullan | Bot v1.0.0',
+            text: 'Ana menüye dönmek için /yardım komutunu kullan | NeuroViaBot v2.0 | neuroviabot.xyz',
             iconURL: interaction.client.user.displayAvatarURL()
         })
         .setTimestamp();
