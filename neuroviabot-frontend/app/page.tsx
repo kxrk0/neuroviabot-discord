@@ -23,31 +23,109 @@ import {
 export default function Home() {
   const [stats, setStats] = useState({ guilds: 66, users: 59032, commands: 43 });
   const [mounted, setMounted] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     setMounted(true);
     fetchBotStats()
       .then(data => setStats(data))
       .catch(() => setStats({ guilds: 66, users: 59032, commands: 43 }));
+
+    // Paralax mouse tracking
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 z-0">
-        {/* Gradient Orbs */}
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      {/* Animated Background with Paralax */}
+      <motion.div 
+        className="fixed inset-0 z-0"
+        style={{
+          x: mousePosition.x,
+          y: mousePosition.y
+        }}
+        transition={{ type: "spring", stiffness: 100, damping: 30 }}
+      >
+        {/* Gradient Orbs with stagger animation */}
+        <motion.div 
+          className="absolute top-0 -left-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-0 -right-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, -50, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+        <motion.div 
+          className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+          animate={{
+            scale: [1, 1.4, 1],
+            x: [0, 30, 0],
+            y: [0, -40, 0],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
+        
+        {/* Floating particles */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-purple-400 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -100, 0],
+              opacity: [0, 1, 0],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 3,
+            }}
+          />
+        ))}
         
         {/* Grid Pattern */}
         <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(rgba(88, 101, 242, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(88, 101, 242, 0.03) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
+          backgroundImage: `linear-gradient(rgba(88, 101, 242, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(88, 101, 242, 0.02) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px',
+          maskImage: 'radial-gradient(ellipse 80% 50% at 50% 50%, black 40%, transparent 100%)'
         }}></div>
-      </div>
+      </motion.div>
 
       {/* Modern Navbar */}
       <nav className="navbar scrolled relative z-50 animate-slide-down">
@@ -104,18 +182,38 @@ export default function Home() {
             <SparklesIcon className="w-4 h-4 text-purple-400" />
           </motion.div>
 
-          {/* Main Title */}
+          {/* Main Title with 3D effect */}
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-6xl md:text-8xl font-black mb-6 leading-tight"
+            initial={{ opacity: 0, y: 30, rotateX: -20 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 0.3,
+              type: "spring",
+              stiffness: 100
+            }}
+            className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 leading-tight perspective-1000"
+            style={{
+              textShadow: '0 0 80px rgba(139, 92, 246, 0.5)',
+            }}
           >
-            <span className="text-white">Discord İçin</span>
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-gradient-x">
+            <motion.span 
+              className="text-white block"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              Discord İçin
+            </motion.span>
+            <motion.span 
+              className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-[length:200%_auto] animate-gradient-x block"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              style={{
+                filter: 'drop-shadow(0 0 30px rgba(168, 85, 247, 0.4))',
+              }}
+            >
               En Gelişmiş Bot
-            </span>
+            </motion.span>
           </motion.h1>
 
           {/* Description */}
@@ -129,30 +227,35 @@ export default function Home() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-semibold"> 40+ güçlü özellik</span> ile sunucunuzu bir üst seviyeye taşıyın.
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons with enhanced effects */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20"
           >
             <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
+              whileHover={{ scale: 1.08, y: -5 }}
               whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <a href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246" className="group relative inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/50">
-                <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                <RocketLaunchIcon className="w-6 h-6 relative z-10" />
+              <a href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246" className="group relative inline-flex items-center gap-3 px-10 py-5 text-lg font-bold text-white bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 rounded-2xl overflow-hidden transition-all duration-500 shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/60">
+                {/* Animated background */}
+                <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                {/* Shine effect */}
+                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></span>
+                <RocketLaunchIcon className="w-6 h-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="relative z-10">Hemen Başla</span>
-                <BoltIcon className="w-6 h-6 relative z-10 group-hover:rotate-12 transition-transform" />
+                <BoltIcon className="w-6 h-6 relative z-10 group-hover:rotate-45 transition-transform duration-300" />
               </a>
             </motion.div>
             <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
+              whileHover={{ scale: 1.08, y: -5 }}
               whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <Link href="#features" className="inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-xl backdrop-blur-xl transition-all duration-300">
-                <SparklesIcon className="w-6 h-6" />
+              <Link href="#features" className="group inline-flex items-center gap-3 px-10 py-5 text-lg font-bold text-white bg-white/5 hover:bg-white/10 border-2 border-white/10 hover:border-purple-500/50 rounded-2xl backdrop-blur-2xl transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-purple-500/20">
+                <SparklesIcon className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
                 Özellikleri Keşfet
               </Link>
             </motion.div>
