@@ -338,36 +338,32 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section - Modern */}
-      <section className="relative z-10 py-32 px-6">
-        <div className="max-w-4xl mx-auto text-center">
+      {/* CTA Section - Simplified */}
+      <section className="relative z-10 py-24 px-6">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="relative p-12 rounded-3xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-xl overflow-hidden"
+            className="relative p-10 rounded-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-xl"
           >
-            {/* Animated background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-pink-600/20 animate-gradient-x"></div>
-            
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-                Hazır mısınız?
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
+                Hadi Başlayalım! 🚀
               </h2>
-              <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-                NeuroViaBot ile Discord sunucunuzu dönüştürün ve topluluğunuzu bir üst seviyeye taşıyın
+              <p className="text-lg text-gray-300 mb-8">
+                Kurulum 30 saniye sürüyor. Ücretsiz, kredi kartı gerekmez!
               </p>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+              <motion.a
+                href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg hover:shadow-xl hover:shadow-purple-500/50 transition-all duration-300"
               >
-                <a href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246" className="inline-flex items-center gap-3 px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300">
-                  <RocketLaunchIcon className="w-7 h-7" />
-                  Şimdi Başla
-                  <BoltIcon className="w-7 h-7" />
-                </a>
-              </motion.div>
+                <RocketLaunchIcon className="w-6 h-6" />
+                <span>Şimdi Dene</span>
+              </motion.a>
             </div>
           </motion.div>
         </div>
