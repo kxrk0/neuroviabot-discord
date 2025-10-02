@@ -198,9 +198,10 @@ export default function Home() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setFeaturesOpen(false)} />
                     <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, scaleX: 0, originX: 0 }}
+                      animate={{ opacity: 1, scaleX: 1 }}
+                      exit={{ opacity: 0, scaleX: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
                       className="absolute top-full left-0 mt-2 w-80 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
                     >
                       <div className="p-3">
@@ -281,9 +282,10 @@ export default function Home() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setResourcesOpen(false)} />
                     <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, scaleX: 0, originX: 0 }}
+                      animate={{ opacity: 1, scaleX: 1 }}
+                      exit={{ opacity: 0, scaleX: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
                       className="absolute top-full left-0 mt-2 w-80 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
                     >
                       <div className="p-3">
@@ -371,9 +373,10 @@ export default function Home() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setLanguageOpen(false)} />
                     <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, scaleX: 0, originX: 1 }}
+                      animate={{ opacity: 1, scaleX: 1 }}
+                      exit={{ opacity: 0, scaleX: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
                       className="absolute top-full right-0 mt-2 w-40 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
                     >
                       <div className="p-1">
