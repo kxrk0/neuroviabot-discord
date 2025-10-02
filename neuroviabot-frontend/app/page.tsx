@@ -181,7 +181,7 @@ export default function Home() {
 
             {/* Center Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {/* Features Dropdown - MEE6 Style */}
+              {/* Features Dropdown - Ultra Modern */}
               <div className="relative">
                 <button 
                   onClick={() => {
@@ -202,70 +202,161 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 mt-2 w-[700px] bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                      className="absolute top-full left-0 mt-2 w-[750px] bg-[#13151f]/98 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl z-50 overflow-hidden"
                     >
-                      <div className="p-4">
-                        <div className="grid grid-cols-2 gap-4">
+                      {/* Animated Gradient Border */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 rounded-3xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
+                      
+                      <div className="relative p-5">
+                        <div className="grid grid-cols-2 gap-3">
                           {/* Left Column */}
-                          <div className="space-y-1">
-                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
-                                <ShieldCheckIcon className="w-4 h-4 text-purple-400" />
+                          <div className="space-y-2">
+                            <motion.a 
+                              href="#features" 
+                              onClick={() => setFeaturesOpen(false)} 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.05 }}
+                              whileHover={{ x: 4, scale: 1.02 }}
+                              className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-purple-500/10 hover:to-blue-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-purple-500/30 overflow-hidden"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
+                              <motion.div 
+                                whileHover={{ rotate: 5, scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                                className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-purple-500/50"
+                              >
+                                <ShieldCheckIcon className="w-6 h-6 text-purple-400" />
+                              </motion.div>
+                              <div className="relative flex-1">
+                                <div className="font-bold text-base mb-1.5 flex items-center gap-2">
+                                  Moderasyon & Sunucu
+                                  <span className="text-[9px] px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full font-semibold">Popüler</span>
+                                </div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Karşılama, Özel Komutlar, Tepki Rol, Auto-Mod...</div>
                               </div>
-                              <div>
-                                <div className="font-bold text-sm mb-0.5">Moderasyon & Sunucu Yönetimi</div>
-                                <div className="text-xs text-gray-400 leading-relaxed">Karşılama, Özel Komutlar, Tepki Rol, Moderatör...</div>
+                            </motion.a>
+
+                            <motion.a 
+                              href="#features" 
+                              onClick={() => setFeaturesOpen(false)} 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1 }}
+                              whileHover={{ x: 4, scale: 1.02 }}
+                              className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-blue-500/10 hover:to-cyan-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-blue-500/30 overflow-hidden"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 transition-all duration-500" />
+                              <motion.div 
+                                whileHover={{ rotate: -5, scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                                className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-blue-500/50"
+                              >
+                                <CommandLineIcon className="w-6 h-6 text-blue-400" />
+                              </motion.div>
+                              <div className="relative flex-1">
+                                <div className="font-bold text-base mb-1.5">Araçlar & Utilities</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Embed Builder, Arama, Timer, Stats, Logs...</div>
                               </div>
-                            </a>
-                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
-                                <CommandLineIcon className="w-4 h-4 text-blue-400" />
+                            </motion.a>
+
+                            <motion.a 
+                              href="#features" 
+                              onClick={() => setFeaturesOpen(false)} 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.15 }}
+                              whileHover={{ x: 4, scale: 1.02 }}
+                              className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-pink-500/10 hover:to-rose-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-pink-500/30 overflow-hidden"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/5 group-hover:to-rose-500/5 transition-all duration-500" />
+                              <motion.div 
+                                whileHover={{ rotate: 5, scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                                className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-pink-500/50"
+                              >
+                                <BoltIcon className="w-6 h-6 text-pink-400" />
+                              </motion.div>
+                              <div className="relative flex-1">
+                                <div className="font-bold text-base mb-1.5">Sosyal Medya</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Twitch, YouTube, X, RSS Notifications...</div>
                               </div>
-                              <div>
-                                <div className="font-bold text-sm mb-0.5">Araçlar</div>
-                                <div className="text-xs text-gray-400 leading-relaxed">Gömülü mesajlar, Arama, Kayıt, Zamanlayıcı...</div>
-                              </div>
-                            </a>
-                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                              <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
-                                <BoltIcon className="w-4 h-4 text-pink-400" />
-                              </div>
-                              <div>
-                                <div className="font-bold text-sm mb-0.5">Sosyal Medya Bildirimleri</div>
-                                <div className="text-xs text-gray-400 leading-relaxed">Twitch, YouTube, Twitter, RSS, Reddit...</div>
-                              </div>
-                            </a>
+                            </motion.a>
                           </div>
 
                           {/* Right Column */}
-                          <div className="space-y-1">
-                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
-                                <MusicalNoteIcon className="w-4 h-4 text-green-400" />
+                          <div className="space-y-2">
+                            <motion.a 
+                              href="#features" 
+                              onClick={() => setFeaturesOpen(false)} 
+                              initial={{ opacity: 0, x: 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.05 }}
+                              whileHover={{ x: -4, scale: 1.02 }}
+                              className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-green-500/10 hover:to-emerald-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-green-500/30 overflow-hidden"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/5 group-hover:to-emerald-500/5 transition-all duration-500" />
+                              <motion.div 
+                                whileHover={{ rotate: -5, scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                                className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-green-500/50"
+                              >
+                                <MusicalNoteIcon className="w-6 h-6 text-green-400" />
+                              </motion.div>
+                              <div className="relative flex-1">
+                                <div className="font-bold text-base mb-1.5 flex items-center gap-2">
+                                  Katılım & Eğlence
+                                  <span className="text-[9px] px-2 py-0.5 bg-green-500/20 text-green-300 rounded-full font-semibold">Yeni</span>
+                                </div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Seviye, Giveaway, Games, Müzik...</div>
                               </div>
-                              <div>
-                                <div className="font-bold text-sm mb-0.5">Katılım ve Eğlence</div>
-                                <div className="text-xs text-gray-400 leading-relaxed">Seviye, Doğum Günü, Çekilişler, Müzik...</div>
+                            </motion.a>
+
+                            <motion.a 
+                              href="#features" 
+                              onClick={() => setFeaturesOpen(false)} 
+                              initial={{ opacity: 0, x: 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1 }}
+                              whileHover={{ x: -4, scale: 1.02 }}
+                              className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-cyan-500/10 hover:to-teal-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-cyan-500/30 overflow-hidden"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/5 group-hover:to-teal-500/5 transition-all duration-500" />
+                              <motion.div 
+                                whileHover={{ rotate: 5, scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                                className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-cyan-500/50"
+                              >
+                                <SparklesIcon className="w-6 h-6 text-cyan-400" />
+                              </motion.div>
+                              <div className="relative flex-1">
+                                <div className="font-bold text-base mb-1.5">Bot Kişiselleştirme</div>
+                                <div className="text-xs text-gray-400 leading-relaxed">Avatar, İsim, AI Kişilik, Custom Branding...</div>
                               </div>
-                            </a>
-                            <a href="#features" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
-                                <SparklesIcon className="w-4 h-4 text-cyan-400" />
+                            </motion.a>
+
+                            <motion.a 
+                              href="#premium" 
+                              onClick={() => setFeaturesOpen(false)} 
+                              initial={{ opacity: 0, x: 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.15 }}
+                              whileHover={{ x: -4, scale: 1.02 }}
+                              className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-gradient-to-br from-yellow-500/10 to-amber-500/10 rounded-2xl transition-all duration-300 border border-yellow-500/30 hover:border-yellow-500/50 overflow-hidden shadow-lg hover:shadow-yellow-500/25"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-amber-500/5 group-hover:from-yellow-500/10 group-hover:to-amber-500/10 transition-all duration-500" />
+                              <motion.div 
+                                whileHover={{ rotate: 360 }}
+                                transition={{ duration: 0.6 }}
+                                className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/30 to-amber-500/30 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-yellow-500/50"
+                              >
+                                <span className="text-2xl">👑</span>
+                              </motion.div>
+                              <div className="relative flex-1">
+                                <div className="font-bold text-base mb-1.5 text-yellow-300">Premium Abonelik</div>
+                                <div className="text-xs text-yellow-200/70 leading-relaxed">Tüm özelliklere sınırsız erişim</div>
                               </div>
-                              <div>
-                                <div className="font-bold text-sm mb-0.5">Bot Kişiselleştirici</div>
-                                <div className="text-xs text-gray-400 leading-relaxed">Avatar, isim, yapay zeka tabanlı...</div>
-                              </div>
-                            </a>
-                            <a href="#premium" onClick={() => setFeaturesOpen(false)} className="flex items-start gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500/20 transition-colors">
-                                <span className="text-lg">👑</span>
-                              </div>
-                              <div>
-                                <div className="font-bold text-sm mb-0.5">Premium Abonelik</div>
-                                <div className="text-xs text-gray-400 leading-relaxed">Tüm özelliklere erişim için Premium'a yükseltin</div>
-                              </div>
-                            </a>
+                            </motion.a>
                           </div>
                         </div>
                       </div>
@@ -274,7 +365,7 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Resources Dropdown - MEE6 Style */}
+              {/* Resources Dropdown - Ultra Modern */}
               <div className="relative">
                 <button 
                   onClick={() => {
@@ -295,78 +386,166 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 mt-2 w-[700px] bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                      className="absolute top-full left-0 mt-2 w-[750px] bg-[#13151f]/98 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl z-50 overflow-hidden"
                     >
-                      <div className="p-4">
-                        <div className="grid grid-cols-2 gap-6">
+                      {/* Animated Gradient Border */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-teal-500/20 rounded-3xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
+                      
+                      <div className="relative p-5">
+                        <div className="grid grid-cols-2 gap-3">
                           {/* Left Column - Destek */}
                           <div>
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">Destek</h3>
-                            <div className="space-y-1">
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                                <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
-                                  <span className="text-lg">📚</span>
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 px-4">🛟 Destek</h3>
+                            <div className="space-y-2">
+                              <motion.a 
+                                href="#" 
+                                onClick={() => setResourcesOpen(false)} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.05 }}
+                                whileHover={{ x: 4, scale: 1.02 }}
+                                className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-purple-500/10 hover:to-blue-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-purple-500/30 overflow-hidden"
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
+                                <motion.div 
+                                  whileHover={{ rotate: -10, scale: 1.1 }}
+                                  transition={{ type: "spring", stiffness: 300 }}
+                                  className="relative text-3xl"
+                                >
+                                  📚
+                                </motion.div>
+                                <div className="relative flex-1">
+                                  <div className="font-bold text-base mb-1.5 flex items-center gap-2">
+                                    Öğretici & Rehberler
+                                    <span className="text-[9px] px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full font-semibold">Güncellendi</span>
+                                  </div>
+                                  <div className="text-xs text-gray-400 leading-relaxed">Başlangıç, komutlar ve ileri seviye kullanım...</div>
                                 </div>
-                                <div>
-                                  <div className="font-bold text-sm mb-0.5">Öğretici</div>
-                                  <div className="text-xs text-gray-400">Discord'da Neurovia'nın nasıl kullanılacağı...</div>
+                              </motion.a>
+
+                              <motion.a 
+                                href="#" 
+                                onClick={() => setResourcesOpen(false)} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 }}
+                                whileHover={{ x: 4, scale: 1.02 }}
+                                className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-blue-500/10 hover:to-cyan-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-blue-500/30 overflow-hidden"
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 transition-all duration-500" />
+                                <motion.div 
+                                  whileHover={{ scale: 1.15 }}
+                                  transition={{ type: "spring", stiffness: 300 }}
+                                  className="relative text-3xl"
+                                >
+                                  📖
+                                </motion.div>
+                                <div className="relative flex-1">
+                                  <div className="font-bold text-base mb-1.5">Dokümantasyon</div>
+                                  <div className="text-xs text-gray-400 leading-relaxed">API referansı, örnekler, bilgi bankası...</div>
                                 </div>
-                              </a>
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
-                                  <span className="text-lg">📖</span>
+                              </motion.a>
+
+                              <motion.a 
+                                href="https://discord.gg/neurovia" 
+                                onClick={() => setResourcesOpen(false)} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.15 }}
+                                whileHover={{ x: 4, scale: 1.02 }}
+                                className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl transition-all duration-300 border border-indigo-500/30 hover:border-indigo-500/50 overflow-hidden shadow-lg hover:shadow-indigo-500/25"
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 group-hover:from-indigo-500/10 group-hover:to-purple-500/10 transition-all duration-500" />
+                                <motion.div 
+                                  whileHover={{ scale: 1.1 }}
+                                  transition={{ type: "spring", stiffness: 300 }}
+                                  className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-indigo-500/50"
+                                >
+                                  <ServerIcon className="w-6 h-6 text-indigo-300" />
+                                </motion.div>
+                                <div className="relative flex-1">
+                                  <div className="font-bold text-base mb-1.5 text-indigo-300">Discord Sunucusu</div>
+                                  <div className="text-xs text-indigo-200/70 leading-relaxed">Canlı destek ve topluluk</div>
                                 </div>
-                                <div>
-                                  <div className="font-bold text-sm mb-0.5">Destek Portalı</div>
-                                  <div className="text-xs text-gray-400">Bilgi bankası ve yardımcı materyaller</div>
-                                </div>
-                              </a>
-                              <a href="https://discord.gg/neurovia" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
-                                  <ServerIcon className="w-4 h-4 text-indigo-400" />
-                                </div>
-                                <div>
-                                  <div className="font-bold text-sm mb-0.5">Discord Sunucusu</div>
-                                  <div className="text-xs text-gray-400">İhtiyacınız olabilecek tüm yardımları alın</div>
-                                </div>
-                              </a>
+                              </motion.a>
                             </div>
                           </div>
 
                           {/* Right Column - Şirket */}
                           <div>
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">Şirket</h3>
-                            <div className="space-y-1">
-                              <a href="/servers" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
-                                  <span className="text-lg">💼</span>
-                                </div>
-                                <div>
-                                  <div className="font-bold text-sm mb-0.5 flex items-center gap-2">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 px-4">🏢 Şirket</h3>
+                            <div className="space-y-2">
+                              <motion.a 
+                                href="/servers" 
+                                onClick={() => setResourcesOpen(false)} 
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.05 }}
+                                whileHover={{ x: -4, scale: 1.02 }}
+                                className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-2xl transition-all duration-300 border border-green-500/30 hover:border-green-500/50 overflow-hidden shadow-lg hover:shadow-green-500/25"
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all duration-500" />
+                                <motion.div 
+                                  whileHover={{ scale: 1.1, rotate: 5 }}
+                                  transition={{ type: "spring", stiffness: 300 }}
+                                  className="relative text-3xl"
+                                >
+                                  💼
+                                </motion.div>
+                                <div className="relative flex-1">
+                                  <div className="font-bold text-base mb-1.5 flex items-center gap-2 text-green-300">
                                     Kariyer
-                                    <span className="text-[9px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded font-semibold">İşe alıyoruz!</span>
+                                    <span className="text-[9px] px-2 py-0.5 bg-green-500/30 text-green-200 rounded-full font-semibold animate-pulse">İşe alıyoruz!</span>
                                   </div>
-                                  <div className="text-xs text-gray-400">Harika topluluklar için araçlar oluşturun</div>
+                                  <div className="text-xs text-green-200/70 leading-relaxed">Milyonlarca kullanıcı için araçlar oluştur</div>
                                 </div>
-                              </a>
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                                <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
-                                  <span className="text-lg">🐛</span>
+                              </motion.a>
+
+                              <motion.a 
+                                href="#" 
+                                onClick={() => setResourcesOpen(false)} 
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 }}
+                                whileHover={{ x: -4, scale: 1.02 }}
+                                className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-pink-500/10 hover:to-rose-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-pink-500/30 overflow-hidden"
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/5 group-hover:to-rose-500/5 transition-all duration-500" />
+                                <motion.div 
+                                  whileHover={{ rotate: 360 }}
+                                  transition={{ duration: 0.6 }}
+                                  className="relative text-3xl"
+                                >
+                                  🐛
+                                </motion.div>
+                                <div className="relative flex-1">
+                                  <div className="font-bold text-base mb-1.5">Bug Bounty</div>
+                                  <div className="text-xs text-gray-400 leading-relaxed">Güvenlik açıklarını bul, ödül kazan!</div>
                                 </div>
-                                <div>
-                                  <div className="font-bold text-sm mb-0.5">Hata Ödül Programı</div>
-                                  <div className="text-xs text-gray-400">Bazı güzel ödüllere giden yolu hackleyin</div>
+                              </motion.a>
+
+                              <motion.a 
+                                href="#" 
+                                onClick={() => setResourcesOpen(false)} 
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.15 }}
+                                whileHover={{ x: -4, scale: 1.02 }}
+                                className="relative group flex items-start gap-4 px-4 py-4 text-gray-300 hover:text-white bg-white/0 hover:bg-gradient-to-br hover:from-cyan-500/10 hover:to-teal-500/10 rounded-2xl transition-all duration-300 border border-transparent hover:border-cyan-500/30 overflow-hidden"
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/5 group-hover:to-teal-500/5 transition-all duration-500" />
+                                <motion.div 
+                                  whileHover={{ scale: 1.15 }}
+                                  transition={{ type: "spring", stiffness: 300 }}
+                                  className="relative text-3xl"
+                                >
+                                  ✉️
+                                </motion.div>
+                                <div className="relative flex-1">
+                                  <div className="font-bold text-base mb-1.5">Bize Ulaşın</div>
+                                  <div className="text-xs text-gray-400 leading-relaxed">Sorularınız için 7/24 buradayız!</div>
                                 </div>
-                              </a>
-                              <a href="#" onClick={() => setResourcesOpen(false)} className="flex items-start gap-3 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
-                                  <span className="text-lg">✉️</span>
-                                </div>
-                                <div>
-                                  <div className="font-bold text-sm mb-0.5">Bize ulaşın</div>
-                                  <div className="text-xs text-gray-400">Biz güzeliz ve arkadaş canlısıyız!</div>
-                                </div>
-                              </a>
+                              </motion.a>
                             </div>
                           </div>
                         </div>
