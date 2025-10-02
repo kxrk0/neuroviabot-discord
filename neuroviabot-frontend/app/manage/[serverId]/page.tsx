@@ -294,10 +294,71 @@ export default function ServerDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#23272f]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-300 text-lg font-medium">Yükleniyor...</p>
+      <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="fixed inset-0 z-0">
+          <motion.div 
+            className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+            animate={{
+              scale: [1, 1.2, 1],
+              x: [0, 50, 0],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div 
+            className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+            animate={{
+              scale: [1, 1.3, 1],
+              x: [0, -50, 0],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
+            }}
+          />
+        </div>
+
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center gap-6 p-8 rounded-2xl bg-gray-900/50 backdrop-blur-xl border border-white/10"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
+            />
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-white mb-2">Ayarlar Yükleniyor</h3>
+              <p className="text-gray-400">Sunucu ayarları getiriliyor...</p>
+            </div>
+            <div className="flex gap-2">
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 bg-purple-500 rounded-full"
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                  }}
+                />
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -306,9 +367,43 @@ export default function ServerDashboard() {
   const currentCategory = categories.find(c => c.id === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#23272f]">
+    <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative">
+      {/* Animated Background */}
+      <div className="fixed inset-0 z-0">
+        <motion.div 
+          className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, -50, 0],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+      </div>
+
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 h-16 bg-[#2c2f38] border-b border-white/10 z-50 flex items-center justify-between px-6">
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+        className="fixed top-0 left-0 right-0 h-16 bg-gray-900/80 backdrop-blur-xl border-b border-white/10 z-50 flex items-center justify-between px-6 shadow-xl"
+      >
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -386,45 +481,84 @@ export default function ServerDashboard() {
         </div>
       </nav>
 
-      <div className="flex pt-16">
-        {/* Sidebar */}
-        <aside className="fixed left-0 top-16 bottom-0 w-64 bg-[#2c2f38] border-r border-white/10 overflow-y-auto">
-          {/* Server Info */}
-          <div className="p-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white text-xl font-black">
-                  {guild?.name?.charAt(0) || 'S'}
-                </span>
-              </div>
+      <div className="flex pt-16 relative z-10">
+        {/* Sidebar with smooth animations */}
+        <motion.aside 
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+          className="fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 overflow-y-auto shadow-2xl"
+        >
+          {/* Server Info with gradient */}
+          <motion.div 
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="p-6 border-b border-white/10 bg-gradient-to-br from-purple-500/10 to-blue-500/10"
+          >
+            <div className="flex items-center gap-4">
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl blur-md opacity-50"></div>
+                <div className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center border-2 border-white/20">
+                  <span className="text-white text-2xl font-black">
+                    {guild?.name?.charAt(0) || 'S'}
+                  </span>
+                </div>
+              </motion.div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-white font-bold text-sm truncate">{guild?.name || 'Server'}</h3>
-                <p className="text-gray-400 text-xs">{guild?.memberCount || 0} üye</p>
+                <h3 className="text-white font-bold text-base truncate">{guild?.name || 'Server'}</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <p className="text-gray-400 text-sm">{guild?.memberCount || 0} üye</p>
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Categories */}
-          <div className="p-2">
-            {categories.map((category) => {
+          {/* Categories with stagger animation */}
+          <div className="p-3">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Kategoriler</p>
+            {categories.map((category, index) => {
               const Icon = category.icon;
               const isActive = activeCategory === category.id;
               return (
-                <button
+                <motion.button
                   key={category.id}
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
+                  whileHover={{ scale: 1.02, x: 4 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setActiveCategory(category.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all mb-1 ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all mb-2 relative group ${
                     isActive
-                      ? 'bg-gradient-to-r ' + category.color + ' text-white shadow-lg'
+                      ? 'bg-gradient-to-r ' + category.color + ' text-white shadow-lg shadow-purple-500/20'
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
+                  {/* Indicator line */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeIndicator"
+                      className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   <span className="font-semibold text-sm flex-1 text-left">{category.name}</span>
                   {category.premium && (
-                    <SparklesIcon className="w-4 h-4 text-yellow-400" />
+                    <motion.div
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <SparklesIcon className="w-4 h-4 text-yellow-400" />
+                    </motion.div>
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </div>
