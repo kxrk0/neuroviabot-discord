@@ -167,7 +167,7 @@ export default function Home() {
             {/* Logo - Hero Style */}
             <Link href="/" className="relative flex items-center gap-3 group z-10">
               {/* Logo Glow Effect */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500"></div>
+              <div className="absolute -inset-2 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-200"></div>
               
               <motion.div 
                 whileHover={{ rotate: 360 }}
@@ -334,7 +334,7 @@ export default function Home() {
                 className="relative group flex items-center gap-2.5 px-6 py-3 text-sm font-bold overflow-hidden rounded-xl transition-all shadow-lg hover:shadow-xl"
               >
                 {/* Background with gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] to-[#7289DA] transition-all duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] to-[#7289DA] transition-all duration-150"></div>
                 
                 {/* Animated glow */}
                 <motion.div
@@ -731,7 +731,7 @@ export default function Home() {
 
       {/* Features Section - Compact Hero Style */}
       <section id="features" className="relative z-1 py-20 lg:py-28" style={{
-        background: 'linear-gradient(rgb(33, 32, 54) 0%, rgb(51, 40, 62) 30%, rgb(98, 61, 83) 60%, rgb(140, 81, 102) 100%)'
+        background: 'linear-gradient(rgb(19, 21, 31) -4.84%, rgb(29, 28, 47) 34.9%, rgb(33, 32, 54) 48.6%, rgb(51, 40, 62) 66.41%, rgb(98, 61, 83) 103.41%, rgb(140, 81, 102) 132.18%)'
       }}>
         {/* Forest Bottom */}
         <div className="absolute w-full h-full left-0 pointer-events-none overflow-hidden">
@@ -777,9 +777,9 @@ export default function Home() {
                 y: -8,
                 transition: { duration: 0.2 }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/40 transition-all duration-300"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/40 transition-all duration-150"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/10 group-hover:to-blue-500/10 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/10 group-hover:to-blue-500/10 transition-all duration-200"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -815,9 +815,9 @@ export default function Home() {
                 y: -8,
                 transition: { duration: 0.2 }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/40 transition-all duration-300"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/40 transition-all duration-150"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-200"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: -5 }}
@@ -853,9 +853,9 @@ export default function Home() {
             y: -8,
             transition: { duration: 0.2 }
           }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/40 transition-all duration-300"
+          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/40 transition-all duration-150"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all duration-200"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -891,9 +891,9 @@ export default function Home() {
                 y: -8,
                 transition: { duration: 0.2 }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/40 transition-all duration-300"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/40 transition-all duration-150"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/10 group-hover:to-orange-500/10 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/10 group-hover:to-orange-500/10 transition-all duration-200"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: -5 }}
@@ -929,9 +929,9 @@ export default function Home() {
                 y: -8,
                 transition: { duration: 0.2 }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/40 transition-all duration-300"
+              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/40 transition-all duration-150"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/10 group-hover:to-rose-500/10 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/10 group-hover:to-rose-500/10 transition-all duration-200"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -967,9 +967,9 @@ export default function Home() {
             y: -8,
             transition: { duration: 0.2 }
           }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/40 transition-all duration-300"
+          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/40 transition-all duration-150"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/10 group-hover:to-teal-500/10 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/10 group-hover:to-teal-500/10 transition-all duration-200"></div>
               <div className="relative p-6">
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: -5 }}
