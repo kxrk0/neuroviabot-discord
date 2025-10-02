@@ -14,7 +14,10 @@ const PORT = process.env.PORT || 5000;
 
 // Discord Bot Client (for reading guild data, not for bot commands)
 const botClient = new Client({
-  intents: [GatewayIntentBits.Guilds],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers, // Needed for memberCount
+  ],
 });
 
 // Login to Discord with bot token (use DISCORD_TOKEN if DISCORD_BOT_TOKEN is not set)
