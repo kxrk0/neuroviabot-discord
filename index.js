@@ -4,7 +4,7 @@
 
 // Environment variables yükleme
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, Collection, REST, Routes, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -47,6 +47,11 @@ const client = new Client({
         GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.DirectMessages,
         GatewayIntentBits.GuildPresences
+    ],
+    partials: [
+        Partials.Message,
+        Partials.Channel,
+        Partials.Reaction
     ]
 });
 

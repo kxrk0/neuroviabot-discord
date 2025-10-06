@@ -11,7 +11,9 @@ const { getDatabase } = require('../database/simple-db');
  */
 async function logMessageDelete(message) {
     try {
-        if (!message.guild || message.author.bot) return;
+        if (!message.guild) return;
+        if (!message.author) return; // Author null olabilir (partial message)
+        if (message.author.bot) return;
         
         const db = getDatabase();
         const settings = db.getGuildSettings(message.guild.id);
@@ -27,7 +29,7 @@ async function logMessageDelete(message) {
             .setTitle('🗑️ Mesaj Silindi')
             .setDescription(`**Kanal:** ${message.channel}\n**Yazar:** ${message.author}`)
             .addFields(
-                { name: '📝 İçerik', value: message.content.substring(0, 1024) || '*İçerik yok*' },
+                { name: '📝 İçerik', value: message.content?.substring(0, 1024) || '*İçerik yok*' },
                 { name: '📅 Tarih', value: new Date().toLocaleString('tr-TR'), inline: true },
                 { name: '🆔 Mesaj ID', value: message.id, inline: true }
             )
@@ -38,7 +40,7 @@ async function logMessageDelete(message) {
         
         logger.info(`[Logging] Message deleted: ${message.author.tag} in ${message.guild.name}`);
     } catch (error) {
-        logger.error('❌ Message delete logging hatası', error);
+        console.error('[Logging] Message delete error:', error.message);
     }
 }
 
@@ -47,7 +49,9 @@ async function logMessageDelete(message) {
  */
 async function logMessageUpdate(oldMessage, newMessage) {
     try {
-        if (!newMessage.guild || newMessage.author.bot) return;
+        if (!newMessage.guild) return;
+        if (!newMessage.author) return; // Author null olabilir
+        if (newMessage.author.bot) return;
         if (oldMessage.content === newMessage.content) return; // İçerik değişmediyse logla
         
         const db = getDatabase();
@@ -74,7 +78,7 @@ async function logMessageUpdate(oldMessage, newMessage) {
         
         logger.info(`[Logging] Message edited: ${newMessage.author.tag} in ${newMessage.guild.name}`);
     } catch (error) {
-        logger.error('❌ Message edit logging hatası', error);
+        console.error('[Logging] Message edit error:', error.message);
     }
 }
 

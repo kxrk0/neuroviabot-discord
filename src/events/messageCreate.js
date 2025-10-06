@@ -168,7 +168,7 @@ async function handleAutoModeration(message) {
                 logger.info(`[Auto-Mod] Message deleted from ${message.author.tag}: ${reason}`);
                 return false; // Mesaj silindi, işleme devam etme
             } catch (error) {
-                console.error('❌ Auto-mod handler hatası');
+                console.error('[Auto-Mod] Error:', error.message);
                 return true;
             }
         }
@@ -176,7 +176,7 @@ async function handleAutoModeration(message) {
         return true; // Mesaj temiz, işleme devam et
         
     } catch (error) {
-        console.error('❌ Auto-mod handler hatası');
+        console.error('[Auto-Mod] Error:', error.message);
         return true;
     }
 }
@@ -331,7 +331,7 @@ async function handleLevelingSystem(message) {
         }, cooldownDuration);
         
     } catch (error) {
-        logger.debug('Leveling system hatası', error);
+        console.error('[Leveling] Error:', error.message);
     }
 }
 
