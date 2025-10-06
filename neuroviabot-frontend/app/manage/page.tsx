@@ -195,6 +195,7 @@ export default function ManagePage() {
   const [channels, setChannels] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [guildDropdownOpen, setGuildDropdownOpen] = useState(false);
@@ -232,8 +233,11 @@ export default function ManagePage() {
   };
 
   const fetchGuildData = async (guildId: string) => {
+    setLoadingData(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      console.log(`[Manage] Fetching data for guild: ${guildId}`);
       
       // Fetch guild settings
       const settingsResponse = await fetch(`${API_URL}/api/guilds/${guildId}/settings`, {
@@ -243,22 +247,55 @@ export default function ManagePage() {
       if (settingsResponse.ok) {
         const data = await settingsResponse.json();
         setSettings(data || {});
+        console.log(`[Manage] Loaded settings for guild ${guildId}:`, Object.keys(data || {}).length, 'settings');
+      } else {
+        console.warn('[Manage] Failed to fetch settings, using defaults');
+        setSettings({});
       }
       
-      // Fetch channels and roles (mock data for now)
-      setChannels([
-        { id: '1', name: 'genel' },
-        { id: '2', name: 'log' },
-        { id: '3', name: 'hoşgeldin' },
-      ]);
+      // Fetch real channels from Discord
+      const channelsResponse = await fetch(`${API_URL}/api/guilds/${guildId}/channels`, {
+        credentials: 'include',
+      });
       
-      setRoles([
-        { id: '1', name: '@everyone', color: '#99AAB5' },
-        { id: '2', name: 'Moderatör', color: '#F04747' },
-        { id: '3', name: 'Üye', color: '#43B581' },
-      ]);
+      if (channelsResponse.ok) {
+        const channelsData = await channelsResponse.json();
+        setChannels(channelsData.map((ch: any) => ({
+          id: ch.id,
+          name: ch.name,
+          type: ch.type,
+        })));
+        console.log(`[Manage] Loaded ${channelsData.length} channels for guild ${guildId}`);
+      } else {
+        console.error('[Manage] Failed to fetch channels');
+        setChannels([]);
+      }
+      
+      // Fetch real roles from Discord
+      const rolesResponse = await fetch(`${API_URL}/api/guilds/${guildId}/roles`, {
+        credentials: 'include',
+      });
+      
+      if (rolesResponse.ok) {
+        const rolesData = await rolesResponse.json();
+        setRoles(rolesData.map((role: any) => ({
+          id: role.id,
+          name: role.name,
+          color: role.color === 0 ? '#99AAB5' : `#${role.color.toString(16).padStart(6, '0')}`,
+          position: role.position,
+        })));
+        console.log(`[Manage] Loaded ${rolesData.length} roles for guild ${guildId}`);
+      } else {
+        console.error('[Manage] Failed to fetch roles');
+        setRoles([]);
+      }
     } catch (error) {
       console.error('Failed to fetch guild data:', error);
+      setChannels([]);
+      setRoles([]);
+      setSettings({});
+    } finally {
+      setLoadingData(false);
     }
   };
 
@@ -271,11 +308,19 @@ export default function ManagePage() {
   };
 
   const handleSaveSettings = async () => {
-    if (!selectedGuild) return;
+    if (!selectedGuild) {
+      console.error('[Manage] No guild selected');
+      return;
+    }
     
     setSaving(true);
+    setSaveStatus('idle');
+    
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      console.log(`[Manage] Saving settings for guild ${selectedGuild.id}:`, settings);
+      
       const response = await fetch(`${API_URL}/api/guilds/${selectedGuild.id}/settings`, {
         method: 'POST',
         headers: {
@@ -286,14 +331,21 @@ export default function ManagePage() {
       });
       
       if (response.ok) {
+        const savedSettings = await response.json();
+        console.log(`[Manage] Settings saved successfully for guild ${selectedGuild.id}`);
+        setSettings(savedSettings);
         setSaveStatus('success');
         setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[Manage] Failed to save settings:', errorData);
         setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
       }
     } catch (error) {
       console.error('Failed to save settings:', error);
       setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     } finally {
       setSaving(false);
     }
@@ -603,25 +655,35 @@ export default function ManagePage() {
         {/* Settings Panel */}
         <div className="ml-64 flex-1 p-6">
           <div className="max-w-4xl mx-auto">
-            <motion.div
-              key={activeCategory}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Category Header */}
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {categories.find(c => c.id === activeCategory)?.name}
-                </h2>
-                <p className="text-gray-400">
-                  {categories.find(c => c.id === activeCategory)?.settings.length} ayar mevcut
-                </p>
+            {loadingData ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-400">Sunucu verileri yükleniyor...</p>
+                </div>
               </div>
+            ) : (
+              <motion.div
+                key={activeCategory}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Category Header */}
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    {categories.find(c => c.id === activeCategory)?.name}
+                  </h2>
+                  <p className="text-gray-400">
+                    {categories.find(c => c.id === activeCategory)?.settings.length} ayar mevcut
+                    {channels.length > 0 && ` • ${channels.length} kanal`}
+                    {roles.length > 0 && ` • ${roles.length} rol`}
+                  </p>
+                </div>
 
-              {/* Settings Grid */}
-              <div className="space-y-4">
-                {activeSettings.map(setting => (
+                {/* Settings Grid */}
+                <div className="space-y-4">
+                  {activeSettings.map(setting => (
                   <motion.div
                     key={setting.id}
                     initial={{ opacity: 0, x: -20 }}
@@ -638,9 +700,10 @@ export default function ManagePage() {
                       </div>
                     </div>
                   </motion.div>
-                ))}
-              </div>
-            </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>

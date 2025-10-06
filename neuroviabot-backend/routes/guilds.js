@@ -153,6 +153,80 @@ router.get('/:guildId', requireAuth, async (req, res) => {
   }
 });
 
+// Get guild channels
+router.get('/:guildId/channels', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  
+  try {
+    // Fetch channels from Discord API
+    const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
+      headers: {
+        'Authorization': `Bot ${process.env.DISCORD_TOKEN}`,
+      },
+    });
+    
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch channels' });
+    }
+    
+    const channels = await response.json();
+    
+    // Filter text channels and sort by position
+    const textChannels = channels
+      .filter(channel => channel.type === 0 || channel.type === 5) // Text and announcement
+      .sort((a, b) => a.position - b.position)
+      .map(channel => ({
+        id: channel.id,
+        name: channel.name,
+        type: channel.type,
+        position: channel.position,
+        parent_id: channel.parent_id,
+      }));
+    
+    res.json(textChannels);
+  } catch (error) {
+    console.error('Error fetching channels:', error);
+    res.status(500).json({ error: 'Failed to fetch channels' });
+  }
+});
+
+// Get guild roles
+router.get('/:guildId/roles', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  
+  try {
+    // Fetch roles from Discord API
+    const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
+      headers: {
+        'Authorization': `Bot ${process.env.DISCORD_TOKEN}`,
+      },
+    });
+    
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch roles' });
+    }
+    
+    const roles = await response.json();
+    
+    // Sort by position (highest first)
+    const sortedRoles = roles
+      .sort((a, b) => b.position - a.position)
+      .map(role => ({
+        id: role.id,
+        name: role.name,
+        color: role.color,
+        position: role.position,
+        permissions: role.permissions,
+        mentionable: role.mentionable,
+      }));
+    
+    res.json(sortedRoles);
+  } catch (error) {
+    console.error('Error fetching roles:', error);
+    res.status(500).json({ error: 'Failed to fetch roles' });
+  }
+});
+
 // Get all guild settings
 router.get('/:guildId/settings', requireAuth, async (req, res) => {
   const { guildId } = req.params;
