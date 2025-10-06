@@ -46,10 +46,42 @@ router.get('/user', requireAuth, async (req, res) => {
     console.log('[Guilds] Bot guild IDs:', botGuildIds);
     console.log('[Guilds] User admin guild IDs:', adminGuilds.map(g => g.id));
     
-    // Enhance guild data with bot presence
-    const enhancedGuilds = adminGuilds.map(guild => {
+    // Check bot presence via Discord API for each guild
+    const enhancedGuilds = await Promise.all(adminGuilds.map(async (guild) => {
       const botGuild = db.data.guilds.get(guild.id);
-      const botPresent = botGuildIds.includes(guild.id);
+      let botPresent = botGuildIds.includes(guild.id);
+      
+      // Double-check via Discord API if not found in database
+      if (!botPresent) {
+        try {
+          const botCheckResponse = await fetch(`https://discord.com/api/v10/guilds/${guild.id}`, {
+            headers: {
+              'Authorization': `Bot ${process.env.DISCORD_TOKEN}`,
+            },
+          });
+          
+          if (botCheckResponse.ok) {
+            botPresent = true;
+            console.log(`[Guilds] Bot found in ${guild.name} via Discord API`);
+            
+            // Add to database if not present
+            if (!botGuild) {
+              const guildData = {
+                name: guild.name,
+                memberCount: 0, // Will be updated later
+                ownerId: guild.owner ? req.user.id : null,
+                icon: guild.icon,
+                active: true,
+                joinedAt: new Date().toISOString()
+              };
+              db.getOrCreateGuild(guild.id, guildData);
+              console.log(`[Guilds] Added ${guild.name} to database`);
+            }
+          }
+        } catch (error) {
+          console.log(`[Guilds] Discord API check failed for ${guild.name}:`, error.message);
+        }
+      }
       
       console.log(`[Guilds] ${guild.name} (${guild.id}): botPresent=${botPresent}`);
       
@@ -62,7 +94,7 @@ router.get('/user', requireAuth, async (req, res) => {
         botPresent: botPresent,
         memberCount: botGuild?.memberCount || null,
       };
-    });
+    }));
     
     res.json(enhancedGuilds);
   } catch (error) {

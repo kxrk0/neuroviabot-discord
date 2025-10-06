@@ -41,8 +41,8 @@ router.get('/callback',
             console.log('[OAuth] Session saved successfully');
           }
           
-          // Redirect to frontend home page
-          return res.redirect('https://neuroviabot.xyz/');
+          // Redirect to servers page after successful login
+          return res.redirect('https://neuroviabot.xyz/servers');
         });
       });
     })(req, res, next);

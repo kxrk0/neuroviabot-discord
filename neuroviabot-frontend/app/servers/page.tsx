@@ -254,18 +254,67 @@ export default function OverviewPage() {
             transition={{ duration: 0.6 }}
             className="mb-12"
           >
-            <div className="flex items-center gap-4 mb-3">
-              <div className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
-              <h1 className="text-5xl font-black text-white">
+            <div className="flex items-center gap-4 mb-6">
+              <motion.div 
+                className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: 48 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              ></motion.div>
+              <motion.h1 
+                className="text-5xl font-black text-white"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
                 Sunucu{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400 bg-[length:200%_auto] animate-gradient-x">
+                <motion.span 
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400"
+                  animate={{
+                    backgroundPosition: ['0%', '100%', '0%']
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  style={{
+                    backgroundSize: '200% 100%'
+                  }}
+                >
                   Yönetimi
-                </span>
-              </h1>
+                </motion.span>
+              </motion.h1>
             </div>
-            <p className="text-gray-400 text-lg ml-16">
-              {loading ? 'Sunucular yükleniyor...' : `${guilds.length} sunucu bulundu`}
-            </p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="flex items-center gap-4 ml-16"
+            >
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
+                <motion.div 
+                  className="w-2 h-2 bg-green-400 rounded-full"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                ></motion.div>
+                <span className="text-gray-300 font-medium">
+                  {loading ? 'Yükleniyor...' : `${guilds.length} sunucu bulundu`}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
+                <motion.div 
+                  className="w-2 h-2 bg-blue-400 rounded-full"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                ></motion.div>
+                <span className="text-gray-300 font-medium">
+                  {guilds.filter(g => g.botPresent).length} bot aktif
+                </span>
+              </div>
+            </motion.div>
           </motion.div>
 
           {loading ? (
@@ -388,36 +437,99 @@ export default function OverviewPage() {
                     {/* Status Badge */}
                     <div className="mb-4">
                       {guild.botPresent ? (
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
-                          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <motion.div 
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30"
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: index * 0.1 + 0.5 }}
+                        >
+                          <motion.span 
+                            className="w-2 h-2 bg-green-400 rounded-full"
+                            animate={{ 
+                              scale: [1, 1.3, 1],
+                              opacity: [1, 0.7, 1]
+                            }}
+                            transition={{ 
+                              duration: 2, 
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          ></motion.span>
                           <span className="text-green-400 text-sm font-medium">Bot Aktif</span>
-                        </div>
+                        </motion.div>
                       ) : (
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-500/20 border border-gray-500/30">
+                        <motion.div 
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-500/20 border border-gray-500/30"
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: index * 0.1 + 0.5 }}
+                        >
                           <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
                           <span className="text-gray-400 text-sm font-medium">Bot Yok</span>
-                        </div>
+                        </motion.div>
                       )}
                     </div>
 
                     {/* Action Button */}
                     <div className="mt-auto">
                       {guild.botPresent ? (
-                        <button
+                        <motion.button
                           onClick={() => handleManageServer(guild.id)}
-                          className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold hover:from-purple-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 group/btn"
+                          className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold hover:from-purple-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 + 0.7 }}
                         >
-                          <Cog6ToothIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300" />
-                          Yönet
-                        </button>
+                          {/* Animated background */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"
+                            initial={{ x: '-100%' }}
+                            whileHover={{ x: '0%' }}
+                            transition={{ duration: 0.3 }}
+                          />
+                          
+                          {/* Shine effect */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                            initial={{ x: '-100%' }}
+                            whileHover={{ x: '100%' }}
+                            transition={{ duration: 0.6 }}
+                          />
+                          
+                          <Cog6ToothIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300 relative z-10" />
+                          <span className="relative z-10">Yönet</span>
+                        </motion.button>
                       ) : (
-                        <button
+                        <motion.button
                           onClick={() => handleAddBot(guild.id)}
-                          className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:from-green-600 hover:to-emerald-600 transition-all flex items-center justify-center gap-2 group/btn"
+                          className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:from-green-600 hover:to-emerald-600 transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 + 0.7 }}
                         >
-                          <PlusIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300" />
-                          Botu Ekle
-                        </button>
+                          {/* Animated background */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600"
+                            initial={{ x: '-100%' }}
+                            whileHover={{ x: '0%' }}
+                            transition={{ duration: 0.3 }}
+                          />
+                          
+                          {/* Shine effect */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                            initial={{ x: '-100%' }}
+                            whileHover={{ x: '100%' }}
+                            transition={{ duration: 0.6 }}
+                          />
+                          
+                          <PlusIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300 relative z-10" />
+                          <span className="relative z-10">Botu Ekle</span>
+                        </motion.button>
                       )}
                     </div>
                   </div>
