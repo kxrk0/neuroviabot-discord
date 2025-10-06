@@ -18,14 +18,14 @@ class LevelingHandler {
             const settings = db.getGuildSettings(message.guild.id);
             
             // Guild ayarlarını kontrol et
-            if (!settings.levelingEnabled) return;
+            if (!settings.leveling?.enabled) return;
 
             // Cooldown kontrolü
             const userId = message.author.id;
             const guildId = message.guild.id;
             const cooldownKey = `${userId}-${guildId}`;
             const now = Date.now();
-            const cooldownTime = settings.xpCooldown || 60000; // 1 dakika default
+            const cooldownTime = (settings.leveling?.xpCooldown || 60) * 1000; // Saniye -> milisaniye
 
             if (this.xpCooldowns.has(cooldownKey)) {
                 const expirationTime = this.xpCooldowns.get(cooldownKey) + cooldownTime;
@@ -50,7 +50,7 @@ class LevelingHandler {
             };
 
             // XP miktarını hesapla
-            const baseXp = settings.xpPerMessage || 15;
+            const baseXp = settings.leveling?.xpPerMessage || 15;
             const randomBonus = Math.floor(Math.random() * 6); // 0-5 bonus XP
             const totalXp = baseXp + randomBonus;
 
@@ -117,9 +117,11 @@ class LevelingHandler {
 
     async handleLevelUp(message, memberData, oldLevel, newLevel, settings) {
         try {
-            // Level up mesajını oluştur
-            const levelUpMessage = settings.levelUpMessage || 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉';
-            const formattedMessage = levelUpMessage
+            // Level up mesajını oluştur (boolean kontrolü)
+            if (!settings.leveling?.levelUpMessage) return; // Mesaj gönderme kapalı
+            
+            const levelUpMessageText = 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉';
+            const formattedMessage = levelUpMessageText
                 .replace(/{user}/g, `<@${memberData.userId}>`)
                 .replace(/{username}/g, message.author.username)
                 .replace(/{level}/g, newLevel.toString())
@@ -148,8 +150,8 @@ class LevelingHandler {
 
             // Level up kanalını belirle
             let targetChannel = message.channel;
-            if (settings.levelUpChannelId) {
-                const levelUpChannel = await message.guild.channels.fetch(settings.levelUpChannelId).catch(() => null);
+            if (settings.leveling?.levelUpChannelId) {
+                const levelUpChannel = await message.guild.channels.fetch(settings.leveling.levelUpChannelId).catch(() => null);
                 if (levelUpChannel) {
                     targetChannel = levelUpChannel;
                 }
@@ -162,7 +164,7 @@ class LevelingHandler {
             });
 
             // Level role rewards kontrolü
-            if (settings.levelRoles && settings.levelRoles.length > 0) {
+            if (settings.leveling?.levelRoles && Object.keys(settings.leveling.levelRoles).length > 0) {
                 await this.handleLevelRoleRewards(message, memberData, newLevel, settings);
             }
 
@@ -181,10 +183,11 @@ class LevelingHandler {
             const member = await message.guild.members.fetch(memberData.userId).catch(() => null);
             if (!member) return;
 
-            // Level roles kontrolü
-            for (const levelRole of settings.levelRoles) {
-                if (levelRole.level === newLevel) {
-                    const role = await message.guild.roles.fetch(levelRole.roleId).catch(() => null);
+            // Level roles kontrolü (Map yapısı)
+            const levelRoles = settings.leveling?.levelRoles || {};
+            for (const [level, roleId] of Object.entries(levelRoles)) {
+                if (parseInt(level) === newLevel) {
+                    const role = await message.guild.roles.fetch(roleId).catch(() => null);
                     if (role && !member.roles.cache.has(role.id)) {
                         await member.roles.add(role);
                         

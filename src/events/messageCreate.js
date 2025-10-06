@@ -46,8 +46,10 @@ module.exports = {
             // Custom command kontrolü
             await handleCustomCommands(message);
 
-            // XP/Leveling sistemi (eğer aktifse)
-            await handleLevelingSystem(message);
+            // XP/Leveling sistemi (levelingHandler kullanarak)
+            if (client.levelingHandler) {
+                await client.levelingHandler.handleMessageXp(message);
+            }
 
         } catch (error) {
             logger.error('messageCreate event hatası', error, {
@@ -70,29 +72,29 @@ async function handleAutoModeration(message) {
         const settings = db.getGuildSettings(message.guild.id);
         
         // Auto-mod aktif mi kontrol et
-        if (!settings.moderationEnabled || !settings.autoModEnabled) return true;
+        if (!settings.moderation?.enabled || !settings.moderation?.autoMod) return true;
         
         const content = message.content.toLowerCase();
         let shouldDelete = false;
         let reason = '';
         
         // Davet linki kontrolü
-        if (settings.antiInvite && (content.includes('discord.gg/') || content.includes('discord.com/invite/'))) {
+        if (settings.moderation?.antiInvite && (content.includes('discord.gg/') || content.includes('discord.com/invite/'))) {
             shouldDelete = true;
             reason = 'Discord davet linki paylaşımı yasak';
         }
         
         // Link kontrolü
-        if (settings.antiLink && (content.includes('http://') || content.includes('https://') || content.includes('www.'))) {
+        if (settings.moderation?.antiLink && (content.includes('http://') || content.includes('https://') || content.includes('www.'))) {
             shouldDelete = true;
             reason = 'Link paylaşımı yasak';
         }
         
-        // Kötü kelime kontrolü
-        if (settings.badWords && settings.badWords.length > 0) {
-            const badWordsList = typeof settings.badWords === 'string' 
-                ? settings.badWords.split(',').map(w => w.trim().toLowerCase())
-                : settings.badWords;
+        // Kötü kelime kontrolü (bannedWords kullan)
+        if (settings.moderation?.bannedWords && settings.moderation.bannedWords.length > 0) {
+            const badWordsList = typeof settings.moderation.bannedWords === 'string' 
+                ? settings.moderation.bannedWords.split(',').map(w => w.trim().toLowerCase())
+                : settings.moderation.bannedWords;
             
             for (const badWord of badWordsList) {
                 if (content.includes(badWord)) {
@@ -104,7 +106,7 @@ async function handleAutoModeration(message) {
         }
         
         // Spam kontrolü
-        if (settings.spamProtection) {
+        if (settings.moderation?.spamProtection) {
             const userId = message.author.id;
             if (!message.client.spamTracker) {
                 message.client.spamTracker = new Map();
@@ -147,8 +149,8 @@ async function handleAutoModeration(message) {
                 }, 5000);
                 
                 // Mod log kanalına bildir
-                if (settings.modLogChannelId) {
-                    const modLogChannel = message.guild.channels.cache.get(settings.modLogChannelId);
+                if (settings.moderation?.logChannelId) {
+                    const modLogChannel = message.guild.channels.cache.get(settings.moderation.logChannelId);
                     if (modLogChannel) {
                         const modLogEmbed = new EmbedBuilder()
                             .setColor('#ff4444')
@@ -248,151 +250,5 @@ async function handleCustomCommands(message) {
     }
 }
 
-// Leveling sistemi
-async function handleLevelingSystem(message) {
-    try {
-        const { getDatabase } = require('../database/simple-db');
-        const db = getDatabase();
-        
-        // Sunucu ayarlarını kontrol et
-        const settings = db.getGuildSettings(message.guild.id);
-        
-        // Leveling aktif mi kontrol et
-        if (!settings.levelingEnabled) return;
-        
-        // Cooldown kontrolü (ayarlarda tanımlı veya 60 saniye)
-        const userId = message.author.id;
-        const guildId = message.guild.id;
-        const cooldownKey = `${userId}-${guildId}`;
-        
-        if (message.client.xpCooldowns && message.client.xpCooldowns.has(cooldownKey)) {
-            return;
-        }
-        
-        // XP hesaplama (ayarlardaki miktarı kullan)
-        const messageLength = message.content.length;
-        const baseXP = settings.xpPerMessage || 15;
-        let xpGain = Math.floor(Math.random() * (baseXP / 2)) + (baseXP / 2); // Base XP ±50%
-        
-        // Mesaj uzunluğu bonusu
-        if (messageLength > 50) xpGain += 2;
-        if (messageLength > 100) xpGain += 3;
-        if (messageLength > 200) xpGain += 5;
-        
-        // Attachment/embed bonusu
-        if (message.attachments.size > 0) xpGain += 3;
-        if (message.embeds.length > 0) xpGain += 2;
-        
-        // Database'e XP kaydet
-        const { GuildMember } = require('../models/index');
-        let guildMember = await GuildMember.findOne({
-            userId: message.author.id,
-            guildId: message.guild.id
-        });
-        
-        if (!guildMember) {
-            guildMember = await GuildMember.findOrCreate(
-                message.author.id, 
-                message.guild.id, 
-                {
-                    xp: xpGain,
-                    level: 1,
-                    totalMessages: 1
-                }
-            );
-        } else {
-            const newXp = (guildMember.xp || 0) + xpGain;
-            const oldLevel = guildMember.level || 1;
-            const newLevel = Math.floor(0.1 * Math.sqrt(newXp));
-            
-            await GuildMember.update(guildMember, {
-                xp: newXp,
-                level: Math.max(newLevel, 1),
-                totalMessages: (guildMember.totalMessages || 0) + 1,
-                lastActive: new Date().toISOString()
-            });
-            
-            // Level up kontrolü
-            if (newLevel > oldLevel) {
-                await handleLevelUp(message, newLevel, newXp);
-            }
-        }
-        
-        // Cooldown ekle (ayarlardaki süreyi kullan)
-        if (!message.client.xpCooldowns) {
-            message.client.xpCooldowns = new Map();
-        }
-        message.client.xpCooldowns.set(cooldownKey, Date.now());
-        
-        // Ayarlardaki cooldown süresini kullan (saniye cinsinden)
-        const cooldownDuration = (settings.xpCooldown || 60) * 1000;
-        setTimeout(() => {
-            message.client.xpCooldowns.delete(cooldownKey);
-        }, cooldownDuration);
-        
-    } catch (error) {
-        console.error('[Leveling] Error:', error.message);
-    }
-}
-
-// Level up mesajı
-async function handleLevelUp(message, newLevel, totalXP) {
-    try {
-        const { EmbedBuilder } = require('discord.js');
-        const config = require('../config.js');
-        
-        const levelUpEmbed = new EmbedBuilder()
-            .setColor('#00ff00')
-            .setTitle('🎉 Seviye Atladın!')
-            .setDescription(`**${message.author}** tebrikler!`)
-            .addFields(
-                {
-                    name: '📈 Yeni Seviye',
-                    value: `**Level ${newLevel}**`,
-                    inline: true
-                },
-                {
-                    name: '⭐ Toplam XP',
-                    value: `${totalXP.toLocaleString()} XP`,
-                    inline: true
-                },
-                {
-                    name: '🎯 Sonraki Seviye',
-                    value: `${Math.pow((newLevel + 1) * 10, 2) - totalXP} XP kaldı`,
-                    inline: true
-                }
-            )
-            .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
-            .setTimestamp();
-        
-        // Level rol kontrolü
-        const levelRole = message.guild.roles.cache.find(role => 
-            role.name.toLowerCase() === `level ${newLevel}` || 
-            role.name.toLowerCase() === `level${newLevel}` ||
-            role.name.toLowerCase() === `lvl ${newLevel}`
-        );
-        
-        if (levelRole && message.member) {
-            try {
-                await message.member.roles.add(levelRole);
-                levelUpEmbed.addFields({
-                    name: '🎭 Yeni Rol',
-                    value: `${levelRole} rolü verildi!`,
-                    inline: false
-                });
-            } catch (roleError) {
-                logger.debug('Level rol verme hatası', roleError);
-            }
-        }
-        
-        await message.reply({ embeds: [levelUpEmbed] });
-        
-        logger.success(`Level up: ${message.author.tag} → Level ${newLevel}`, {
-            guild: message.guild.name,
-            totalXP: totalXP
-        });
-        
-    } catch (error) {
-        logger.error('Level up mesajı hatası', error);
-    }
-}
+// Leveling sistemi artık levelingHandler.js tarafından yönetiliyor
+// Bu fonksiyonlar kaldırıldı ve client.levelingHandler.handleMessageXp() kullanılıyor

@@ -168,6 +168,7 @@ class SimpleDatabase {
                     spamProtection: true,
                     antiInvite: false,
                     antiLink: false,
+                    bannedWords: [],
                     logChannelId: null,
                     muteRoleId: null,
                     maxWarnings: 3,
@@ -186,7 +187,11 @@ class SimpleDatabase {
                 general: {
                     prefix: '!',
                     language: 'tr',
-                }
+                },
+                // Logging settings
+                loggingEnabled: false,
+                messageLogChannel: null,
+                serverLogChannel: null,
             };
             
             this.data.settings.set(guildId, settings);

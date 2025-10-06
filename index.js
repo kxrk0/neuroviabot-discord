@@ -256,8 +256,12 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-// Logging Events
+// Handlers
 const loggingHandler = require('./src/handlers/loggingHandler');
+const LevelingHandler = require('./src/handlers/levelingHandler');
+
+// Initialize leveling handler
+client.levelingHandler = new LevelingHandler(client);
 
 client.on('messageDelete', async (message) => {
     await loggingHandler.logMessageDelete(message);
