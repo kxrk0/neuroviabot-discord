@@ -204,24 +204,33 @@ export default function ManagePage() {
     fetchUserGuilds();
   }, []);
 
-  // Read guild ID from URL query parameter
+  // Read guild ID from localStorage (universal approach)
   useEffect(() => {
     if (typeof window !== 'undefined' && guilds.length > 0) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const guildIdFromUrl = urlParams.get('guild');
+      const savedGuildId = localStorage.getItem('selectedGuildId');
       
-      if (guildIdFromUrl) {
-        const guild = guilds.find((g: any) => g.id === guildIdFromUrl);
+      if (savedGuildId) {
+        const guild = guilds.find((g: any) => g.id === savedGuildId);
         if (guild) {
           setSelectedGuild(guild);
-          console.log(`[Manage] Selected guild from URL: ${guild.name} (${guild.id})`);
+          console.log(`[Manage] Auto-selected guild from localStorage: ${guild.name} (${guild.id})`);
+        } else {
+          // Saved guild not found, select first available
+          setSelectedGuild(guilds[0]);
         }
+      } else if (guilds.length > 0) {
+        // No saved guild, select first one
+        setSelectedGuild(guilds[0]);
       }
     }
   }, [guilds]);
 
   useEffect(() => {
     if (selectedGuild) {
+      // Save to localStorage whenever guild changes
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedGuildId', selectedGuild.id);
+      }
       fetchGuildData(selectedGuild.id);
     }
   }, [selectedGuild]);
