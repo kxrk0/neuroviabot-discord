@@ -16,7 +16,7 @@ router.get('/stats', (req, res) => {
       if (guild.memberCount) {
         totalUsers += guild.memberCount;
       }
-    });
+    }); 
     
     console.log('[Backend API] Stats from database - Guilds:', guilds.length, 'Users:', totalUsers);
     console.log('[Backend API] Guild IDs:', guildIds);
