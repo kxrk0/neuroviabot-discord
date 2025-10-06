@@ -335,7 +335,7 @@ process.on('SIGTERM', () => {
 async function setupSocketIO(client) {
     try {
         const io = require('socket.io-client');
-        const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+        const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
         
         const socket = io(BACKEND_URL, {
             reconnection: true,
