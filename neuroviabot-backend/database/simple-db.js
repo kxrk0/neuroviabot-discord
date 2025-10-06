@@ -102,6 +102,30 @@ class SimpleDatabase {
         }
     }
 
+    // Guild operations
+    getOrCreateGuild(guildId, guildData = {}) {
+        let guild = this.data.guilds.get(guildId);
+        
+        if (!guild) {
+            guild = {
+                id: guildId,
+                name: guildData.name || 'Unknown',
+                memberCount: guildData.memberCount || 0,
+                ownerId: guildData.ownerId || null,
+                icon: guildData.icon || null,
+                active: guildData.active !== undefined ? guildData.active : true,
+                joinedAt: guildData.joinedAt || new Date().toISOString(),
+                ...guildData
+            };
+            
+            this.data.guilds.set(guildId, guild);
+            this.saveData();
+            console.log(`[Backend DB] Guild created: ${guild.name} (${guildId})`);
+        }
+        
+        return guild;
+    }
+
     // Guild settings operations
     getGuildSettings(guildId) {
         let settings = this.data.settings.get(guildId);
@@ -167,24 +191,35 @@ class SimpleDatabase {
             
             this.data.settings.set(guildId, settings);
             this.saveData();
+            console.log(`[Backend DB] Default settings created for guild: ${guildId}`);
         }
         
         return settings;
     }
 
     updateGuildSettings(guildId, updates) {
+        console.log(`[Backend DB] Updating settings for guild ${guildId}:`, updates);
+        
         const current = this.getGuildSettings(guildId);
-        const updated = { ...current, ...updates };
+        const updated = { ...current, ...updates, guildId };
+        
         this.data.settings.set(guildId, updated);
         this.saveData();
+        
+        console.log(`[Backend DB] Settings saved for guild ${guildId}`);
         return updated;
     }
 
     updateGuildSettingsCategory(guildId, category, updates) {
+        console.log(`[Backend DB] Updating ${category} settings for guild ${guildId}:`, updates);
+        
         const current = this.getGuildSettings(guildId);
         current[category] = { ...current[category], ...updates };
+        
         this.data.settings.set(guildId, current);
         this.saveData();
+        
+        console.log(`[Backend DB] Category ${category} saved for guild ${guildId}`);
         return current;
     }
 
