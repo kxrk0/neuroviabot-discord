@@ -239,6 +239,8 @@ router.put('/:guildId/settings', requireAuth, async (req, res) => {
   }
 });
 
+
+
 // Bulk update settings (POST) - for frontend compatibility
 router.post('/:guildId/settings', requireAuth, async (req, res) => {
   const { guildId } = req.params;
