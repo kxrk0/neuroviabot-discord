@@ -331,6 +331,62 @@ process.on('SIGTERM', () => {
     process.exit(0);
 });
 
+// Socket.IO setup (Backend ile real-time senkronizasyon)
+async function setupSocketIO(client) {
+    try {
+        const io = require('socket.io-client');
+        const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+        
+        const socket = io(BACKEND_URL, {
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 10
+        });
+
+        socket.on('connect', () => {
+            log(`✅ Backend'e bağlanıldı: ${BACKEND_URL}`, 'SUCCESS');
+            
+            // Tüm guild'lere subscribe ol
+            client.guilds.cache.forEach(guild => {
+                socket.emit('join', `guild_${guild.id}`);
+            });
+        });
+
+        socket.on('disconnect', () => {
+            log('❌ Backend bağlantısı kesildi', 'WARNING');
+        });
+
+        // Settings değişikliğini dinle
+        socket.on('settings_changed', async (data) => {
+            const { guildId, settings, category } = data;
+            
+            log(`🔄 Ayarlar güncellendi: Guild ${guildId}${category ? ` - ${category}` : ''}`, 'INFO');
+            
+            // Database'i yeniden yükle (simple-db otomatik kaydediyor)
+            const { getDatabase } = require('./src/database/simple-db');
+            const db = getDatabase();
+            
+            // Leveling handler'ı güncelle
+            if (settings.leveling && client.levelingHandler) {
+                log(`📊 Leveling ayarları güncellendi: ${JSON.stringify(settings.leveling)}`, 'DEBUG');
+            }
+            
+            // Moderation ayarları güncellendi
+            if (settings.moderation) {
+                log(`🛡️ Moderasyon ayarları güncellendi`, 'DEBUG');
+            }
+            
+            log(`✅ Guild ${guildId} ayarları senkronize edildi`, 'SUCCESS');
+        });
+
+        client.socket = socket;
+        
+    } catch (error) {
+        log(`Socket.IO hatası: ${error.message}`, 'WARNING');
+        // Socket hatasında bot çalışmaya devam eder (kritik değil)
+    }
+}
+
 // Ana başlatma fonksiyonu
 async function startBot() {
     log('Starting NeuroViaBot...', 'INFO');
@@ -357,6 +413,9 @@ async function startBot() {
         
         // Handler'ları yükle
         await loadHandlers();
+        
+        // Socket.IO bağlantısı (Backend ile real-time senkronizasyon)
+        await setupSocketIO(client);
         
         // Komutları ve event'leri yükle
         await loadCommands();
