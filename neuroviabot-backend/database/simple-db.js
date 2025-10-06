@@ -203,10 +203,30 @@ class SimpleDatabase {
     }
 
     updateGuildSettings(guildId, updates) {
-        console.log(`[Backend DB] Updating settings for guild ${guildId}:`, updates);
+        console.log(`[Backend DB] Updating settings for guild ${guildId}`);
         
         const current = this.getGuildSettings(guildId);
-        const updated = { ...current, ...updates, guildId };
+        
+        // Deep merge nested objects (welcome, leave, moderation, leveling, etc.)
+        const updated = {
+            guildId,
+            prefix: updates.general?.prefix ?? updates.prefix ?? current.prefix,
+            language: updates.general?.language ?? updates.language ?? current.language,
+            welcomeChannel: current.welcomeChannel,
+            leaveChannel: current.leaveChannel,
+            logChannel: current.logChannel,
+            muteRole: current.muteRole,
+            features: { ...current.features, ...updates.features },
+            welcome: { ...current.welcome, ...updates.welcome },
+            leave: { ...current.leave, ...updates.leave },
+            moderation: { ...current.moderation, ...updates.moderation },
+            leveling: { ...current.leveling, ...updates.leveling },
+            autorole: { ...current.autorole, ...updates.autorole },
+            general: { ...current.general, ...updates.general },
+            loggingEnabled: updates.loggingEnabled ?? current.loggingEnabled,
+            messageLogChannel: updates.messageLogChannel ?? current.messageLogChannel,
+            serverLogChannel: updates.serverLogChannel ?? current.serverLogChannel,
+        };
         
         this.data.settings.set(guildId, updated);
         this.saveData();
