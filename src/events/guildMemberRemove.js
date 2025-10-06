@@ -151,31 +151,26 @@ async function sendLeaveMessage(member) {
         });
 
     } catch (error) {
-        logger.error('Ayrılma mesajı gönderme hatası', error);
+        console.error('[Leave] Send message error:', error.message);
     }
 }
 
-// Database güncelleme
+// Database güncelleme (simple-db kullanarak)
 async function updateDatabase(member) {
     try {
-        // Eğer model dosyaları varsa ve database aktifse
-        const { GuildMember } = require('../models/index');
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
         
-        // GuildMember kaydını güncelle (leftAt timestamp ekle)
-        const guildMember = await GuildMember.findOne({
-            where: {
-                userId: member.user.id,
-                guildId: member.guild.id
-            }
-        });
-
-        if (guildMember) {
-            await guildMember.update({
-                leftAt: new Date(),
-                lastActive: new Date()
-            });
-
-            logger.debug('Member ayrılma tarihi veritabanına kaydedildi', {
+        const memberKey = `${member.user.id}_${member.guild.id}`;
+        const memberData = db.data.members?.get(memberKey);
+        
+        if (memberData) {
+            memberData.leftAt = new Date().toISOString();
+            memberData.lastActive = new Date().toISOString();
+            db.data.members.set(memberKey, memberData);
+            db.saveData();
+            
+            logger.debug('Member ayrılma tarihi database\'e kaydedildi', {
                 user: member.user.tag,
                 guild: member.guild.name
             });
@@ -183,6 +178,6 @@ async function updateDatabase(member) {
 
     } catch (error) {
         // Database hatası kritik değil, sadece logla
-        logger.debug('Database güncelleme hatası (kritik değil)', error);
+        console.error('[Leave] Database update error:', error.message);
     }
 }
