@@ -11,12 +11,11 @@ Ekran görüntünde gördüğüm redirects **DOĞRU**:
 
 **Discord tarafı tamam!** ✅
 
----
+---    
 
 ## 🔧 VPS'te Yapman Gerekenler
 
 ### 1️⃣ Environment Variables Ayarla
-
 VPS'ine SSH ile bağlan:
 ```bash
 ssh root@neuroviabot.xyz
