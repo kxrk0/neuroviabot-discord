@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, PermissionFlagsBits } = require('discord.js');
-const { Guild, GuildMember, User } = require('../models');
+const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
 
 module.exports = {
@@ -164,27 +164,26 @@ module.exports = {
                 .setDescription('Bot kullanıcılarının seviye verisi yoktur!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
         }
 
-        // Seviye sistemi aktif mi kontrol et
-        const guild = await Guild.findOne({ where: { id: interaction.guild.id } });
-        if (!guild || !guild.levelingEnabled) {
+        // simple-db'den ayarları al
+        const db = getDatabase();
+        const settings = db.getGuildSettings(interaction.guild.id);
+        
+        if (!settings.leveling?.enabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Seviye Sistemi Kapalı')
                 .setDescription('Bu sunucuda seviye sistemi etkin değil!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
         }
 
-        const guildMember = await GuildMember.findOne({
-            where: {
-                userId: targetUser.id,
-                guildId: interaction.guild.id
-            }
-        });
+        // Kullanıcı verisini al
+        const memberKey = `${targetUser.id}_${interaction.guild.id}`;
+        const guildMember = db.data.members?.get(memberKey);
 
         if (!guildMember) {
             const errorEmbed = new EmbedBuilder()
@@ -193,7 +192,7 @@ module.exports = {
                 .setDescription('Bu kullanıcının seviye verisi bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
         }
 
         const currentXp = parseInt(guildMember.xp) || 0;
@@ -204,20 +203,12 @@ module.exports = {
         const neededXp = xpForNextLevel - xpForCurrentLevel;
         const progressPercent = Math.floor((progressXp / neededXp) * 100);
 
-        // Sıralamayı hesapla
-        const { QueryTypes } = require('sequelize');
-        const { sequelize } = require('../database/connection');
-
-        const rankQuery = await sequelize.query(`
-            SELECT COUNT(*) + 1 as rank
-            FROM guild_members 
-            WHERE guildId = ? AND (xp > ? OR (xp = ? AND level > ?))
-        `, {
-            replacements: [interaction.guild.id, currentXp, currentXp, currentLevel],
-            type: QueryTypes.SELECT
-        });
-
-        const rank = rankQuery[0]?.rank || 1;
+        // Sıralamayı hesapla (simple-db'den)
+        const allMembers = Array.from(db.data.members?.values() || [])
+            .filter(m => m.guildId === interaction.guild.id && m.xp > 0)
+            .sort((a, b) => b.xp - a.xp);
+        
+        const rank = allMembers.findIndex(m => m.userId === targetUser.id) + 1;
 
         // Progress bar oluştur
         const progressBar = this.createProgressBar(progressPercent);
@@ -249,35 +240,26 @@ module.exports = {
         const itemsPerPage = 10;
         const offset = (page - 1) * itemsPerPage;
 
-        // Seviye sistemi aktif mi kontrol et
-        const guild = await Guild.findOne({ where: { id: interaction.guild.id } });
-        if (!guild || !guild.levelingEnabled) {
+        // simple-db'den ayarları al
+        const db = getDatabase();
+        const settings = db.getGuildSettings(interaction.guild.id);
+        
+        if (!settings.leveling?.enabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Seviye Sistemi Kapalı')
                 .setDescription('Bu sunucuda seviye sistemi etkin değil!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
         }
 
-        const { QueryTypes } = require('sequelize');
-        const { sequelize } = require('../database/connection');
+        // Tüm üyeleri getir ve sırala
+        const allMembers = Array.from(db.data.members?.values() || [])
+            .filter(m => m.guildId === interaction.guild.id && m.xp > 0)
+            .sort((a, b) => b.xp - a.xp);
 
-        const leaderboard = await sequelize.query(`
-            SELECT 
-                gm.userId,
-                gm.xp,
-                gm.level,
-                gm.messageCount
-            FROM guild_members gm
-            WHERE gm.guildId = ? AND gm.xp > 0
-            ORDER BY gm.xp DESC, gm.level DESC
-            LIMIT ? OFFSET ?
-        `, {
-            replacements: [interaction.guild.id, itemsPerPage, offset],
-            type: QueryTypes.SELECT
-        });
+        const leaderboard = allMembers.slice(offset, offset + itemsPerPage);
 
         if (leaderboard.length === 0) {
             const errorEmbed = new EmbedBuilder()
@@ -305,23 +287,14 @@ module.exports = {
         }
 
         // Toplam sayfa sayısını hesapla
-        const totalCount = await sequelize.query(`
-            SELECT COUNT(*) as count
-            FROM guild_members
-            WHERE guildId = ? AND xp > 0
-        `, {
-            replacements: [interaction.guild.id],
-            type: QueryTypes.SELECT
-        });
-
-        const totalPages = Math.ceil(totalCount[0].count / itemsPerPage);
+        const totalPages = Math.ceil(allMembers.length / itemsPerPage);
 
         const leaderboardEmbed = new EmbedBuilder()
             .setColor('#ffd700')
             .setTitle('🏆 Seviye Sıralaması')
             .setDescription(description)
             .setFooter({
-                text: `Sayfa ${page}/${totalPages} • Toplam ${totalCount[0].count} aktif kullanıcı`,
+                text: `Sayfa ${page}/${totalPages} • Toplam ${allMembers.length} aktif kullanıcı`,
                 iconURL: interaction.guild.iconURL()
             })
             .setTimestamp();
@@ -338,13 +311,15 @@ module.exports = {
         await interaction.deferReply();
 
         try {
-            await Guild.update({
-                levelingEnabled: enabled,
-                xpPerMessage: xpAmount,
-                xpCooldown: cooldown * 1000, // saniyeyi milisaniyeye çevir
-                levelUpChannelId: levelUpChannel?.id || null
-            }, {
-                where: { id: interaction.guild.id }
+            const db = getDatabase();
+            db.updateGuildSettings(interaction.guild.id, {
+                leveling: {
+                    enabled: enabled,
+                    xpPerMessage: xpAmount,
+                    xpCooldown: cooldown,
+                    levelUpMessage: true,
+                    levelUpChannelId: levelUpChannel?.id || null
+                }
             });
 
             const setupEmbed = new EmbedBuilder()
