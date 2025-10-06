@@ -1,18 +1,12 @@
 const { EmbedBuilder } = require('discord.js');
-const { Guild, GuildMember } = require('../models');
+const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
 
 class LevelingHandler {
     constructor(client) {
         this.client = client;
         this.xpCooldowns = new Map(); // User cooldown tracking
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        this.client.on('messageCreate', async (message) => {
-            await this.handleMessageXp(message);
-        });
+        // NO setupEventListeners - event handled in messageCreate.js
     }
 
     async handleMessageXp(message) {
@@ -20,16 +14,18 @@ class LevelingHandler {
             // Bot mesajlarını ve DM'leri görmezden gel
             if (message.author.bot || !message.guild) return;
 
-            // Guild ayarlarını al
-            const guild = await Guild.findOne({ where: { id: message.guild.id } });
-            if (!guild || !guild.levelingEnabled) return;
+            const db = getDatabase();
+            const settings = db.getGuildSettings(message.guild.id);
+            
+            // Guild ayarlarını kontrol et
+            if (!settings.levelingEnabled) return;
 
             // Cooldown kontrolü
             const userId = message.author.id;
             const guildId = message.guild.id;
             const cooldownKey = `${userId}-${guildId}`;
             const now = Date.now();
-            const cooldownTime = guild.xpCooldown || 60000; // 1 dakika default
+            const cooldownTime = settings.xpCooldown || 60000; // 1 dakika default
 
             if (this.xpCooldowns.has(cooldownKey)) {
                 const expirationTime = this.xpCooldowns.get(cooldownKey) + cooldownTime;
@@ -41,27 +37,20 @@ class LevelingHandler {
             // Cooldown'ı güncelle
             this.xpCooldowns.set(cooldownKey, now);
 
-            // Guild member'ı al veya oluştur
-            let guildMember = await GuildMember.findOne({
-                where: {
-                    userId: userId,
-                    guildId: guildId
-                }
-            });
-
-            if (!guildMember) {
-                // Yeni guild member oluştur
-                guildMember = await GuildMember.create({
-                    userId: userId,
-                    guildId: guildId,
-                    xp: 0,
-                    level: 0,
-                    messageCount: 0
-                });
-            }
+            // Guild member verilerini al/oluştur (simple-db kullanarak)
+            const memberKey = `${userId}_${guildId}`;
+            let memberData = db.data.members?.get(memberKey) || {
+                userId,
+                guildId,
+                xp: 0,
+                level: 0,
+                messageCount: 0,
+                lastMessage: null,
+                lastXpGain: null
+            };
 
             // XP miktarını hesapla
-            const baseXp = guild.xpPerMessage || 15;
+            const baseXp = settings.xpPerMessage || 15;
             const randomBonus = Math.floor(Math.random() * 6); // 0-5 bonus XP
             const totalXp = baseXp + randomBonus;
 
@@ -74,23 +63,26 @@ class LevelingHandler {
             const finalXp = totalXp + lengthBonus;
 
             // Mevcut değerleri al
-            const currentXp = parseInt(guildMember.xp) || 0;
-            const currentLevel = parseInt(guildMember.level) || 0;
+            const currentXp = parseInt(memberData.xp) || 0;
+            const currentLevel = parseInt(memberData.level) || 0;
             const newXp = currentXp + finalXp;
             const newLevel = this.getLevelFromXp(newXp);
 
             // Verileri güncelle
-            await guildMember.update({
-                xp: newXp,
-                level: newLevel,
-                messageCount: (guildMember.messageCount || 0) + 1,
-                lastMessage: new Date(),
-                lastXpGain: new Date()
-            });
+            memberData.xp = newXp;
+            memberData.level = newLevel;
+            memberData.messageCount = (memberData.messageCount || 0) + 1;
+            memberData.lastMessage = new Date().toISOString();
+            memberData.lastXpGain = new Date().toISOString();
+
+            // Database'e kaydet
+            if (!db.data.members) db.data.members = new Map();
+            db.data.members.set(memberKey, memberData);
+            db.saveData();
 
             // Level up kontrolü
             if (newLevel > currentLevel) {
-                await this.handleLevelUp(message, guildMember, currentLevel, newLevel, guild);
+                await this.handleLevelUp(message, memberData, currentLevel, newLevel, settings);
                 
                 // Real-time güncelleme gönder
                 if (global.realtimeUpdates) {
@@ -119,24 +111,20 @@ class LevelingHandler {
             }
 
         } catch (error) {
-            logger.error('Leveling XP hatası', error, {
-                user: message.author.tag,
-                guild: message.guild.name,
-                channel: message.channel.name
-            });
+            console.error('[Leveling] Error:', error.message);
         }
     }
 
-    async handleLevelUp(message, guildMember, oldLevel, newLevel, guild) {
+    async handleLevelUp(message, memberData, oldLevel, newLevel, settings) {
         try {
             // Level up mesajını oluştur
-            const levelUpMessage = guild.levelUpMessage || 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉';
+            const levelUpMessage = settings.levelUpMessage || 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉';
             const formattedMessage = levelUpMessage
-                .replace(/{user}/g, `<@${guildMember.userId}>`)
+                .replace(/{user}/g, `<@${memberData.userId}>`)
                 .replace(/{username}/g, message.author.username)
                 .replace(/{level}/g, newLevel.toString())
                 .replace(/{oldLevel}/g, oldLevel.toString())
-                .replace(/{xp}/g, guildMember.xp.toString());
+                .replace(/{xp}/g, memberData.xp.toString());
 
             // Level up embed'i
             const levelUpEmbed = new EmbedBuilder()
@@ -147,8 +135,8 @@ class LevelingHandler {
                     { name: '👤 Kullanıcı', value: message.author.username, inline: true },
                     { name: '📈 Eski Seviye', value: oldLevel.toString(), inline: true },
                     { name: '🏆 Yeni Seviye', value: newLevel.toString(), inline: true },
-                    { name: '⭐ Toplam XP', value: guildMember.xp.toLocaleString(), inline: true },
-                    { name: '💬 Mesaj Sayısı', value: (guildMember.messageCount || 0).toString(), inline: true },
+                    { name: '⭐ Toplam XP', value: memberData.xp.toLocaleString(), inline: true },
+                    { name: '💬 Mesaj Sayısı', value: (memberData.messageCount || 0).toString(), inline: true },
                     { name: '🎯 Sonraki Seviye', value: `${this.getXpForLevel(newLevel + 1).toLocaleString()} XP`, inline: true }
                 )
                 .setThumbnail(message.author.displayAvatarURL())
@@ -160,8 +148,8 @@ class LevelingHandler {
 
             // Level up kanalını belirle
             let targetChannel = message.channel;
-            if (guild.levelUpChannelId) {
-                const levelUpChannel = await message.guild.channels.fetch(guild.levelUpChannelId).catch(() => null);
+            if (settings.levelUpChannelId) {
+                const levelUpChannel = await message.guild.channels.fetch(settings.levelUpChannelId).catch(() => null);
                 if (levelUpChannel) {
                     targetChannel = levelUpChannel;
                 }
@@ -169,17 +157,17 @@ class LevelingHandler {
 
             // Level up mesajını gönder
             await targetChannel.send({
-                content: `🎉 <@${guildMember.userId}>`,
+                content: `🎉 <@${memberData.userId}>`,
                 embeds: [levelUpEmbed]
             });
 
             // Level role rewards kontrolü
-            if (guild.levelRoles && guild.levelRoles.length > 0) {
-                await this.handleLevelRoleRewards(message, guildMember, newLevel, guild);
+            if (settings.levelRoles && settings.levelRoles.length > 0) {
+                await this.handleLevelRoleRewards(message, memberData, newLevel, settings);
             }
 
             // Level milestone achievements
-            await this.handleLevelMilestones(message, guildMember, newLevel);
+            await this.handleLevelMilestones(message, memberData, newLevel);
 
             logger.info(`Level up: ${message.author.tag} -> Level ${newLevel} (${message.guild.name})`);
 
@@ -188,13 +176,13 @@ class LevelingHandler {
         }
     }
 
-    async handleLevelRoleRewards(message, guildMember, newLevel, guild) {
+    async handleLevelRoleRewards(message, memberData, newLevel, settings) {
         try {
-            const member = await message.guild.members.fetch(guildMember.userId).catch(() => null);
+            const member = await message.guild.members.fetch(memberData.userId).catch(() => null);
             if (!member) return;
 
             // Level roles kontrolü
-            for (const levelRole of guild.levelRoles) {
+            for (const levelRole of settings.levelRoles) {
                 if (levelRole.level === newLevel) {
                     const role = await message.guild.roles.fetch(levelRole.roleId).catch(() => null);
                     if (role && !member.roles.cache.has(role.id)) {
@@ -224,7 +212,7 @@ class LevelingHandler {
         }
     }
 
-    async handleLevelMilestones(message, guildMember, newLevel) {
+    async handleLevelMilestones(message, memberData, newLevel) {
         try {
             // Milestone seviyeleri
             const milestones = [5, 10, 25, 50, 75, 100, 150, 200, 300, 500, 750, 1000];
@@ -237,7 +225,7 @@ class LevelingHandler {
                     .addFields(
                         { name: '👤 Kullanıcı', value: message.author.username, inline: true },
                         { name: '🏆 Milestone Seviye', value: newLevel.toString(), inline: true },
-                        { name: '⭐ Toplam XP', value: guildMember.xp.toLocaleString(), inline: true }
+                        { name: '⭐ Toplam XP', value: memberData.xp.toLocaleString(), inline: true }
                     )
                     .setThumbnail(message.author.displayAvatarURL())
                     .setImage('https://media.giphy.com/media/g9582DNuQppxC/giphy.gif') // Celebration GIF
