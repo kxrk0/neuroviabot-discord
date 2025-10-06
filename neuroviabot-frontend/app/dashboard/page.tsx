@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ServerIcon,
   PlusCircleIcon,
@@ -23,6 +24,7 @@ interface Guild {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
