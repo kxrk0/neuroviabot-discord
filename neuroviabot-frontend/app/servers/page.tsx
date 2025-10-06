@@ -19,11 +19,11 @@ interface Guild {
   icon: string | null;
   owner: boolean;
   permissions: string;
-  botPresent?: boolean;
   memberCount?: number;
+  botPresent: boolean;
 }
 
-export default function OverviewPage() {
+export default function ServersPage() {
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -38,20 +38,20 @@ export default function OverviewPage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       
-      // Fetch user info
+      // Fetch user
       const userResponse = await fetch(`${API_URL}/api/auth/user`, {
         credentials: 'include',
       });
       
-      if (!userResponse.ok) {
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUser(userData);
+      } else {
         router.push('/');
         return;
       }
-      
-      const userData = await userResponse.json();
-      setUser(userData);
 
-      // Fetch user guilds
+      // Fetch guilds
       const guildsResponse = await fetch(`${API_URL}/api/guilds/user`, {
         credentials: 'include',
       });
@@ -61,8 +61,7 @@ export default function OverviewPage() {
         setGuilds(guildsData);
       }
     } catch (error) {
-      console.error('Fetch error:', error);
-      router.push('/');
+      console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
     }
@@ -101,7 +100,7 @@ export default function OverviewPage() {
           // If bot is now present, redirect
           if (updatedGuild?.botPresent) {
             clearInterval(checkInterval);
-            router.push(`/manage/${guildId}`);
+            router.push(`/manage`);
           }
         }
       } catch (error) {
@@ -258,44 +257,36 @@ export default function OverviewPage() {
 
       {/* Content */}
       <div className="relative z-10 pt-16">
-        {/* Header */}
-        <motion.header 
-          className="border-b border-white/5 backdrop-blur-xl bg-[#1A1B23]/50"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="max-w-7xl mx-auto px-6 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  <Link href="/" className="inline-flex items-center gap-3 mb-2 group">
-                    <motion.div 
-                      className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                    >
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                      </svg>
-                    </motion.div>
-                    <span className="text-white font-bold text-xl group-hover:text-purple-300 transition-colors">NeuroViaBot</span>
-                  </Link>
-                </motion.div>
-                
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-6 py-12">
+          {/* Server Grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-12"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <motion.div 
+                  className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: 48 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                ></motion.div>
                 <motion.h1 
-                  className="text-3xl font-black text-white"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="text-5xl font-black text-white"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
                 >
                   Sunucu{' '}
                   <motion.span 
-                    className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"
+                    className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400"
                     animate={{
                       backgroundPosition: ['0%', '100%', '0%']
                     }}
@@ -311,391 +302,234 @@ export default function OverviewPage() {
                     Yönetimi
                   </motion.span>
                 </motion.h1>
-                
-                <motion.p 
-                  className="text-gray-400 mt-1"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
-                >
-                  Sunucularınızı yönetin ve özelleştirin
-                </motion.p>
-              </div>
-
-              <motion.div 
-                className="flex items-center gap-4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                {/* User Menu */}
-                <div className="relative">
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
-              >
-                {user && (
-                  <>
-                    <img
-                      src={user.avatar 
-                        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
-                        : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`
-                      }
-                      alt={user.username}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span className="text-white font-semibold">{user.username}</span>
-                  </>
-                )}
-              </button>
-
-              {/* Dropdown Menu */}
-              {userMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setUserMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl bg-gray-900 border border-white/10 shadow-2xl z-50 overflow-hidden">
-                    <div className="p-4 border-b border-white/10">
-                      <p className="text-white font-semibold">{user?.username}</p>
-                      {user?.discriminator && user.discriminator !== '0' && (
-                        <p className="text-gray-400 text-sm">#{user.discriminator}</p>
-                      )}
-                    </div>
-                    <div className="p-2">
-                      <Link
-                        href="/"
-                        className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                        <span className="text-sm font-medium">Ana Sayfa</span>
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          handleLogout();
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-                      >
-                        <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                        <span className="text-sm font-medium">Çıkış Yap</span>
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Content */}
-      <div className="relative z-10 pt-16">
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-6 py-12">
-          {/* Server Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-12"
-            >
-            <div className="flex items-center gap-4 mb-6">
-              <motion.div 
-                className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: 48 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              ></motion.div>
-              <motion.h1 
-                className="text-5xl font-black text-white"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                Sunucu{' '}
-                <motion.span 
-                  className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400"
-                  animate={{
-                    backgroundPosition: ['0%', '100%', '0%']
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  style={{
-                    backgroundSize: '200% 100%'
-                  }}
-                >
-                  Yönetimi
-                </motion.span>
-              </motion.h1>
-            </div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="flex items-center gap-4 ml-16"
-            >
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
-                <motion.div 
-                  className="w-2 h-2 bg-green-400 rounded-full"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                ></motion.div>
-                <span className="text-gray-300 font-medium">
-                  {loading ? 'Yükleniyor...' : `${guilds.length} sunucu bulundu`}
-                </span>
               </div>
               
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
-                <motion.div 
-                  className="w-2 h-2 bg-blue-400 rounded-full"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                ></motion.div>
-                <span className="text-gray-300 font-medium">
-                  {guilds.filter(g => g.botPresent).length} bot aktif
-                </span>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {loading ? (
-            // Skeleton loading
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.08 }}
-                >
-                  <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 h-full">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-16 h-16 rounded-2xl bg-gray-800 animate-pulse"></div>
-                      <div className="flex-1">
-                        <div className="h-5 bg-gray-800 rounded-lg mb-2 animate-pulse"></div>
-                        <div className="h-4 w-24 bg-gray-800 rounded animate-pulse"></div>
-                      </div>
-                    </div>
-                    <div className="flex gap-4 mb-4">
-                      <div className="h-4 w-20 bg-gray-800 rounded animate-pulse"></div>
-                      <div className="h-4 w-20 bg-gray-800 rounded animate-pulse"></div>
-                    </div>
-                    <div className="h-12 bg-gray-800 rounded-xl animate-pulse"></div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : guilds.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center py-20"
-            >
-              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-purple-500/10 mb-6">
-                <ServerIcon className="w-12 h-12 text-purple-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Sunucu Bulunamadı</h2>
-              <p className="text-gray-400 text-lg mb-6">Yönetici olduğun sunucu bulunamadı.</p>
-              <p className="text-gray-500 text-sm max-w-md mx-auto">Discord'da bir sunucuya yönetici izni aldığında burada görünecektir.</p>
-            </motion.div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {guilds.map((guild, index) => (
-                <motion.div
-                  key={guild.id}
-                  initial={{ opacity: 0, y: 30, rotateX: -15 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    delay: index * 0.08,
-                    type: "spring",
-                    stiffness: 120
-                  }}
-                  whileHover={{ 
-                    scale: 1.03, 
-                    y: -8,
-                    rotateY: 2,
-                    transition: { type: "spring", stiffness: 400, damping: 17 }
-                  }}
-                  className="group relative perspective-1000"
-                >
-                  {/* Animated gradient border */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="flex items-center gap-4 ml-16"
+              >
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
                   <motion.div 
-                    className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-500"
-                    animate={{
-                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    className="w-2 h-2 bg-green-400 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  ></motion.div>
+                  <span className="text-gray-300 font-medium">
+                    {loading ? 'Yükleniyor...' : `${guilds.length} sunucu bulundu`}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
+                  <motion.div 
+                    className="w-2 h-2 bg-blue-400 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  ></motion.div>
+                  <span className="text-gray-300 font-medium">
+                    {guilds.filter(g => g.botPresent).length} bot aktif
+                  </span>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {guilds.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-20"
+              >
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-purple-500/10 mb-6">
+                  <ServerIcon className="w-12 h-12 text-purple-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Sunucu Bulunamadı</h2>
+                <p className="text-gray-400 text-lg mb-6">Yönetici olduğun sunucu bulunamadı.</p>
+                <p className="text-gray-500 text-sm max-w-md mx-auto">Discord'da bir sunucuya yönetici izni aldığında burada görünecektir.</p>
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {guilds.map((guild, index) => (
+                  <motion.div
+                    key={guild.id}
+                    initial={{ opacity: 0, y: 30, rotateX: -15 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    transition={{ 
+                      duration: 0.6, 
+                      delay: index * 0.08,
+                      type: "spring",
+                      stiffness: 120
                     }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "linear"
+                    whileHover={{ 
+                      scale: 1.03, 
+                      y: -8,
+                      rotateY: 2,
+                      transition: { type: "spring", stiffness: 400, damping: 17 }
                     }}
-                    style={{ backgroundSize: '200% 200%' }}
-                  />
-                  
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-pink-500/0 group-hover:from-purple-500/5 group-hover:via-blue-500/5 group-hover:to-pink-500/5 rounded-2xl blur-2xl transition-all duration-500"></div>
-                  
-                  {/* Card content */}
-                  <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-900/80 backdrop-blur-2xl border-2 border-white/10 group-hover:border-purple-500/30 rounded-2xl p-6 h-full flex flex-col shadow-xl group-hover:shadow-2xl group-hover:shadow-purple-500/20 transition-all duration-500">
-                    {/* Server Icon & Info */}
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="relative">
-                        {getGuildIcon(guild) ? (
-                          <img
-                            src={getGuildIcon(guild)!}
-                            alt={guild.name}
-                            className="w-16 h-16 rounded-2xl"
-                          />
+                    className="group relative perspective-1000"
+                  >
+                    {/* Animated gradient border */}
+                    <motion.div 
+                      className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-500"
+                      animate={{
+                        backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                      style={{ backgroundSize: '200% 200%' }}
+                    />
+                    
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-pink-500/0 group-hover:from-purple-500/5 group-hover:via-blue-500/5 group-hover:to-pink-500/5 rounded-2xl blur-2xl transition-all duration-500"></div>
+                    
+                    {/* Card content */}
+                    <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-900/80 backdrop-blur-2xl border-2 border-white/10 group-hover:border-purple-500/30 rounded-2xl p-6 h-full flex flex-col shadow-xl group-hover:shadow-2xl group-hover:shadow-purple-500/20 transition-all duration-500">
+                      {/* Server Icon & Info */}
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="relative">
+                          {getGuildIcon(guild) ? (
+                            <img
+                              src={getGuildIcon(guild)!}
+                              alt={guild.name}
+                              className="w-16 h-16 rounded-2xl"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                              <span className="text-white text-2xl font-black">
+                                {guild.name.charAt(0)}
+                              </span>
+                            </div>
+                          )}
+                          {guild.owner && (
+                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-gray-900">
+                              <ShieldCheckIcon className="w-4 h-4 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-bold text-lg truncate mb-1">
+                            {guild.name}
+                          </h3>
+                          {guild.memberCount && (
+                            <div className="flex items-center gap-2 text-gray-400 text-sm">
+                              <UsersIcon className="w-4 h-4" />
+                              <span>{guild.memberCount.toLocaleString()} üye</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="mb-4">
+                        {guild.botPresent ? (
+                          <motion.div 
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: index * 0.1 + 0.5 }}
+                          >
+                            <motion.span 
+                              className="w-2 h-2 bg-green-400 rounded-full"
+                              animate={{ 
+                                scale: [1, 1.3, 1],
+                                opacity: [1, 0.7, 1]
+                              }}
+                              transition={{ 
+                                duration: 2, 
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                              }}
+                            ></motion.span>
+                            <span className="text-green-400 text-sm font-medium">Bot Aktif</span>
+                          </motion.div>
                         ) : (
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                            <span className="text-white text-2xl font-black">
-                              {guild.name.charAt(0)}
-                            </span>
-                          </div>
-                        )}
-                        {guild.owner && (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-gray-900">
-                            <ShieldCheckIcon className="w-4 h-4 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-bold text-lg truncate mb-1">
-                          {guild.name}
-                        </h3>
-                        {guild.memberCount && (
-                          <div className="flex items-center gap-2 text-gray-400 text-sm">
-                            <UsersIcon className="w-4 h-4" />
-                            <span>{guild.memberCount.toLocaleString()} üye</span>
-                          </div>
+                          <motion.div 
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-500/20 border border-gray-500/30"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: index * 0.1 + 0.5 }}
+                          >
+                            <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                            <span className="text-gray-400 text-sm font-medium">Bot Yok</span>
+                          </motion.div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Status Badge */}
-                    <div className="mb-4">
-                      {guild.botPresent ? (
-                        <motion.div 
-                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30"
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ delay: index * 0.1 + 0.5 }}
-                        >
-                          <motion.span 
-                            className="w-2 h-2 bg-green-400 rounded-full"
-                            animate={{ 
-                              scale: [1, 1.3, 1],
-                              opacity: [1, 0.7, 1]
-                            }}
-                            transition={{ 
-                              duration: 2, 
-                              repeat: Infinity,
-                              ease: "easeInOut"
-                            }}
-                          ></motion.span>
-                          <span className="text-green-400 text-sm font-medium">Bot Aktif</span>
-                        </motion.div>
-                      ) : (
-                        <motion.div 
-                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-500/20 border border-gray-500/30"
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ delay: index * 0.1 + 0.5 }}
-                        >
-                          <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-                          <span className="text-gray-400 text-sm font-medium">Bot Yok</span>
-                        </motion.div>
-                      )}
+                      {/* Action Button */}
+                      <div className="mt-auto">
+                        {guild.botPresent ? (
+                          <motion.button
+                            onClick={() => handleManageServer(guild.id)}
+                            className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold hover:from-purple-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 + 0.7 }}
+                          >
+                            {/* Animated background */}
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"
+                              initial={{ x: '-100%' }}
+                              whileHover={{ x: '0%' }}
+                              transition={{ duration: 0.3 }}
+                            />
+                            
+                            {/* Shine effect */}
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                              initial={{ x: '-100%' }}
+                              whileHover={{ x: '100%' }}
+                              transition={{ duration: 0.6 }}
+                            />
+                            
+                            <Cog6ToothIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300 relative z-10" />
+                            <span className="relative z-10">Yönet</span>
+                          </motion.button>
+                        ) : (
+                          <motion.button
+                            onClick={() => handleAddBot(guild.id)}
+                            className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:from-green-600 hover:to-emerald-600 transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 + 0.7 }}
+                          >
+                            {/* Animated background */}
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600"
+                              initial={{ x: '-100%' }}
+                              whileHover={{ x: '0%' }}
+                              transition={{ duration: 0.3 }}
+                            />
+                            
+                            {/* Shine effect */}
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                              initial={{ x: '-100%' }}
+                              whileHover={{ x: '100%' }}
+                              transition={{ duration: 0.6 }}
+                            />
+                            
+                            <PlusIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300 relative z-10" />
+                            <span className="relative z-10">Botu Ekle</span>
+                          </motion.button>
+                        )}
+                      </div>
                     </div>
-
-                    {/* Action Button */}
-                    <div className="mt-auto">
-                      {guild.botPresent ? (
-                        <motion.button
-                          onClick={() => handleManageServer(guild.id)}
-                          className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold hover:from-purple-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 + 0.7 }}
-                        >
-                          {/* Animated background */}
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"
-                            initial={{ x: '-100%' }}
-                            whileHover={{ x: '0%' }}
-                            transition={{ duration: 0.3 }}
-                          />
-                          
-                          {/* Shine effect */}
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                            initial={{ x: '-100%' }}
-                            whileHover={{ x: '100%' }}
-                            transition={{ duration: 0.6 }}
-                          />
-                          
-                          <Cog6ToothIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300 relative z-10" />
-                          <span className="relative z-10">Yönet</span>
-                        </motion.button>
-                      ) : (
-                        <motion.button
-                          onClick={() => handleAddBot(guild.id)}
-                          className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:from-green-600 hover:to-emerald-600 transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 + 0.7 }}
-                        >
-                          {/* Animated background */}
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600"
-                            initial={{ x: '-100%' }}
-                            whileHover={{ x: '0%' }}
-                            transition={{ duration: 0.3 }}
-                          />
-                          
-                          {/* Shine effect */}
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                            initial={{ x: '-100%' }}
-                            whileHover={{ x: '100%' }}
-                            transition={{ duration: 0.6 }}
-                          />
-                          
-                          <PlusIcon className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-300 relative z-10" />
-                          <span className="relative z-10">Botu Ekle</span>
-                        </motion.button>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
         </main>
       </div>
     </div>
   );
 }
-
