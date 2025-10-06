@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { backendToFrontend, frontendToBackend } from '@/lib/settingsMapper';
 import {
   Cog6ToothIcon,
   ChevronDownIcon,
@@ -270,12 +271,14 @@ export default function ManagePage() {
       });
       
       if (settingsResponse.ok) {
-        const data = await settingsResponse.json();
-        setSettings(data || {});
-        console.log(`[Manage] Loaded settings for guild ${guildId}:`, Object.keys(data || {}).length, 'settings');
+        const backendData = await settingsResponse.json();
+        // Dönüştür: backend (nested) → frontend (flat)
+        const frontendData = backendToFrontend(backendData);
+        setSettings(frontendData);
+        console.log(`[Manage] Loaded settings for guild ${guildId}:`, Object.keys(frontendData).length, 'settings');
       } else {
         console.warn('[Manage] Failed to fetch settings, using defaults');
-        setSettings({});
+        setSettings(backendToFrontend({})); // Empty defaults
       }
       
       // Fetch real channels from Discord
@@ -344,7 +347,9 @@ export default function ManagePage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       
-      console.log(`[Manage] Saving settings for guild ${selectedGuild.id}:`, settings);
+      // Dönüştür: frontend (flat) → backend (nested)
+      const backendData = frontendToBackend(settings);
+      console.log(`[Manage] Saving settings for guild ${selectedGuild.id}:`, backendData);
       
       const response = await fetch(`${API_URL}/api/guilds/${selectedGuild.id}/settings`, {
         method: 'POST',
@@ -352,13 +357,14 @@ export default function ManagePage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(settings),
+        body: JSON.stringify(backendData),
       });
       
       if (response.ok) {
-        const savedSettings = await response.json();
+        const savedBackendSettings = await response.json();
         console.log(`[Manage] Settings saved successfully for guild ${selectedGuild.id}`);
-        setSettings(savedSettings);
+        // Dönüştür geri: backend → frontend
+        setSettings(backendToFrontend(savedBackendSettings));
         setSaveStatus('success');
         setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
