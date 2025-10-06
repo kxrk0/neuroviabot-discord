@@ -30,7 +30,7 @@ module.exports = {
     {
       name: 'neuroviabot-backend',
       script: './index.js',
-      cwd: '/root/neuroviabot/bot/backend',
+      cwd: '/root/neuroviabot/bot/neuroviabot-backend',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -52,7 +52,7 @@ module.exports = {
       name: 'neuroviabot-frontend',
       script: 'npm',
       args: 'start',
-      cwd: '/root/neuroviabot/bot/frontend',
+      cwd: '/root/neuroviabot/bot/neuroviabot-frontend',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
