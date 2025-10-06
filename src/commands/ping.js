@@ -10,7 +10,7 @@ module.exports = {
         const start = Date.now();
         
         // İlk yanıt (API gecikmesi için)
-        await interaction.reply({ content: '🏓 Pong! Gecikme hesaplanıyor...', ephemeral: true });
+        await interaction.deferReply();
         
         const end = Date.now();
         
@@ -74,7 +74,7 @@ module.exports = {
             })
             .setTimestamp();
 
-        await interaction.editReply({ content: '', embeds: [pingEmbed] });
+        await interaction.editReply({ embeds: [pingEmbed] });
     },
 };
 
