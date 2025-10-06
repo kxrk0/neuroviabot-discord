@@ -25,7 +25,13 @@ if ! grep -q "BACKEND_URL" .env; then
 fi
 
 echo ""
-echo "🔄 5. Tüm PM2 servisleri restart..."
+echo "🏗️  5. Frontend build..."
+cd neuroviabot-frontend
+npm run build
+cd ..
+
+echo ""
+echo "🔄 6. Tüm PM2 servisleri restart..."
 pm2 restart all
 
 echo ""
