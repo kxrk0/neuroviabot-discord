@@ -123,6 +123,10 @@ export default function DashboardPage() {
     }, 3000);
   };
 
+  const handleManageServer = (guildId: string) => {
+    router.push('/manage');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] flex items-center justify-center">
@@ -407,7 +411,7 @@ function GuildCard({ guild, getIconUrl, inviteBot, index }: GuildCardProps) {
         <div className="mt-auto">
           {guild.botPresent ? (
             <Link
-              href={`/dashboard/${guild.id}`}
+              href="/manage"
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl transition-all duration-300 group/btn"
             >
               <Cog6ToothIcon className="w-5 h-5" />

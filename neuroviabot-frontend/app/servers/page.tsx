@@ -76,7 +76,7 @@ export default function OverviewPage() {
   };
 
   const handleManageServer = (guildId: string) => {
-    router.push(`/manage/${guildId}`);
+    router.push('/manage');
   };
 
   const handleAddBot = (guildId: string) => {
