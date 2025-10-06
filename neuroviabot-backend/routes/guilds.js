@@ -213,8 +213,34 @@ router.get('/:guildId/settings/:category', requireAuth, async (req, res) => {
   }
 });
 
-// Bulk update settings
+// Bulk update settings (PUT)
 router.put('/:guildId/settings', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  const updates = req.body;
+  
+  try {
+    // Update in bot database
+    const settings = db.updateGuildSettings(guildId, updates);
+    
+    // Emit real-time update via WebSocket
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`guild_${guildId}`).emit('settings_changed', {
+        guildId,
+        settings,
+        timestamp: new Date().toISOString(),
+      });
+    }
+    
+    res.json(settings);
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// Bulk update settings (POST) - for frontend compatibility
+router.post('/:guildId/settings', requireAuth, async (req, res) => {
   const { guildId } = req.params;
   const updates = req.body;
   
@@ -254,70 +280,6 @@ router.post('/:guildId/settings/reset', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Error resetting settings:', error);
     res.status(500).json({ error: 'Failed to reset settings' });
-  }
-});
-
-// Get guild settings
-router.get('/:guildId/settings', requireAuth, async (req, res) => {
-  try {
-    const { guildId } = req.params;
-    const db = req.app.get('db');
-    
-    // Get guild settings from database
-    const guild = db.data.guilds.get(guildId);
-    
-    if (!guild) {
-      return res.status(404).json({ error: 'Guild not found' });
-    }
-    
-    // Return settings or empty object if no settings
-    res.json(guild.settings || {});
-  } catch (error) {
-    console.error('Error fetching guild settings:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Update guild settings
-router.put('/:guildId/settings', requireAuth, async (req, res) => {
-  try {
-    const { guildId } = req.params;
-    const { category, feature, setting, value } = req.body;
-    const db = req.app.get('db');
-    
-    // Get or create guild
-    let guild = db.data.guilds.get(guildId);
-    if (!guild) {
-      guild = {
-        id: guildId,
-        name: 'Unknown Guild',
-        settings: {}
-      };
-      db.data.guilds.set(guildId, guild);
-    }
-    
-    // Initialize settings structure if not exists
-    if (!guild.settings) {
-      guild.settings = {};
-    }
-    if (!guild.settings[category]) {
-      guild.settings[category] = {};
-    }
-    if (!guild.settings[category][feature]) {
-      guild.settings[category][feature] = {};
-    }
-    
-    // Update setting
-    guild.settings[category][feature][setting] = value;
-    
-    // Save to database
-    db.data.guilds.set(guildId, guild);
-    db.save();
-    
-    res.json({ success: true, message: 'Setting updated successfully' });
-  } catch (error) {
-    console.error('Error updating guild settings:', error);
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
