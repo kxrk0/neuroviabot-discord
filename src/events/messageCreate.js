@@ -39,6 +39,10 @@ module.exports = {
             // Database'e kullanıcı/guild bilgilerini kaydet
             await saveToDatabase(message);
 
+            // Auto-Moderation kontrolü
+            const shouldContinue = await handleAutoModeration(message);
+            if (!shouldContinue) return; // Mesaj otomatik moderasyon tarafından silinmişse dur
+
             // Custom command kontrolü
             await handleCustomCommands(message);
 
@@ -54,6 +58,128 @@ module.exports = {
         }
     }
 };
+
+// Auto-Moderation handler
+async function handleAutoModeration(message) {
+    try {
+        const { getDatabase } = require('../database/simple-db');
+        const { EmbedBuilder } = require('discord.js');
+        const db = getDatabase();
+        
+        // Sunucu ayarlarını kontrol et
+        const settings = db.getGuildSettings(message.guild.id);
+        
+        // Auto-mod aktif mi kontrol et
+        if (!settings.moderationEnabled || !settings.autoModEnabled) return true;
+        
+        const content = message.content.toLowerCase();
+        let shouldDelete = false;
+        let reason = '';
+        
+        // Davet linki kontrolü
+        if (settings.antiInvite && (content.includes('discord.gg/') || content.includes('discord.com/invite/'))) {
+            shouldDelete = true;
+            reason = 'Discord davet linki paylaşımı yasak';
+        }
+        
+        // Link kontrolü
+        if (settings.antiLink && (content.includes('http://') || content.includes('https://') || content.includes('www.'))) {
+            shouldDelete = true;
+            reason = 'Link paylaşımı yasak';
+        }
+        
+        // Kötü kelime kontrolü
+        if (settings.badWords && settings.badWords.length > 0) {
+            const badWordsList = typeof settings.badWords === 'string' 
+                ? settings.badWords.split(',').map(w => w.trim().toLowerCase())
+                : settings.badWords;
+            
+            for (const badWord of badWordsList) {
+                if (content.includes(badWord)) {
+                    shouldDelete = true;
+                    reason = 'Yasaklı kelime kullanımı';
+                    break;
+                }
+            }
+        }
+        
+        // Spam kontrolü
+        if (settings.spamProtection) {
+            const userId = message.author.id;
+            if (!message.client.spamTracker) {
+                message.client.spamTracker = new Map();
+            }
+            
+            const now = Date.now();
+            const userSpam = message.client.spamTracker.get(userId) || [];
+            
+            // Son 5 saniyedeki mesajları filtrele
+            const recentMessages = userSpam.filter(timestamp => now - timestamp < 5000);
+            recentMessages.push(now);
+            
+            message.client.spamTracker.set(userId, recentMessages);
+            
+            // 5 saniyede 5'ten fazla mesaj
+            if (recentMessages.length > 5) {
+                shouldDelete = true;
+                reason = 'Spam tespiti';
+            }
+        }
+        
+        // Mesajı sil ve uyarı ver
+        if (shouldDelete) {
+            try {
+                await message.delete();
+                
+                // Kullanıcıya uyarı gönder
+                const warningEmbed = new EmbedBuilder()
+                    .setColor('#ff4444')
+                    .setTitle('⚠️ Otomatik Moderasyon')
+                    .setDescription(`${message.author}, mesajınız otomatik moderasyon sistemi tarafından silindi.`)
+                    .addFields({ name: 'Sebep', value: reason })
+                    .setTimestamp();
+                
+                const warningMessage = await message.channel.send({ embeds: [warningEmbed] });
+                
+                // 5 saniye sonra uyarı mesajını da sil
+                setTimeout(() => {
+                    warningMessage.delete().catch(() => {});
+                }, 5000);
+                
+                // Mod log kanalına bildir
+                if (settings.modLogChannelId) {
+                    const modLogChannel = message.guild.channels.cache.get(settings.modLogChannelId);
+                    if (modLogChannel) {
+                        const modLogEmbed = new EmbedBuilder()
+                            .setColor('#ff4444')
+                            .setTitle('🛡️ Auto-Mod: Mesaj Silindi')
+                            .addFields(
+                                { name: '👤 Kullanıcı', value: `${message.author.tag} (${message.author.id})`, inline: true },
+                                { name: '📢 Kanal', value: `${message.channel}`, inline: true },
+                                { name: '📝 İçerik', value: message.content.substring(0, 1024) || '*İçerik yok*' },
+                                { name: '⚠️ Sebep', value: reason }
+                            )
+                            .setTimestamp();
+                        
+                        await modLogChannel.send({ embeds: [modLogEmbed] });
+                    }
+                }
+                
+                logger.info(`[Auto-Mod] Message deleted from ${message.author.tag}: ${reason}`);
+                return false; // Mesaj silindi, işleme devam etme
+            } catch (error) {
+                console.error('❌ Auto-mod handler hatası');
+                return true;
+            }
+        }
+        
+        return true; // Mesaj temiz, işleme devam et
+        
+    } catch (error) {
+        console.error('❌ Auto-mod handler hatası');
+        return true;
+    }
+}
 
 // Database'e kaydetme
 async function saveToDatabase(message) {
@@ -125,23 +251,28 @@ async function handleCustomCommands(message) {
 // Leveling sistemi
 async function handleLevelingSystem(message) {
     try {
-        const config = require('../config.js');
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
         
-        // Feature flag kontrolü
-        if (!config.features.leveling) return;
+        // Sunucu ayarlarını kontrol et
+        const settings = db.getGuildSettings(message.guild.id);
         
-        // Cooldown kontrolü (60 saniye)
+        // Leveling aktif mi kontrol et
+        if (!settings.levelingEnabled) return;
+        
+        // Cooldown kontrolü (ayarlarda tanımlı veya 60 saniye)
         const userId = message.author.id;
         const guildId = message.guild.id;
         const cooldownKey = `${userId}-${guildId}`;
         
-        if (client.xpCooldowns && client.xpCooldowns.has(cooldownKey)) {
+        if (message.client.xpCooldowns && message.client.xpCooldowns.has(cooldownKey)) {
             return;
         }
         
-        // XP hesaplama (mesaj uzunluğuna göre)
+        // XP hesaplama (ayarlardaki miktarı kullan)
         const messageLength = message.content.length;
-        let xpGain = Math.floor(Math.random() * 10) + 5; // 5-15 XP base
+        const baseXP = settings.xpPerMessage || 15;
+        let xpGain = Math.floor(Math.random() * (baseXP / 2)) + (baseXP / 2); // Base XP ±50%
         
         // Mesaj uzunluğu bonusu
         if (messageLength > 50) xpGain += 2;
@@ -187,16 +318,17 @@ async function handleLevelingSystem(message) {
             }
         }
         
-        // Cooldown ekle
-        if (!client.xpCooldowns) {
-            client.xpCooldowns = new Map();
+        // Cooldown ekle (ayarlardaki süreyi kullan)
+        if (!message.client.xpCooldowns) {
+            message.client.xpCooldowns = new Map();
         }
-        client.xpCooldowns.set(cooldownKey, Date.now());
+        message.client.xpCooldowns.set(cooldownKey, Date.now());
         
-        // 60 saniye sonra cooldown'ı kaldır
+        // Ayarlardaki cooldown süresini kullan (saniye cinsinden)
+        const cooldownDuration = (settings.xpCooldown || 60) * 1000;
         setTimeout(() => {
-            client.xpCooldowns.delete(cooldownKey);
-        }, 60000);
+            message.client.xpCooldowns.delete(cooldownKey);
+        }, cooldownDuration);
         
     } catch (error) {
         logger.debug('Leveling system hatası', error);

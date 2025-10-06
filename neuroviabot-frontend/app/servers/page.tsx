@@ -75,7 +75,8 @@ export default function ServersPage() {
   };
 
   const handleManageServer = (guildId: string) => {
-    router.push('/manage');
+    // Redirect to universal manage page with guild ID in URL as query parameter
+    router.push(`/manage?guild=${guildId}`);
   };
 
   const handleAddBot = (guildId: string) => {

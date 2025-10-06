@@ -204,6 +204,22 @@ export default function ManagePage() {
     fetchUserGuilds();
   }, []);
 
+  // Read guild ID from URL query parameter
+  useEffect(() => {
+    if (typeof window !== 'undefined' && guilds.length > 0) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const guildIdFromUrl = urlParams.get('guild');
+      
+      if (guildIdFromUrl) {
+        const guild = guilds.find((g: any) => g.id === guildIdFromUrl);
+        if (guild) {
+          setSelectedGuild(guild);
+          console.log(`[Manage] Selected guild from URL: ${guild.name} (${guild.id})`);
+        }
+      }
+    }
+  }, [guilds]);
+
   useEffect(() => {
     if (selectedGuild) {
       fetchGuildData(selectedGuild.id);

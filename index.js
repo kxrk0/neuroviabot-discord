@@ -251,6 +251,45 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+// Logging Events
+const loggingHandler = require('./src/handlers/loggingHandler');
+
+client.on('messageDelete', async (message) => {
+    await loggingHandler.logMessageDelete(message);
+});
+
+client.on('messageUpdate', async (oldMessage, newMessage) => {
+    await loggingHandler.logMessageUpdate(oldMessage, newMessage);
+});
+
+client.on('guildMemberAdd', async (member) => {
+    await loggingHandler.logMemberJoin(member);
+});
+
+client.on('guildMemberRemove', async (member) => {
+    await loggingHandler.logMemberLeave(member);
+});
+
+client.on('roleCreate', async (role) => {
+    await loggingHandler.logRoleCreate(role);
+});
+
+client.on('roleDelete', async (role) => {
+    await loggingHandler.logRoleDelete(role);
+});
+
+client.on('channelCreate', async (channel) => {
+    await loggingHandler.logChannelCreate(channel);
+});
+
+client.on('channelDelete', async (channel) => {
+    await loggingHandler.logChannelDelete(channel);
+});
+
+client.on('voiceStateUpdate', async (oldState, newState) => {
+    await loggingHandler.logVoiceStateUpdate(oldState, newState);
+});
+
 // Hata yakalama
 client.on('error', error => {
     log(`Client error: ${error.message}`, 'ERROR');
