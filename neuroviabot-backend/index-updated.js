@@ -8,7 +8,6 @@ const DiscordStrategy = require('passport-discord').Strategy;
 const http = require('http');
 const { Server } = require('socket.io');
 const { getDatabase } = require('./database/simple-db');
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,8 +16,6 @@ const PORT = process.env.PORT || 5000;
 // Get shared database instance (synced with main bot)
 const db = getDatabase();
 console.log('[Backend] Database loaded, shared with main bot');
-console.log('[Backend] Database path:', db.dbPath);
-console.log('[Backend] Guilds in database:', Array.from(db.data.guilds.keys()));
 
 // Make database available to routes
 app.set('db', db);
@@ -152,3 +149,4 @@ server.listen(PORT, () => {
   console.log(`[Backend] Socket.IO enabled`);
   console.log(`[Backend] Environment: ${process.env.NODE_ENV || 'development'}`);
 });
+

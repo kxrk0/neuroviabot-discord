@@ -18,7 +18,7 @@ const requireAuth = (req, res, next) => {
 router.get('/user', requireAuth, async (req, res) => {
   try {
     const accessToken = req.user.accessToken;
-    const botClient = req.app.get('botClient');
+    const db = req.app.get('db');
     
     // Fetch user's guilds from Discord API
     const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
@@ -39,23 +39,27 @@ router.get('/user', requireAuth, async (req, res) => {
       return guild.owner || (permissions & BigInt(0x8)) === BigInt(0x8);
     });
     
-    // Get bot guild IDs from Discord bot client
-    const botGuildIds = botClient && botClient.guilds 
-      ? Array.from(botClient.guilds.cache.keys())
-      : [];
+    // Get bot guild IDs from database
+    const botGuildIds = Array.from(db.data.guilds.keys());
     
     console.log('[Guilds] Bot is in', botGuildIds.length, 'guilds');
+    console.log('[Guilds] Bot guild IDs:', botGuildIds);
+    console.log('[Guilds] User admin guild IDs:', adminGuilds.map(g => g.id));
     
     // Enhance guild data with bot presence
     const enhancedGuilds = adminGuilds.map(guild => {
-      const botGuild = botClient?.guilds?.cache.get(guild.id);
+      const botGuild = db.data.guilds.get(guild.id);
+      const botPresent = botGuildIds.includes(guild.id);
+      
+      console.log(`[Guilds] ${guild.name} (${guild.id}): botPresent=${botPresent}`);
+      
       return {
         id: guild.id,
         name: guild.name,
         icon: guild.icon,
         owner: guild.owner,
         permissions: guild.permissions,
-        botPresent: botGuildIds.includes(guild.id),
+        botPresent: botPresent,
         memberCount: botGuild?.memberCount || null,
       };
     });
@@ -93,8 +97,8 @@ router.get('/:guildId', requireAuth, async (req, res) => {
   const { guildId } = req.params;
   
   try {
-    const botClient = req.app.get('botClient');
-    const guild = botClient?.guilds?.cache.get(guildId);
+    const db = req.app.get('db');
+    const guild = db.data.guilds.get(guildId);
     
     if (!guild) {
       return res.status(404).json({ 

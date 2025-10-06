@@ -19,6 +19,7 @@ import {
   UserGroupIcon,
   ServerIcon,
   ChevronDownIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
 export default function Home() {
@@ -26,6 +27,8 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en'>('tr');
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -52,12 +55,58 @@ export default function Home() {
       }
     };
     
+    const loadUser = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+        console.log('👤 Fetching user from:', `${API_URL}/api/auth/user`);
+        console.log('👤 Cookies:', document.cookie);
+        
+        const response = await fetch(`${API_URL}/api/auth/user`, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        console.log('👤 Response status:', response.status);
+        console.log('👤 Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        if (response.ok) {
+          const userData = await response.json();
+          console.log('👤 User logged in:', userData);
+          setUser(userData);
+        } else {
+          const errorData = await response.text();
+          console.log('👤 No user logged in, error:', errorData);
+          setUser(null);
+        }
+      } catch (error) {
+        console.log('👤 User check failed:', error);
+        setUser(null);
+      }
+    };
+    
     loadStats();
+    loadUser();
     
     // Her 30 saniyede bir güncelle
     const interval = setInterval(loadStats, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      setUser(null);
+      setUserMenuOpen(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const t = {
     tr: {
@@ -73,6 +122,9 @@ export default function Home() {
       login: 'Giriş Yap',
       whatCanYouDo: 'Neler Yapabilirsin?',
       whatCanYouDoDesc: 'Sunucunu yönetmek ve eğlenceli hale getirmek için her şey burada',
+      home: 'Ana Sayfa',
+      logout: 'Çıkış Yap',
+      myServers: 'Sunucularım',
     },
     en: {
       title: 'The best all-in-one bot for Discord',
@@ -87,6 +139,9 @@ export default function Home() {
       login: 'Login',
       whatCanYouDo: 'What Can You Do?',
       whatCanYouDoDesc: 'Everything you need to manage and make your server fun',
+      home: 'Home',
+      logout: 'Logout',
+      myServers: 'My Servers',
     }
   };
 
@@ -351,46 +406,114 @@ export default function Home() {
                 </AnimatePresence>
               </div>
 
-              {/* Discord Login - Modern */}
-              <motion.a
-                href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative group flex items-center gap-2.5 px-6 py-3 text-sm font-bold overflow-hidden rounded-xl transition-all shadow-lg hover:shadow-xl"
-              >
-                {/* Background with gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] to-[#7289DA] transition-all duration-150"></div>
-                
-                {/* Animated glow */}
-                <motion.div
-                  animate={{
-                    opacity: [0.5, 0.8, 0.5]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  className="absolute inset-0 bg-[#5865F2] blur-xl opacity-50"
-                />
-                
-                {/* Content */}
-                <div className="relative flex items-center gap-2.5 text-white z-10">
-                  <motion.svg 
-                    className="w-5 h-5" 
-                    fill="currentColor" 
-                    viewBox="0 0 24 24"
-                    whileHover={{ rotate: [0, -10, 10, 0] }}
-            transition={{ duration: 0.5 }}
+              {/* Discord Login / User Profile */}
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
                   >
-                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                  </motion.svg>
-                  <span className="hidden sm:inline font-bold tracking-wide drop-shadow-sm">{t[language].login}</span>
+                    <img
+                      src={user.avatar 
+                        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+                        : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`
+                      }
+                      alt={user.username}
+                      className="w-8 h-8 rounded-full ring-2 ring-purple-500/30 group-hover:ring-purple-500/60 transition-all"
+                    />
+                    <span className="hidden md:inline text-white font-semibold">{user.username}</span>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {userMenuOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setUserMenuOpen(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 mt-2 w-56 rounded-xl bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 shadow-2xl z-50 overflow-hidden"
+                        >
+                          {/* User Info */}
+                          <div className="p-4 border-b border-white/10 bg-gradient-to-br from-purple-500/10 to-blue-500/10">
+                            <p className="text-white font-semibold truncate">{user.username}</p>
+                            {user.discriminator && user.discriminator !== '0' && (
+                              <p className="text-gray-400 text-sm">#{user.discriminator}</p>
+                            )}
+                          </div>
+                          
+                          {/* Menu Items */}
+                          <div className="p-2">
+                            <Link
+                              href="/servers"
+                              className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <ServerIcon className="w-5 h-5" />
+                              <span className="text-sm font-medium">{t[language].myServers}</span>
+                            </Link>
+                            <button
+                              onClick={() => {
+                                setUserMenuOpen(false);
+                                handleLogout();
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                            >
+                              <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                              <span className="text-sm font-medium">{t[language].logout}</span>
+                            </button>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
                 </div>
-                
-                {/* Border glow */}
-                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity ring-2 ring-white/20"></div>
-              </motion.a>
+              ) : (
+                <motion.a
+                  href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2Fneuroviabot.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative group flex items-center gap-2.5 px-6 py-3 text-sm font-bold overflow-hidden rounded-xl transition-all shadow-lg hover:shadow-xl"
+                >
+                  {/* Background with gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] to-[#7289DA] transition-all duration-150"></div>
+                  
+                  {/* Animated glow */}
+                  <motion.div
+                    animate={{
+                      opacity: [0.5, 0.8, 0.5]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="absolute inset-0 bg-[#5865F2] blur-xl opacity-50"
+                  />
+                  
+                  {/* Content */}
+                  <div className="relative flex items-center gap-2.5 text-white z-10">
+                    <motion.svg 
+                      className="w-5 h-5" 
+                      fill="currentColor" 
+                      viewBox="0 0 24 24"
+                      whileHover={{ rotate: [0, -10, 10, 0] }}
+            transition={{ duration: 0.5 }}
+                    >
+                      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                    </motion.svg>
+                    <span className="hidden sm:inline font-bold tracking-wide drop-shadow-sm">{t[language].login}</span>
+                  </div>
+                  
+                  {/* Border glow */}
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity ring-2 ring-white/20"></div>
+                </motion.a>
+              )}
             </div>
           </div>
         </div>

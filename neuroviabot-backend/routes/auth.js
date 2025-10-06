@@ -29,10 +29,21 @@ router.get('/callback',
         }
         
         console.log('[OAuth] Login successful, session ID:', req.sessionID);
+        console.log('[OAuth] Session:', JSON.stringify(req.session, null, 2));
         console.log('[OAuth] Session cookie:', req.session.cookie);
+        console.log('[OAuth] User:', user.username);
         
-        // Redirect to frontend servers page
-        return res.redirect('https://neuroviabot.xyz/servers');
+        // Save session explicitly
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('[OAuth] Session save error:', saveErr);
+          } else {
+            console.log('[OAuth] Session saved successfully');
+          }
+          
+          // Redirect to frontend home page
+          return res.redirect('https://neuroviabot.xyz/');
+        });
       });
     })(req, res, next);
   }
@@ -41,13 +52,17 @@ router.get('/callback',
 // Get current user
 router.get('/user', (req, res) => {
   console.log('[Auth] /user called, session ID:', req.sessionID);
+  console.log('[Auth] Session:', JSON.stringify(req.session, null, 2));
+  console.log('[Auth] Cookies:', req.headers.cookie);
   console.log('[Auth] isAuthenticated:', req.isAuthenticated());
+  console.log('[Auth] req.user:', req.user);
   
   if (!req.isAuthenticated()) {
-    console.log('[Auth] User not authenticated, session:', req.session);
+    console.log('[Auth] User not authenticated');
     return res.status(401).json({ error: 'Not authenticated' });
   }
   
+  console.log('[Auth] Sending user data:', req.user.username);
   res.json({
     id: req.user.id,
     username: req.user.username,

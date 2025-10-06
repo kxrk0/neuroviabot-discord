@@ -4,53 +4,31 @@ const router = express.Router();
 // Get bot stats
 router.get('/stats', (req, res) => {
   try {
-    const botClient = req.app.get('botClient');
+    const db = req.app.get('db');
     
-    console.log('[Backend API] /stats called');
-    console.log('[Backend API] botClient exists:', !!botClient);
-    console.log('[Backend API] botClient.user:', botClient?.user?.tag);
-    console.log('[Backend API] botClient.isReady():', botClient?.isReady?.());
+    // Get guild data from shared database
+    const guilds = Array.from(db.data.guilds.values());
+    const guildIds = Array.from(db.data.guilds.keys());
     
-    if (!botClient || !botClient.user || !botClient.isReady()) {
-      console.log('[Backend API] Bot not ready, returning zeros');
-      return res.json({
-        guilds: 0,
-        users: 0,
-        commands: 43,
-        uptime: 0,
-        ping: 0,
-        memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024,
-        guildIds: [],
-      });
-    }
-    
-    const guildIds = Array.from(botClient.guilds.cache.keys());
-    console.log('[Backend API] Guild count:', botClient.guilds.cache.size);
-    
-    // REAL-TIME kullanıcı sayısı hesaplama - Bot streaming activity'si ile senkronize
-    // Her guild'den gerçek member count al (bot streaming'de gösterilen ile aynı)
+    // Calculate total users from database
     let totalUsers = 0;
-    let guildsWithMembers = 0;
-    
-    botClient.guilds.cache.forEach((guild) => {
+    guilds.forEach((guild) => {
       if (guild.memberCount) {
         totalUsers += guild.memberCount;
-        guildsWithMembers++;
       }
-      console.log(`[Backend API] Guild: ${guild.name}, memberCount: ${guild.memberCount}`);
     });
     
-    console.log('[Backend API] Total users calculated:', totalUsers);
-    console.log('[Backend API] Guilds with member data:', guildsWithMembers);
+    console.log('[Backend API] Stats from database - Guilds:', guilds.length, 'Users:', totalUsers);
+    console.log('[Backend API] Guild IDs:', guildIds);
     
     res.json({
-      guilds: botClient.guilds.cache.size,
-      users: totalUsers, // ✅ Artık streaming activity ile aynı değer
+      guilds: guilds.length,
+      users: totalUsers,
       commands: 43,
-      uptime: botClient.uptime,
-      ping: botClient.ws.ping,
+      uptime: process.uptime() * 1000, // Process uptime in milliseconds
+      ping: 0, // Not available without bot client
       memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
-      guildIds: guildIds, // List of guild IDs where bot is present
+      guildIds: guildIds,
     });
   } catch (error) {
     console.error('[Backend API] Error fetching bot stats:', error);
@@ -82,8 +60,8 @@ router.get('/check-guild/:guildId', (req, res) => {
   const { guildId } = req.params;
   
   try {
-    const botClient = req.app.get('botClient');
-    const guild = botClient?.guilds?.cache.get(guildId);
+    const db = req.app.get('db');
+    const guild = db.data.guilds.get(guildId);
     const isPresent = !!guild;
     
     res.json({
@@ -109,10 +87,10 @@ router.post('/check-guilds', (req, res) => {
   }
   
   try {
-    const botClient = req.app.get('botClient');
+    const db = req.app.get('db');
     
     const results = guildIds.map(guildId => {
-      const guild = botClient?.guilds?.cache.get(guildId);
+      const guild = db.data.guilds.get(guildId);
       return {
         guildId,
         botPresent: !!guild,

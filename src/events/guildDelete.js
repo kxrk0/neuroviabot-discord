@@ -40,17 +40,31 @@ module.exports = {
 // Guild'i database'de güncelle
 async function updateGuildInDatabase(guild) {
     try {
-        // Guild kaydını güncelle (silme yerine leftAt timestamp ekle)
-        const existingGuild = await Guild.findById(guild.id);
+        // Simple database'den kaldır (backend ile paylaşılan)
+        const db = require('../database/simple-db');
+        const existingGuild = db.getGuild(guild.id);
         
         if (existingGuild) {
+            // Guild'i sil
+            db.data.guilds.delete(guild.id);
+            
+            logger.success('Guild simple database\'den kaldırıldı', {
+                guildName: guild.name,
+                guildId: guild.id
+            });
+        }
+
+        // Sequelize database'de güncelle (opsiyonel)
+        const sequelizeGuild = await Guild.findById(guild.id);
+        
+        if (sequelizeGuild) {
             await Guild.update(guild.id, {
                 leftAt: new Date().toISOString(),
                 lastMemberCount: guild.memberCount,
                 active: false
             });
 
-            logger.debug('Guild database\'de güncellendi (leftAt)', {
+            logger.debug('Guild sequelize database\'de güncellendi (leftAt)', {
                 guildName: guild.name,
                 guildId: guild.id
             });

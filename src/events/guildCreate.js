@@ -44,7 +44,9 @@ module.exports = {
 // Guild'i database'e kaydet
 async function saveGuildToDatabase(guild) {
     try {
-        await getOrCreateGuild(guild.id, {
+        // Simple database'e kaydet (backend ile paylaşılan)
+        const db = require('../database/simple-db');
+        const guildData = {
             name: guild.name,
             memberCount: guild.memberCount,
             ownerId: guild.ownerId,
@@ -52,10 +54,23 @@ async function saveGuildToDatabase(guild) {
             joinedAt: new Date().toISOString(),
             features: guild.features || [],
             boostLevel: guild.premiumTier || 0,
-            boostCount: guild.premiumSubscriptionCount || 0
+            boostCount: guild.premiumSubscriptionCount || 0,
+            icon: guild.icon,
+            active: true
+        };
+        
+        db.getOrCreateGuild(guild.id, guildData);
+        
+        logger.success('Guild simple database\'e kaydedildi', {
+            guildName: guild.name,
+            guildId: guild.id,
+            memberCount: guild.memberCount
         });
 
-        logger.debug('Guild database\'e kaydedildi', {
+        // Sequelize database'e de kaydet (opsiyonel)
+        await getOrCreateGuild(guild.id, guildData);
+
+        logger.debug('Guild sequelize database\'e kaydedildi', {
             guildName: guild.name,
             guildId: guild.id
         });
