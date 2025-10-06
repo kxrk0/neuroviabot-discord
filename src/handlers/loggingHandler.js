@@ -19,9 +19,9 @@ async function logMessageDelete(message) {
         const settings = db.getGuildSettings(message.guild.id);
         
         // Loglama aktif mi ve kanal ayarlanmış mı kontrol et
-        if (!settings.loggingEnabled || !settings.messageLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.messageLogChannel) return;
         
-        const logChannel = message.guild.channels.cache.get(settings.messageLogChannelId);
+        const logChannel = message.guild.channels.cache.get(settings.messageLogChannel);
         if (!logChannel) return;
         
         const embed = new EmbedBuilder()
@@ -57,9 +57,9 @@ async function logMessageUpdate(oldMessage, newMessage) {
         const db = getDatabase();
         const settings = db.getGuildSettings(newMessage.guild.id);
         
-        if (!settings.loggingEnabled || !settings.messageLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.messageLogChannel) return;
         
-        const logChannel = newMessage.guild.channels.cache.get(settings.messageLogChannelId);
+        const logChannel = newMessage.guild.channels.cache.get(settings.messageLogChannel);
         if (!logChannel) return;
         
         const embed = new EmbedBuilder()
@@ -90,9 +90,9 @@ async function logMemberJoin(member) {
         const db = getDatabase();
         const settings = db.getGuildSettings(member.guild.id);
         
-        if (!settings.loggingEnabled || !settings.memberLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.serverLogChannel) return;
         
-        const logChannel = member.guild.channels.cache.get(settings.memberLogChannelId);
+        const logChannel = member.guild.channels.cache.get(settings.serverLogChannel);
         if (!logChannel) return;
         
         const embed = new EmbedBuilder()
@@ -124,9 +124,9 @@ async function logMemberLeave(member) {
         const db = getDatabase();
         const settings = db.getGuildSettings(member.guild.id);
         
-        if (!settings.loggingEnabled || !settings.memberLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.serverLogChannel) return;
         
-        const logChannel = member.guild.channels.cache.get(settings.memberLogChannelId);
+        const logChannel = member.guild.channels.cache.get(settings.serverLogChannel);
         if (!logChannel) return;
         
         const embed = new EmbedBuilder()
@@ -158,9 +158,9 @@ async function logRoleCreate(role) {
         const db = getDatabase();
         const settings = db.getGuildSettings(role.guild.id);
         
-        if (!settings.loggingEnabled || !settings.roleLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.serverLogChannel) return;
         
-        const logChannel = role.guild.channels.cache.get(settings.roleLogChannelId);
+        const logChannel = role.guild.channels.cache.get(settings.serverLogChannel);
         if (!logChannel) return;
         
         const embed = new EmbedBuilder()
@@ -190,9 +190,9 @@ async function logRoleDelete(role) {
         const db = getDatabase();
         const settings = db.getGuildSettings(role.guild.id);
         
-        if (!settings.loggingEnabled || !settings.roleLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.serverLogChannel) return;
         
-        const logChannel = role.guild.channels.cache.get(settings.roleLogChannelId);
+        const logChannel = role.guild.channels.cache.get(settings.serverLogChannel);
         if (!logChannel) return;
         
         const embed = new EmbedBuilder()
@@ -223,9 +223,9 @@ async function logChannelCreate(channel) {
         const db = getDatabase();
         const settings = db.getGuildSettings(channel.guild.id);
         
-        if (!settings.loggingEnabled || !settings.channelLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.serverLogChannel) return;
         
-        const logChannel = channel.guild.channels.cache.get(settings.channelLogChannelId);
+        const logChannel = channel.guild.channels.cache.get(settings.serverLogChannel);
         if (!logChannel) return;
         
         const channelTypes = {
@@ -265,9 +265,9 @@ async function logChannelDelete(channel) {
         const db = getDatabase();
         const settings = db.getGuildSettings(channel.guild.id);
         
-        if (!settings.loggingEnabled || !settings.channelLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.serverLogChannel) return;
         
-        const logChannel = channel.guild.channels.cache.get(settings.channelLogChannelId);
+        const logChannel = channel.guild.channels.cache.get(settings.serverLogChannel);
         if (!logChannel || logChannel.id === channel.id) return; // Silinen kanal log kanalıysa loglamayalım
         
         const channelTypes = {
@@ -305,9 +305,9 @@ async function logVoiceStateUpdate(oldState, newState) {
         const db = getDatabase();
         const settings = db.getGuildSettings(newState.guild.id);
         
-        if (!settings.loggingEnabled || !settings.voiceLogChannelId) return;
+        if (!settings.loggingEnabled || !settings.serverLogChannel) return;
         
-        const logChannel = newState.guild.channels.cache.get(settings.voiceLogChannelId);
+        const logChannel = newState.guild.channels.cache.get(settings.serverLogChannel);
         if (!logChannel) return;
         
         let embed;
