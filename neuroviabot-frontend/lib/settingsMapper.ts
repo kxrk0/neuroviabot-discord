@@ -148,8 +148,9 @@ export function frontendToBackend(frontendSettings: any): any {
       enabled: frontendSettings.levelingEnabled ?? false,
       xpPerMessage: frontendSettings.xpPerMessage ?? 15,
       xpCooldown: frontendSettings.xpCooldown ?? 60,
-      levelUpMessage: frontendSettings.levelUpMessage ? true : false, // Boolean
+      levelUpMessage: frontendSettings.levelUpMessage ? true : false, // Boolean (backend expects boolean)
       levelUpChannelId: frontendSettings.levelUpChannel ?? null,
+      levelRoles: {}, // Empty object for now
     },
     
     // Autorole
