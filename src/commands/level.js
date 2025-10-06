@@ -113,7 +113,7 @@ module.exports = {
                 .setDescription('Bu komutu kullanabilmek için **Sunucuyu Yönet** yetkisine sahip olmanız gerekiyor!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -147,9 +147,9 @@ module.exports = {
                 .setTimestamp();
 
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ embeds: [errorEmbed], flags: [4096] });
+                await interaction.followUp({ embeds: [errorEmbed], flags: 64 });
             } else {
-                await interaction.reply({ embeds: [errorEmbed], flags: [4096] });
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
     },
@@ -164,7 +164,7 @@ module.exports = {
                 .setDescription('Bot kullanıcılarının seviye verisi yoktur!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // simple-db'den ayarları al
@@ -178,7 +178,7 @@ module.exports = {
                 .setDescription('Bu sunucuda seviye sistemi etkin değil!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Kullanıcı verisini al
@@ -192,7 +192,7 @@ module.exports = {
                 .setDescription('Bu kullanıcının seviye verisi bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         const currentXp = parseInt(guildMember.xp) || 0;
@@ -251,7 +251,7 @@ module.exports = {
                 .setDescription('Bu sunucuda seviye sistemi etkin değil!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Tüm üyeleri getir ve sırala

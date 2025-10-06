@@ -110,9 +110,9 @@ module.exports = {
                 .setTimestamp();
 
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.followUp({ embeds: [errorEmbed], flags: 64 });
             } else {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
     },
@@ -232,7 +232,7 @@ module.exports = {
                 .setDescription('Bot kullanıcılarının istatistikleri gösterilmez!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         await interaction.deferReply();
@@ -354,7 +354,7 @@ module.exports = {
             const client = interaction.client;
             
             // Bot başlangıç süresi
-            const uptime = this.formatDuration(client.uptime);
+            const uptime = this.formatDuration(client.uptime || 0);
             
             // Sunucu sayıları
             const guilds = client.guilds.cache.size;
