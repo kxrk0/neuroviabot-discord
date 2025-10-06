@@ -319,4 +319,6 @@ process.on('SIGTERM', () => {
     db.saveData();
 });
 
+// Export both the instance and a getter function for compatibility
 module.exports = db;
+module.exports.getDatabase = () => db;
