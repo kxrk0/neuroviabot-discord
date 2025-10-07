@@ -87,7 +87,26 @@ class CustomMusicPlayer {
             console.log(`[CUSTOM-PLAYER] YouTube URL validated successfully`);
 
             // play-dl ile stream oluştur
-            const stream = await playdl.stream(track.url);
+            let stream;
+            try {
+                stream = await playdl.stream(track.url);
+                console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
+            } catch (streamError) {
+                console.error(`[CUSTOM-PLAYER] Failed to create stream:`, streamError);
+                
+                // Alternatif yöntem: video_basic_info ile deneme
+                try {
+                    console.log(`[CUSTOM-PLAYER] Trying alternative method with video_basic_info`);
+                    const videoInfo = await playdl.video_basic_info(track.url);
+                    stream = await playdl.stream_from_info(videoInfo);
+                    console.log(`[CUSTOM-PLAYER] Alternative stream created successfully`);
+                } catch (altError) {
+                    console.error(`[CUSTOM-PLAYER] Alternative method also failed:`, altError);
+                    await this.playNext(guildId); // Sıradaki şarkıyı çal
+                    return false;
+                }
+            }
+
             const resource = createAudioResource(stream.stream, {
                 inputType: stream.type
             });
