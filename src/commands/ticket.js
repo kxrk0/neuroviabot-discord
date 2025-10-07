@@ -108,7 +108,7 @@ module.exports = {
             return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
-        // Admin kontrolü (setup hariç diğer komutlar için)
+        // Admin kontrolü (sadece setup komutu için)
         if (subcommand === 'setup' && !interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
@@ -122,28 +122,28 @@ module.exports = {
         try {
             switch (subcommand) {
                 case 'setup':
-                    await this.handleSetup(interaction);
+                    await handleSetup(interaction);
                     break;
                 case 'close':
-                    await this.handleClose(interaction);
+                    await handleClose(interaction);
                     break;
                 case 'add':
-                    await this.handleAdd(interaction);
+                    await handleAdd(interaction);
                     break;
                 case 'remove':
-                    await this.handleRemove(interaction);
+                    await handleRemove(interaction);
                     break;
                 case 'claim':
-                    await this.handleClaim(interaction);
+                    await handleClaim(interaction);
                     break;
                 case 'unclaim':
-                    await this.handleUnclaim(interaction);
+                    await handleUnclaim(interaction);
                     break;
                 case 'transcript':
-                    await this.handleTranscript(interaction);
+                    await handleTranscript(interaction);
                     break;
                 case 'stats':
-                    await this.handleStats(interaction);
+                    await handleStats(interaction);
                     break;
             }
         } catch (error) {
@@ -161,9 +161,11 @@ module.exports = {
                 await interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
-    },
+    }
+};
 
-    async handleSetup(interaction) {
+// Handler fonksiyonları
+async function handleSetup(interaction) {
         const channel = interaction.options.getChannel('kanal');
         const category = interaction.options.getChannel('kategori');
         const supportRole = interaction.options.getRole('destek-rolü');
@@ -637,4 +639,3 @@ module.exports = {
             logger.error('Ticket stats hatası', error);
         }
     }
-};
