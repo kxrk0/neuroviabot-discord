@@ -1,23 +1,17 @@
-const { Player } = require('discord-player');
+const { useMainPlayer } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
-        this.player = new Player(client, {
-            ytdlOptions: {
-                quality: 'highestaudio',
-                highWaterMark: 1 << 25,
-                filter: 'audioonly',
-                opusEncoded: false,
-                requestOptions: {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                    }
-                }
-            }
-        });
+        this.player = useMainPlayer();
+        
+        // Bağımlılık raporunu kontrol et
+        console.log('[CUSTOM-PLAYER] Dependency report:', this.player.scanDeps());
+        
+        // Debug modunu etkinleştir
+        this.player.on('debug', console.log);
         
         this.setupEventListeners();
     }
@@ -83,6 +77,9 @@ class CustomMusicPlayer {
                 }
             });
 
+            console.log(`[CUSTOM-PLAYER] Queue created for ${voiceChannel.guild.name}`);
+            console.log(`[CUSTOM-PLAYER] Attempting to connect to ${voiceChannel.name}`);
+            
             await queue.connect(voiceChannel);
             console.log(`[CUSTOM-PLAYER] Connected to ${voiceChannel.name}`);
             return true;
@@ -100,11 +97,14 @@ class CustomMusicPlayer {
                 return false;
             }
 
+            console.log(`[CUSTOM-PLAYER] Adding track to queue: ${track.title}`);
             await queue.addTrack(track);
-            console.log(`[CUSTOM-PLAYER] Added track to queue: ${track.title}`);
+            console.log(`[CUSTOM-PLAYER] Track added successfully: ${track.title}`);
             
             if (!queue.isPlaying()) {
+                console.log(`[CUSTOM-PLAYER] Starting playback for: ${track.title}`);
                 await queue.node.play();
+                console.log(`[CUSTOM-PLAYER] Playback started successfully`);
             }
             
             return true;
