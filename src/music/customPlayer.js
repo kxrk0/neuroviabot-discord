@@ -58,12 +58,24 @@ class CustomMusicPlayer {
                 });
                 
                 console.log('[CUSTOM-PLAYER] Joining voice channel...');
+                console.log('[CUSTOM-PLAYER] Connection state:', connection.state.status);
                 
-                // Wait for connection to be ready
+                // Listen to state changes
+                connection.on('stateChange', (oldState, newState) => {
+                    console.log(`[CUSTOM-PLAYER] Voice state: ${oldState.status} -> ${newState.status}`);
+                });
+                
+                connection.on('error', error => {
+                    console.error('[CUSTOM-PLAYER] Voice connection error:', error);
+                });
+                
+                // Wait for connection to be ready (60 seconds timeout)
                 try {
-                    await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
+                    await entersState(connection, VoiceConnectionStatus.Ready, 60_000);
                     console.log('[CUSTOM-PLAYER] Voice connection ready!');
                 } catch (error) {
+                    console.error('[CUSTOM-PLAYER] Failed to enter Ready state:', error);
+                    console.log('[CUSTOM-PLAYER] Current state:', connection.state.status);
                     connection.destroy();
                     throw new Error(`Failed to join voice channel: ${error.message}`);
                 }
