@@ -36,17 +36,17 @@ class MusicPlayer {
                 bufferingTimeout: 3000
             });
 
+            // Event listener'ları hemen kur (Player oluşturulur oluşturulmaz)
+            if (!this.eventListenersSetup) {
+                this.setupEventListeners();
+                this.eventListenersSetup = true;
+            }
+
             // Extractor'ları yükle
             const extractorsLoaded = await this.loadExtractors();
             if (!extractorsLoaded) {
                 logger.error('Extractor yüklenemedi - Müzik sistemi devre dışı');
                 return false;
-            }
-            
-            // Event listener'ları kur (sadece bir kez)
-            if (!this.eventListenersSetup) {
-                this.setupEventListeners();
-                this.eventListenersSetup = true;
             }
             
             this.initialized = true;
