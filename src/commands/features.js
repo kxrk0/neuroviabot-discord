@@ -173,22 +173,22 @@ async function handleEnable(interaction) {
         giveaways: '🎉 Çekiliş Sistemi'
     };
 
-            const successEmbed = new EmbedBuilder()
-                .setColor('#00ff00')
-                .setTitle('✅ Özellik Aktifleştirildi')
-                .setDescription(`${featureNames[feature]} başarıyla aktifleştirildi!`)
-                .addFields(
-                    {
-                        name: '📝 Not',
-                        value: 'Özellik aktifleştirildi. İlgili komutlar artık kullanılabilir.',
-                        inline: false
-                    }
-                )
-                .setFooter({ 
-                    text: `Komut kullanan: ${interaction.user.tag}`,
-                    iconURL: interaction.user.displayAvatarURL()
-                })
-                .setTimestamp();
+    const successEmbed = new EmbedBuilder()
+        .setColor('#00ff00')
+        .setTitle('✅ Özellik Aktifleştirildi')
+        .setDescription(`${featureNames[feature]} başarıyla aktifleştirildi!`)
+        .addFields(
+            {
+                name: '📝 Not',
+                value: 'Özellik aktifleştirildi. İlgili komutlar artık kullanılabilir.',
+                inline: false
+            }
+        )
+        .setFooter({ 
+            text: `Komut kullanan: ${interaction.user.tag}`,
+            iconURL: interaction.user.displayAvatarURL()
+        })
+        .setTimestamp();
 
     await interaction.reply({ embeds: [successEmbed], flags: 64 });
 }
