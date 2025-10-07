@@ -219,7 +219,7 @@ client.once('clientReady', async () => {
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
     // Slash komutlarını kaydet
-    await deployCommands();
+    await registerSlashCommands();
     
     // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
     
