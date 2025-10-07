@@ -381,11 +381,9 @@ async function startBot() {
         const { initializeModels } = require('./src/models/index');
         await initializeModels();
         
-        // Music Player'ı başlat
-        const CustomMusicPlayer = require('./src/music/customPlayer');
-        client.customPlayer = new CustomMusicPlayer(client);
+        // Eski CustomMusicPlayer devre dışı - yeni MusicManager kullanılıyor
         
-        log('Custom Music Player başlatıldı!', 'SUCCESS');
+        log('Music System başlatıldı!', 'SUCCESS');
         
         // Security ve Analytics sistemlerini başlat
         const { security } = require('./src/utils/security');

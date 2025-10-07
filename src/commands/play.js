@@ -21,6 +21,7 @@ module.exports = {
             const query = interaction.options.getString('query');
             const member = interaction.member;
             const voiceChannel = member?.voice?.channel;
+            const guildId = interaction.guild.id;
 
             // Kullanıcı sesli kanalda mı kontrol et
             if (!voiceChannel) {
