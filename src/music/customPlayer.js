@@ -16,6 +16,10 @@ class CustomMusicPlayer {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                     }
                 }
+            },
+            bridgeProvider: 'ffmpeg',
+            bridgeProviderOptions: {
+                ffmpeg: 'ffmpeg-static'
             }
         });
         
@@ -34,18 +38,30 @@ class CustomMusicPlayer {
     async initializeExtractors() {
         console.log('[CUSTOM-PLAYER] Loading extractors...');
         try {
+            // Discord-player v6.7.0 için uyumlu extractor yükleme
             await this.player.extractors.loadDefault();
-            console.log('[CUSTOM-PLAYER] Extractors loaded successfully');
-        } catch (error) {
-            console.error('[CUSTOM-PLAYER] Failed to load extractors:', error);
-            // Manuel extractor yükleme
+            console.log('[CUSTOM-PLAYER] Default extractors loaded successfully');
+            
+            // Manuel YouTube extractor kaydı
             try {
                 const { YouTubeExtractor } = require('@discord-player/extractor');
-                this.player.extractors.register(YouTubeExtractor, {});
+                this.player.extractors.register(YouTubeExtractor, {
+                    bridgeProvider: 'ffmpeg',
+                    bridgeProviderOptions: {
+                        ffmpeg: 'ffmpeg-static'
+                    }
+                });
                 console.log('[CUSTOM-PLAYER] YouTube extractor registered manually');
             } catch (manualError) {
                 console.error('[CUSTOM-PLAYER] Manual extractor registration failed:', manualError);
             }
+            
+            // Extractors listesini kontrol et
+            const extractors = this.player.extractors.store;
+            console.log('[CUSTOM-PLAYER] Available extractors:', Object.keys(extractors));
+            
+        } catch (error) {
+            console.error('[CUSTOM-PLAYER] Failed to load extractors:', error);
         }
     }
 
