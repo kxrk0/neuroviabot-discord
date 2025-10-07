@@ -121,6 +121,7 @@ class MusicPlayer {
 
         // Track ended
         this.player.on('playerFinish', (queue, track) => {
+            console.log(`[DEBUG-PLAYER] Track finished: ${track.title} in ${queue.guild.name}`);
             logger.musicEvent('Track Finished', {
                 title: track.title,
                 guild: queue.guild.name
@@ -129,6 +130,7 @@ class MusicPlayer {
 
         // Queue ended
         this.player.on('emptyQueue', (queue) => {
+            console.log(`[DEBUG-PLAYER] Queue empty in ${queue.guild.name}`);
             logger.musicEvent('Queue Empty', {
                 guild: queue.guild.name
             });
@@ -151,6 +153,11 @@ class MusicPlayer {
         // Track error
         this.player.on('playerError', (queue, error, track) => {
             console.error(`[DEBUG-PLAYER] Player error in ${queue.guild.name} for track ${track?.title}:`, error);
+            console.error(`[DEBUG-PLAYER] Error details:`, {
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             logger.playerError(error, {
                 guild: queue.guild.name,
                 track: track.title,
@@ -165,6 +172,7 @@ class MusicPlayer {
 
         // Bot disconnected
         this.player.on('disconnect', (queue) => {
+            console.log(`[DEBUG-PLAYER] Bot disconnected from ${queue.guild.name}`);
             logger.musicEvent('Bot Disconnected', {
                 guild: queue.guild.name
             });
