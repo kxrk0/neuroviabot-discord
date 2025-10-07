@@ -42,9 +42,10 @@
     "node-fetch": "^3.3.2",
     "play-dl": "^1.9.7",
     "socket.io-client": "^4.5.4",
-    "discord-player": "^6.6.3",
+    "discord-player": "^6.7.0",
     "@discordjs/voice": "^0.16.1",
-    "opusscript": "^0.0.8"
+    "opusscript": "^0.0.8",
+    "ffmpeg-static": "^5.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
