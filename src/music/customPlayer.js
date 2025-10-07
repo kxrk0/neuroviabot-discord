@@ -32,6 +32,19 @@ class CustomMusicPlayer {
 
     async addTrack(guildId, track, metadata) {
         try {
+            console.log(`[CUSTOM-PLAYER] Adding track to queue:`, {
+                title: track.title,
+                url: track.url,
+                author: track.author,
+                duration: track.duration
+            });
+
+            // Track URL'yi kontrol et
+            if (!track.url || typeof track.url !== 'string') {
+                console.error(`[CUSTOM-PLAYER] Invalid track URL in addTrack: ${track.url}`);
+                return false;
+            }
+
             let queue = this.queues.get(guildId);
             if (!queue) {
                 queue = [];
@@ -43,7 +56,7 @@ class CustomMusicPlayer {
                 metadata: metadata
             });
 
-            console.log(`[CUSTOM-PLAYER] Added track to queue: ${track.title}`);
+            console.log(`[CUSTOM-PLAYER] Added track to queue: ${track.title} (URL: ${track.url})`);
 
             // Eğer şu anda çalan şarkı yoksa, çalmaya başla
             if (!this.players.has(guildId)) {
@@ -89,6 +102,7 @@ class CustomMusicPlayer {
             // play-dl ile stream oluştur
             let stream;
             try {
+                console.log(`[CUSTOM-PLAYER] Attempting to create stream for URL: ${track.url}`);
                 stream = await playdl.stream(track.url);
                 console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
             } catch (streamError) {
@@ -96,8 +110,24 @@ class CustomMusicPlayer {
                 
                 // Alternatif yöntem: video_basic_info ile deneme
                 try {
-                    console.log(`[CUSTOM-PLAYER] Trying alternative method with video_basic_info`);
+                    console.log(`[CUSTOM-PLAYER] Trying alternative method with video_basic_info for URL: ${track.url}`);
+                    
+                    // URL'yi tekrar kontrol et
+                    if (!track.url || typeof track.url !== 'string') {
+                        console.error(`[CUSTOM-PLAYER] Track URL is still invalid: ${track.url}`);
+                        await this.playNext(guildId);
+                        return false;
+                    }
+                    
                     const videoInfo = await playdl.video_basic_info(track.url);
+                    console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
+                    
+                    // videoInfo.video_details.url'yi kontrol et ve gerekirse düzelt
+                    if (!videoInfo.video_details.url) {
+                        console.log(`[CUSTOM-PLAYER] video_details.url is missing, setting to track.url`);
+                        videoInfo.video_details.url = track.url;
+                    }
+                    
                     stream = await playdl.stream_from_info(videoInfo);
                     console.log(`[CUSTOM-PLAYER] Alternative stream created successfully`);
                 } catch (altError) {
