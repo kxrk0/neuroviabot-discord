@@ -1,20 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const ytdl = require('ytdl-core');
 const { logger } = require('../utils/logger');
-
-function formatDuration(seconds) {
-    if (!seconds || isNaN(seconds)) return 'Bilinmiyor';
-    
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hours > 0) {
-        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    } else {
-        return `${minutes}:${secs.toString().padStart(2, '0')}`;
-    }
-}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -27,7 +12,6 @@ module.exports = {
 
     async execute(interaction) {
         try {
-            // Hemen yanıt ver
             await interaction.deferReply();
 
             const query = interaction.options.getString('query');
@@ -63,8 +47,8 @@ module.exports = {
 
             console.log(`[PLAY] Query: ${query}`);
 
-            // YouTube URL doğrulama
-            if (!ytdl.validateURL(query)) {
+            // Basit URL kontrolü
+            if (!query.includes('youtube.com') && !query.includes('youtu.be')) {
                 return await interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
@@ -81,36 +65,6 @@ module.exports = {
             }
 
             console.log(`[PLAY] Valid YouTube URL: ${query}`);
-
-            // Video bilgilerini al
-            let videoInfo;
-            try {
-                videoInfo = await ytdl.getInfo(query);
-                console.log(`[PLAY] Video info retrieved: ${videoInfo.videoDetails.title}`);
-            } catch (infoError) {
-                console.error(`[PLAY] Failed to get video info:`, infoError);
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ff0000')
-                            .setTitle('❌ Video Bilgisi Alınamadı')
-                            .setDescription('YouTube videosu bulunamadı veya erişilemiyor!')
-                            .setTimestamp()
-                    ]
-                });
-            }
-
-            // Track oluştur
-            const track = {
-                title: videoInfo.videoDetails.title,
-                author: videoInfo.videoDetails.author?.name || 'Bilinmiyor',
-                duration: videoInfo.videoDetails.lengthSeconds ? 
-                    formatDuration(videoInfo.videoDetails.lengthSeconds) : 'Bilinmiyor',
-                url: query,
-                thumbnail: videoInfo.videoDetails.thumbnails?.[0]?.url || null
-            };
-
-            console.log(`[PLAY] Track created:`, track);
 
             // Custom player'ı kontrol et
             const customPlayer = interaction.client.customPlayer;
@@ -143,6 +97,17 @@ module.exports = {
                 });
             }
 
+            // Basit track oluştur
+            const track = {
+                title: 'YouTube Video',
+                author: 'Bilinmiyor',
+                duration: 'Bilinmiyor',
+                url: query,
+                thumbnail: null
+            };
+
+            console.log(`[PLAY] Track created:`, track);
+
             // Kuyruğa ekle
             console.log(`[PLAY] Adding track to queue`);
             await customPlayer.addTrack(interaction.guild.id, track, interaction.channel);
@@ -157,16 +122,11 @@ module.exports = {
                     { name: '⏱️ Süre', value: track.duration, inline: true },
                     { name: '🔗 Kaynak', value: 'YouTube', inline: true }
                 )
-                .setTimestamp();
-
-            if (track.thumbnail) {
-                successEmbed.setThumbnail(track.thumbnail);
-            }
-
-            successEmbed.setFooter({ 
-                text: `İsteyen: ${interaction.user.username}`, 
-                iconURL: interaction.user.displayAvatarURL() 
-            });
+                .setTimestamp()
+                .setFooter({ 
+                    text: `İsteyen: ${interaction.user.username}`, 
+                    iconURL: interaction.user.displayAvatarURL() 
+                });
 
             console.log(`[PLAY] Sending success reply`);
             await interaction.editReply({ embeds: [successEmbed] });
