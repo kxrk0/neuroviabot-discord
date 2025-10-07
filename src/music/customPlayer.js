@@ -25,14 +25,35 @@ class CustomMusicPlayer {
         try {
             // Check if YouTube cookies are set via environment variable
             if (process.env.YOUTUBE_COOKIE) {
-                await play.setToken({
-                    youtube: {
-                        cookie: process.env.YOUTUBE_COOKIE
+                console.log('[CUSTOM-PLAYER] Attempting to authenticate with YouTube cookies...');
+                
+                // Parse cookie string into object format that play-dl expects
+                const cookieObj = {};
+                const cookies = process.env.YOUTUBE_COOKIE.split('; ');
+                cookies.forEach(cookie => {
+                    const [key, ...valueParts] = cookie.split('=');
+                    if (key && valueParts.length > 0) {
+                        cookieObj[key.trim()] = valueParts.join('=').trim();
                     }
                 });
-                console.log('[CUSTOM-PLAYER] YouTube cookies authenticated');
+                
+                // Set cookies for YouTube
+                const yt_cookie = [
+                    cookieObj['SID'] ? `SID=${cookieObj['SID']}` : '',
+                    cookieObj['__Secure-1PSID'] ? `__Secure-1PSID=${cookieObj['__Secure-1PSID']}` : '',
+                    cookieObj['__Secure-3PSID'] ? `__Secure-3PSID=${cookieObj['__Secure-3PSID']}` : ''
+                ].filter(c => c).join('; ');
+                
+                if (yt_cookie) {
+                    await play.setToken({
+                        youtube: { cookie: yt_cookie }
+                    });
+                    console.log('[CUSTOM-PLAYER] YouTube cookies authenticated successfully!');
+                } else {
+                    console.warn('[CUSTOM-PLAYER] Could not parse YouTube cookies');
+                }
             } else {
-                console.warn('[CUSTOM-PLAYER] No YouTube cookies found, may encounter rate limits');
+                console.warn('[CUSTOM-PLAYER] No YOUTUBE_COOKIE environment variable found');
             }
             this.initialized = true;
         } catch (error) {
