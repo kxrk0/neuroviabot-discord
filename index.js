@@ -320,7 +320,8 @@ async function setupSocketIO(client) {
             
             // Tüm guild'lere subscribe ol
             client.guilds.cache.forEach(guild => {
-                socket.emit('join', `guild_${guild.id}`);
+                socket.emit('join_guild', guild.id);
+                log(`🔗 Guild room'a join edildi: ${guild.name} (${guild.id})`, 'DEBUG');
             });
         });
 
@@ -337,6 +338,13 @@ async function setupSocketIO(client) {
             // Database'i yeniden yükle (simple-db otomatik kaydediyor)
             const { getDatabase } = require('./src/database/simple-db');
             const db = getDatabase();
+            
+            // Bot'un database'ini güncelle
+            if (settings) {
+                db.data.settings.set(guildId, settings);
+                db.saveData();
+                log(`💾 Bot database güncellendi: Guild ${guildId}`, 'DEBUG');
+            }
             
             // Leveling handler'ı güncelle
             if (settings.leveling && client.levelingHandler) {
