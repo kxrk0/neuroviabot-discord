@@ -100,39 +100,39 @@ class GuardHandler {
             // Bot mesajlarını ve DM'leri görmezden gel
             if (message.author.bot || !message.guild) return;
 
-            // Guild ayarlarını al
-            const guild = await Guild.findOne({ where: { id: message.guild.id } });
-            if (!guild || !guild.guardEnabled) return;
-
-            // Whitelist kontrolü
-            const member = message.member;
-            if (this.isWhitelisted(member, guild)) return;
+            // Guild ayarlarını al (simple-db kullanarak)
+            const { getDatabase } = require('../database/simple-db');
+            const db = getDatabase();
+            const settings = db.getGuildSettings(message.guild.id);
+            
+            if (!settings.moderation?.enabled || !settings.moderation?.autoMod) return;
 
             // Moderatör kontrolü
+            const member = message.member;
             if (member.permissions.has(PermissionFlagsBits.ManageMessages)) return;
 
             let violations = [];
 
             // Anti-Spam kontrolü
-            if (guild.antiSpamEnabled) {
+            if (settings.moderation?.antiSpam) {
                 const isSpam = await this.checkSpam(message);
                 if (isSpam) violations.push('spam');
             }
 
             // Anti-Link kontrolü
-            if (guild.autoDeleteLinks) {
+            if (settings.moderation?.antiLink) {
                 const hasLinks = this.checkLinks(message.content);
                 if (hasLinks) violations.push('link');
             }
 
             // Anti-Caps kontrolü
-            if (guild.antiCapsEnabled) {
+            if (settings.moderation?.antiCaps) {
                 const hasCaps = this.checkCaps(message.content);
                 if (hasCaps) violations.push('caps');
             }
 
             // Anti-Mention kontrolü
-            if (guild.antiMentionEnabled) {
+            if (settings.moderation?.antiMention) {
                 const hasMentionSpam = this.checkMentionSpam(message);
                 if (hasMentionSpam) violations.push('mention');
             }
