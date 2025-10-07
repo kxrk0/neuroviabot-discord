@@ -148,7 +148,7 @@ export function frontendToBackend(frontendSettings: any): any {
       enabled: frontendSettings.levelingEnabled ?? false,
       xpPerMessage: frontendSettings.xpPerMessage ?? 15,
       xpCooldown: frontendSettings.xpCooldown ?? 60,
-      levelUpMessage: frontendSettings.levelUpMessage ? true : false, // Boolean (backend expects boolean)
+      levelUpMessage: frontendSettings.levelUpMessage || 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉', // String (backend expects string)
       levelUpChannelId: frontendSettings.levelUpChannel ?? null,
       levelRoles: {}, // Empty object for now
     },

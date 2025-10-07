@@ -177,7 +177,7 @@ class SimpleDatabase {
                     enabled: true,
                     xpPerMessage: 15,
                     xpCooldown: 60,
-                    levelUpMessage: true,
+                    levelUpMessage: 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉',
                     levelUpChannelId: null,
                 },
                 autorole: {

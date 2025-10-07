@@ -118,9 +118,9 @@ class LevelingHandler {
     async handleLevelUp(message, memberData, oldLevel, newLevel, settings) {
         try {
             // Level up mesajını oluştur (boolean kontrolü)
-            if (!settings.leveling?.levelUpMessage) return; // Mesaj gönderme kapalı
+            if (!settings.leveling?.levelUpMessage || settings.leveling.levelUpMessage === 'false') return; // Mesaj gönderme kapalı
             
-            const levelUpMessageText = 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉';
+            const levelUpMessageText = settings.leveling.levelUpMessage || 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉';
             const formattedMessage = levelUpMessageText
                 .replace(/{user}/g, `<@${memberData.userId}>`)
                 .replace(/{username}/g, message.author.username)
