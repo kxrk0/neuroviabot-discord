@@ -2,6 +2,7 @@ const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerSta
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
 const playdl = require('play-dl');
+const ytdl = require('ytdl-core');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -121,19 +122,62 @@ class CustomMusicPlayer {
                     
                     const videoInfo = await playdl.video_basic_info(track.url);
                     console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
+                    console.log(`[CUSTOM-PLAYER] Video info structure:`, {
+                        hasVideoDetails: !!videoInfo.video_details,
+                        videoDetailsUrl: videoInfo.video_details?.url,
+                        videoDetailsId: videoInfo.video_details?.id,
+                        trackUrl: track.url
+                    });
                     
                     // videoInfo.video_details.url'yi kontrol et ve gerekirse düzelt
                     if (!videoInfo.video_details.url) {
-                        console.log(`[CUSTOM-PLAYER] video_details.url is missing, setting to track.url`);
+                        console.log(`[CUSTOM-PLAYER] video_details.url is missing, setting to track.url: ${track.url}`);
                         videoInfo.video_details.url = track.url;
                     }
+                    
+                    // videoInfo.video_details.id'yi de kontrol et
+                    if (!videoInfo.video_details.id && track.url.includes('watch?v=')) {
+                        const videoId = track.url.split('watch?v=')[1].split('&')[0];
+                        console.log(`[CUSTOM-PLAYER] Setting video_details.id to: ${videoId}`);
+                        videoInfo.video_details.id = videoId;
+                    }
+                    
+                    console.log(`[CUSTOM-PLAYER] Attempting stream_from_info with:`, {
+                        url: videoInfo.video_details.url,
+                        id: videoInfo.video_details.id
+                    });
                     
                     stream = await playdl.stream_from_info(videoInfo);
                     console.log(`[CUSTOM-PLAYER] Alternative stream created successfully`);
                 } catch (altError) {
                     console.error(`[CUSTOM-PLAYER] Alternative method also failed:`, altError);
-                    await this.playNext(guildId); // Sıradaki şarkıyı çal
-                    return false;
+                    
+                    // Son çare: ytdl-core ile deneme
+                    try {
+                        console.log(`[CUSTOM-PLAYER] Trying ytdl-core as final fallback for URL: ${track.url}`);
+                        
+                        const ytdlStream = ytdl(track.url, {
+                            filter: 'audioonly',
+                            quality: 'highestaudio',
+                            highWaterMark: 1 << 25,
+                            requestOptions: {
+                                headers: {
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                                }
+                            }
+                        });
+                        
+                        stream = {
+                            stream: ytdlStream,
+                            type: 'opus'
+                        };
+                        
+                        console.log(`[CUSTOM-PLAYER] ytdl-core stream created successfully`);
+                    } catch (ytdlError) {
+                        console.error(`[CUSTOM-PLAYER] ytdl-core also failed:`, ytdlError);
+                        await this.playNext(guildId); // Sıradaki şarkıyı çal
+                        return false;
+                    }
                 }
             }
 
