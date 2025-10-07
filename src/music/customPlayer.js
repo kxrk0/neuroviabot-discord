@@ -18,7 +18,9 @@ class CustomMusicPlayer {
                 guildId: guildId,
                 adapterCreator: voiceChannel.guild.voiceAdapterCreator,
                 selfDeaf: true,
-                selfMute: false
+                selfMute: false,
+                // DAVE protokolünü devre dışı bırak
+                useDavesProtocol: false
             });
 
             this.connections.set(guildId, connection);
