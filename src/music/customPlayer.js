@@ -38,10 +38,10 @@ class CustomMusicPlayer {
             await this.player.extractors.loadDefault();
             console.log('[CUSTOM-PLAYER] Default extractors loaded successfully');
             
-            // YouTube extractor'ını manuel olarak kaydet
+            // @discord-player/extractor'dan YouTube extractor'ını kaydet
             try {
-                const { YoutubeExtractor } = require('discord-player-youtubei');
-                await this.player.extractors.register(YoutubeExtractor);
+                const { YouTubeExtractor } = require('@discord-player/extractor');
+                this.player.extractors.register(YouTubeExtractor, {});
                 console.log('[CUSTOM-PLAYER] YouTube extractor registered successfully');
             } catch (youtubeError) {
                 console.error('[CUSTOM-PLAYER] Failed to register YouTube extractor:', youtubeError);
