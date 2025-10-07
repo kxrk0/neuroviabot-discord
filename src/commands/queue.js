@@ -1,98 +1,179 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { logger } = require('../utils/logger');
+const { useMainPlayer } = require('discord-player');
+const config = require('../config.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('queue')
-        .setDescription('Mevcut kuyruğu göster'),
+        .setDescription('📋 Müzik kuyruğunu görüntüle')
+        .addIntegerOption(option =>
+            option.setName('sayfa')
+                .setDescription('Görüntülenecek sayfa numarası (her sayfada 10 şarkı)')
+                .setMinValue(1)
+                .setRequired(false)
+        ),
 
     async execute(interaction) {
-        try {
-            await interaction.deferReply();
+        const player = useMainPlayer();
+        const queue = player.nodes.get(interaction.guild);
+        const page = interaction.options.getInteger('sayfa') || 1;
 
-            const customPlayer = interaction.client.customPlayer;
-            if (!customPlayer) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Sistem Hatası')
-                    .setDescription('Müzik sistemi başlatılamadı!')
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [errorEmbed] });
-            }
-
-            const queue = customPlayer.getQueue(interaction.guild.id);
-            const isPlaying = customPlayer.isPlaying(interaction.guild.id);
-            const isPaused = customPlayer.isPaused(interaction.guild.id);
-
-            console.log(`[CUSTOM-QUEUE] Guild: ${interaction.guild.id}, Queue: ${queue.length}, Playing: ${isPlaying}, Paused: ${isPaused}`);
-
-            if (queue.length === 0) {
-                const emptyQueueEmbed = new EmbedBuilder()
-                    .setColor('#ffa500')
-                    .setTitle('📭 Kuyruk Boş')
-                    .setDescription('Şu anda kuyruğunuzda hiç şarkı yok!')
-                    .addFields({
-                        name: '🎵 Şarkı Ekle',
-                        value: '`/play [şarkı adı]` komutunu kullanarak şarkı ekleyebilirsin!',
-                        inline: false
-                    })
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [emptyQueueEmbed] });
-            }
-
-            // Kuyruk mesajını oluştur
-            let queueDescription = '';
-            const maxTracks = Math.min(queue.length, 10); // İlk 10 şarkıyı göster
-
-            for (let i = 0; i < maxTracks; i++) {
-                const track = queue[i];
-                const position = i + 1;
-                const status = i === 0 ? (isPlaying ? '▶️' : isPaused ? '⏸️' : '⏹️') : '⏳';
-                
-                queueDescription += `${status} **${position}.** ${track.title}\n`;
-                queueDescription += `   👤 ${track.author} • ⏱️ ${track.duration}\n\n`;
-            }
-
-            if (queue.length > 10) {
-                queueDescription += `... ve ${queue.length - 10} şarkı daha`;
-            }
-
-            const queueEmbed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setTitle('📋 Müzik Kuyruğu')
-                .setDescription(queueDescription)
-                .addFields(
-                    { name: '📊 Toplam Şarkı', value: queue.length.toString(), inline: true },
-                    { name: '🎵 Durum', value: isPlaying ? 'Çalıyor' : isPaused ? 'Duraklatıldı' : 'Bekliyor', inline: true },
-                    { name: '⏱️ Tahmini Süre', value: 'Hesaplanıyor...', inline: true }
-                )
-                .setFooter({ text: `Sunucu: ${interaction.guild.name}`, iconURL: interaction.guild.iconURL() })
-                .setTimestamp();
-
-            await interaction.editReply({ embeds: [queueEmbed] });
-
-        } catch (error) {
-            console.error(`[CUSTOM-QUEUE] Command error:`, error);
-            logger.error('Queue komutu hatası', error);
-
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Komut Hatası')
-                .setDescription('Komut çalıştırılırken bir hata oluştu!')
+        // Queue var mı kontrol et
+        console.log(`[DEBUG-QUEUE] Queue exists: ${!!queue}`);
+        console.log(`[DEBUG-QUEUE] Queue tracks size: ${queue?.tracks?.size || 0}`);
+        console.log(`[DEBUG-QUEUE] Queue currentTrack: ${queue?.currentTrack?.title || 'None'}`);
+        console.log(`[DEBUG-QUEUE] Queue isPlaying: ${queue?.isPlaying()}`);
+        
+        if (!queue || (!queue.currentTrack && queue.tracks.size === 0)) {
+            const emptyQueueEmbed = new EmbedBuilder()
+                .setColor('#ffa500')
+                .setTitle('📭 Kuyruk Boş')
+                .setDescription('Şu anda kuyruğunuzda hiç şarkı yok!')
                 .addFields({
-                    name: '🔧 Hata Detayı',
-                    value: `\`\`\`${error.message}\`\`\``,
+                    name: '🎵 Şarkı Ekle',
+                    value: '`/play [şarkı adı]` komutunu kullanarak şarkı ekleyebilirsin!',
                     inline: false
                 })
                 .setTimestamp();
-
-            if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-            } else {
-                await interaction.editReply({ embeds: [errorEmbed] });
-            }
+            
+            return interaction.reply({ embeds: [emptyQueueEmbed] });
         }
-    }
+
+        try {
+            const tracks = queue.tracks.toArray();
+            const itemsPerPage = 10;
+            const maxPages = Math.ceil(tracks.length / itemsPerPage);
+            
+            // Sayfa kontrolü
+            if (page > maxPages && maxPages > 0) {
+                const invalidPageEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Geçersiz Sayfa')
+                    .setDescription(`Maksimum ${maxPages} sayfa var! Lütfen 1-${maxPages} arasında bir sayfa seçin.`)
+                    .setTimestamp();
+                
+                return interaction.reply({ embeds: [invalidPageEmbed], ephemeral: true });
+            }
+
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = tracks.slice(startIndex, endIndex);
+
+            const queueEmbed = new EmbedBuilder()
+                .setColor(config.embedColor)
+                .setTitle('📋 Müzik Kuyruğu')
+                .setTimestamp();
+
+            // Şu anda çalan şarkı
+            if (queue.currentTrack) {
+                const currentTrack = queue.currentTrack;
+                const progress = queue.node.getTimestamp();
+                const progressBar = createProgressBar(progress);
+                
+                queueEmbed.addFields({
+                    name: '🎵 Şu Anda Çalıyor',
+                    value: `**${currentTrack.title}** - ${currentTrack.author}\n` +
+                           `👤 İsteyen: ${currentTrack.requestedBy.username}\n` +
+                           `${progressBar}\n` +
+                           `⏱️ ${progress?.current?.label || '0:00'} / ${currentTrack.duration}`,
+                    inline: false
+                });
+            }
+
+            // Kuyruk bilgileri
+            if (tracks.length > 0) {
+                let queueDescription = '';
+                
+                pageItems.forEach((track, index) => {
+                    const position = startIndex + index + 1;
+                    queueDescription += `**${position}.** [${track.title}](${track.url}) - ${track.author}\n` +
+                                      `👤 ${track.requestedBy.username} • ⏱️ ${track.duration}\n\n`;
+                });
+
+                queueEmbed.setDescription(queueDescription);
+                
+                // Sayfa bilgisi
+                if (maxPages > 1) {
+                    queueEmbed.setFooter({ 
+                        text: `Sayfa ${page}/${maxPages} • Toplam ${tracks.length} şarkı • Toplam süre: ${calculateTotalDuration(tracks)}`,
+                        iconURL: interaction.client.user.displayAvatarURL()
+                    });
+                } else {
+                    queueEmbed.setFooter({ 
+                        text: `Toplam ${tracks.length} şarkı • Toplam süre: ${calculateTotalDuration(tracks)}`,
+                        iconURL: interaction.client.user.displayAvatarURL()
+                    });
+                }
+            } else {
+                queueEmbed.addFields({
+                    name: '📝 Sıradaki Şarkılar',
+                    value: 'Kuyruğunda başka şarkı yok!',
+                    inline: false
+                });
+            }
+
+            // Kuyruk istatistikleri
+            queueEmbed.addFields(
+                { name: '🔊 Ses Seviyesi', value: `${queue.node.volume}%`, inline: true },
+                { name: '🔁 Döngü', value: getLoopModeText(queue.repeatMode), inline: true },
+                { name: '🎲 Karıştır', value: queue.tracks.shuffled ? 'Açık' : 'Kapalı', inline: true }
+            );
+
+            await interaction.reply({ embeds: [queueEmbed] });
+            
+        } catch (error) {
+            console.error('Queue komutunda hata:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Kuyruk Hatası')
+                .setDescription('Kuyruk görüntülenirken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+    },
 };
+
+// Progress bar oluştur
+function createProgressBar(progress, length = 20) {
+    if (!progress || !progress.total) return '▱'.repeat(length);
+    
+    const percentage = progress.current.value / progress.total.value;
+    const filledLength = Math.round(length * percentage);
+    const emptyLength = length - filledLength;
+    
+    return '▰'.repeat(filledLength) + '▱'.repeat(emptyLength);
+}
+
+// Toplam süre hesapla
+function calculateTotalDuration(tracks) {
+    if (!tracks.length) return '0:00';
+    
+    let totalSeconds = 0;
+    tracks.forEach(track => {
+        const [minutes, seconds] = track.duration.split(':').map(Number);
+        totalSeconds += (minutes * 60) + seconds;
+    });
+    
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+// Loop mode text
+function getLoopModeText(mode) {
+    switch (mode) {
+        case 0: return 'Kapalı';
+        case 1: return 'Şarkı';
+        case 2: return 'Kuyruk';
+        default: return 'Kapalı';
+    }
+}
+
