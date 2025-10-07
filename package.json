@@ -31,6 +31,7 @@
     "discord-player": "^6.7.1",
     "mediaplex": "^0.0.9",
     "@discord-player/extractor": "^4.5.1",
+    "youtube-ext": "^1.1.19",
     "@discordjs/voice": "^0.16.1",
     "youtube-sr": "^4.3.11",
     "sequelize": "^6.35.1",
