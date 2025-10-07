@@ -1,237 +1,158 @@
-const { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, joinVoiceChannel, VoiceConnectionStatus } = require('@discordjs/voice');
+const { Player } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
-const playdl = require('play-dl');
-const ytdl = require('ytdl-core');
 const { logger } = require('../utils/logger');
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
-        this.players = new Map(); // guildId -> player data
-        this.queues = new Map(); // guildId -> queue
-        this.connections = new Map(); // guildId -> connection
+        this.player = new Player(client, {
+            ytdlOptions: {
+                quality: 'highestaudio',
+                highWaterMark: 1 << 25,
+                filter: 'audioonly',
+                opusEncoded: false,
+                requestOptions: {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                }
+            }
+        });
+        
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        // Player events
+        this.player.events.on('playerStart', (queue, track) => {
+            console.log(`[CUSTOM-PLAYER] Started playing: ${track.title}`);
+            
+            const nowPlayingEmbed = new EmbedBuilder()
+                .setColor('#00ff00')
+                .setTitle('🎵 Şimdi Çalıyor')
+                .setDescription(`**${track.title}**`)
+                .addFields(
+                    { name: '👤 Sanatçı', value: track.author || 'Bilinmiyor', inline: true },
+                    { name: '⏱️ Süre', value: track.duration || 'Bilinmiyor', inline: true },
+                    { name: '🔗 Kaynak', value: 'YouTube', inline: true }
+                )
+                .setThumbnail(track.thumbnail || null)
+                .setTimestamp();
+
+            queue.metadata.channel.send({ embeds: [nowPlayingEmbed] }).catch(console.error);
+        });
+
+        this.player.events.on('playerFinish', (queue, track) => {
+            console.log(`[CUSTOM-PLAYER] Finished playing: ${track.title}`);
+        });
+
+        this.player.events.on('playerError', (queue, error) => {
+            console.error(`[CUSTOM-PLAYER] Player error:`, error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Çalma Hatası')
+                .setDescription('Şarkı çalınamadı!')
+                .addFields({
+                    name: '🔧 Hata Detayı',
+                    value: `\`\`\`${error.message}\`\`\``,
+                    inline: false
+                })
+                .setTimestamp();
+
+            queue.metadata.channel.send({ embeds: [errorEmbed] }).catch(console.error);
+        });
+
+        this.player.events.on('queueEnd', (queue) => {
+            console.log(`[CUSTOM-PLAYER] Queue ended for ${queue.guild.name}`);
+        });
+
+        this.player.events.on('connectionError', (queue, error) => {
+            console.error(`[CUSTOM-PLAYER] Connection error:`, error);
+        });
+
+        console.log('[CUSTOM-PLAYER] Event listeners setup completed');
     }
 
     async joinChannel(guildId, voiceChannel) {
         try {
-            const connection = joinVoiceChannel({
-                channelId: voiceChannel.id,
-                guildId: guildId,
-                adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-                selfDeaf: true,
-                selfMute: false
+            const queue = this.player.nodes.create(voiceChannel.guild, {
+                metadata: {
+                    channel: voiceChannel,
+                    guild: voiceChannel.guild
+                }
             });
 
-            this.connections.set(guildId, connection);
-            
-            const player = createAudioPlayer();
-            this.players.set(guildId, player);
-            
-            connection.subscribe(player);
-            
-            // Connection event listeners
-            connection.on(VoiceConnectionStatus.Ready, () => {
-                console.log(`[CUSTOM-PLAYER] Connected to ${voiceChannel.name}`);
-            });
-
-            connection.on(VoiceConnectionStatus.Disconnected, () => {
-                console.log(`[CUSTOM-PLAYER] Disconnected from ${voiceChannel.name}`);
-                this.cleanup(guildId);
-            });
-
-            // Player event listeners
-            player.on(AudioPlayerStatus.Playing, () => {
-                console.log(`[CUSTOM-PLAYER] Playing in ${guildId}`);
-            });
-
-            player.on(AudioPlayerStatus.Idle, () => {
-                console.log(`[CUSTOM-PLAYER] Player idle in ${guildId}`);
-                this.playNext(guildId);
-            });
-
-            player.on('error', (error) => {
-                console.error(`[CUSTOM-PLAYER] Player error in ${guildId}:`, error);
-                this.playNext(guildId);
-            });
-
+            await queue.connect(voiceChannel);
+            console.log(`[CUSTOM-PLAYER] Connected to ${voiceChannel.name}`);
             return true;
         } catch (error) {
-            console.error(`[CUSTOM-PLAYER] Join error:`, error);
+            console.error(`[CUSTOM-PLAYER] Failed to join voice channel:`, error);
             return false;
         }
     }
 
     async addTrack(guildId, track, metadata) {
-        if (!this.queues.has(guildId)) {
-            this.queues.set(guildId, []);
-        }
+        try {
+            const queue = this.player.nodes.get(guildId);
+            if (!queue) {
+                console.log(`[CUSTOM-PLAYER] No queue found for guild ${guildId}`);
+                return false;
+            }
 
-        const queue = this.queues.get(guildId);
-        queue.push({
-            ...track,
-            metadata: metadata
-        });
-
-        console.log(`[CUSTOM-PLAYER] Added track to queue: ${track.title}`);
-        
-        // Eğer şu anda çalmıyorsa çalmaya başla
-        const player = this.players.get(guildId);
-        if (player && player.state.status === AudioPlayerStatus.Idle) {
-            await this.playNext(guildId);
+            await queue.addTrack(track);
+            console.log(`[CUSTOM-PLAYER] Added track to queue: ${track.title}`);
+            
+            if (!queue.isPlaying()) {
+                await queue.node.play();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error(`[CUSTOM-PLAYER] Failed to add track:`, error);
+            return false;
         }
     }
 
     async playNext(guildId) {
-        const queue = this.queues.get(guildId);
-        const player = this.players.get(guildId);
-        
-        if (!queue || queue.length === 0 || !player) {
-            console.log(`[CUSTOM-PLAYER] No tracks to play in ${guildId}`);
-            return;
-        }
-
-        const track = queue.shift();
-        console.log(`[CUSTOM-PLAYER] Playing: ${track.title}`);
-
-        try {
-            // URL kontrolü
-            if (!track.url || track.url === 'undefined' || track.url === 'null') {
-                throw new Error(`Invalid track URL: ${track.url}`);
-            }
-            
-            // Play-dl ile stream oluştur
-            console.log(`[CUSTOM-PLAYER] Creating stream for: ${track.url}`);
-            
-            // ytdl-core ile stream oluştur (play-dl fallback)
-            console.log(`[CUSTOM-PLAYER] Creating stream with ytdl-core for: ${track.url}`);
-            let stream;
-            
-            try {
-                // Önce ytdl-core dene
-                const ytdlStream = ytdl(track.url, {
-                    quality: 'highestaudio',
-                    highWaterMark: 1 << 25,
-                    filter: 'audioonly',
-                    opusEncoded: true, // Opus encoding aktif
-                    // YouTube signature extraction için ek ayarlar
-                    requestOptions: {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                        }
-                    }
-                });
-                
-                // Stream error handler ekle
-                ytdlStream.on('error', (error) => {
-                    console.error(`[CUSTOM-PLAYER] ytdl-core stream error:`, error.message);
-                    // Stream hatası durumunda play-dl'e geç
-                    this.handleStreamError(track, error);
-                });
-                
-                stream = {
-                    stream: ytdlStream,
-                    type: 'opus'
-                };
-                console.log(`[CUSTOM-PLAYER] ytdl-core stream created successfully`);
-                
-            } catch (ytdlError) {
-                console.log(`[CUSTOM-PLAYER] ytdl-core failed, trying play-dl:`, ytdlError.message);
-                
-                // Fallback to play-dl
-                try {
-                    const playdlStream = await playdl.stream(track.url, {
-                        discordPlayerCompatibility: true,
-                        quality: 2
-                    });
-                    
-                    stream = playdlStream;
-                    console.log(`[CUSTOM-PLAYER] play-dl stream created successfully`);
-                } catch (playdlError) {
-                    console.error(`[CUSTOM-PLAYER] Both ytdl-core and play-dl failed:`, playdlError.message);
-                    throw new Error(`Stream extraction failed: ${playdlError.message}`);
-                }
-            }
-            console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
-
-            const resource = createAudioResource(stream.stream, {
-                inputType: stream.type,
-                inlineVolume: true
-            });
-            console.log(`[CUSTOM-PLAYER] Audio resource created successfully`);
-
-            player.play(resource);
-            console.log(`[CUSTOM-PLAYER] Player.play() called successfully`);
-            
-            // Şimdi çalıyor mesajı gönder
-            if (track.metadata) {
-                console.log(`[CUSTOM-PLAYER] Sending now playing message for: ${track.title}`);
-                const nowPlayingEmbed = new EmbedBuilder()
-                    .setColor('#00ff00')
-                    .setTitle('🎵 Şimdi Çalıyor')
-                    .setDescription(`**${track.title}**`)
-                    .addFields(
-                        { name: '👤 Sanatçı', value: track.author || 'Bilinmiyor', inline: true },
-                        { name: '⏱️ Süre', value: track.duration || 'Bilinmiyor', inline: true },
-                        { name: '🔗 Kaynak', value: 'YouTube', inline: true }
-                    )
-                    .setThumbnail(track.thumbnail || null)
-                    .setTimestamp();
-
-                try {
-                    await track.metadata.send({ embeds: [nowPlayingEmbed] });
-                    console.log(`[CUSTOM-PLAYER] Now playing message sent successfully`);
-                } catch (error) {
-                    console.error(`[CUSTOM-PLAYER] Failed to send now playing message:`, error);
-                }
-            }
-
-        } catch (error) {
-            console.error(`[CUSTOM-PLAYER] Stream error for ${track.title}:`, error);
-            
-            // Hata mesajı gönder
-            if (track.metadata) {
-                console.log(`[CUSTOM-PLAYER] Sending error message for: ${track.title}`);
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Çalma Hatası')
-                    .setDescription(`**${track.title}** çalınamadı!`)
-                    .addFields({
-                        name: '🔧 Hata Detayı',
-                        value: `\`\`\`${error.message}\`\`\``,
-                        inline: false
-                    })
-                    .setTimestamp();
-
-                try {
-                    await track.metadata.send({ embeds: [errorEmbed] });
-                    console.log(`[CUSTOM-PLAYER] Error message sent successfully`);
-                } catch (sendError) {
-                    console.error(`[CUSTOM-PLAYER] Failed to send error message:`, sendError);
-                }
-            }
-
-            // Sonraki şarkıya geç
-            await this.playNext(guildId);
+        const queue = this.player.nodes.get(guildId);
+        if (queue && !queue.isPlaying()) {
+            await queue.node.play();
         }
     }
 
     async stop(guildId) {
-        const player = this.players.get(guildId);
-        if (player) {
-            player.stop();
+        const queue = this.player.nodes.get(guildId);
+        if (queue) {
+            queue.delete();
+            console.log(`[CUSTOM-PLAYER] Stopped playback and cleaned up for ${guildId}`);
         }
-        
-        if (this.queues.has(guildId)) {
-            this.queues.set(guildId, []);
-        }
-        
-        console.log(`[CUSTOM-PLAYER] Stopped playback in ${guildId}`);
+    }
+
+    getQueue(guildId) {
+        const queue = this.player.nodes.get(guildId);
+        return queue ? queue.tracks.toArray() : [];
+    }
+
+    getCurrentTrack(guildId) {
+        const queue = this.player.nodes.get(guildId);
+        return queue?.currentTrack || null;
+    }
+
+    isPlaying(guildId) {
+        const queue = this.player.nodes.get(guildId);
+        return queue ? queue.isPlaying() : false;
+    }
+
+    isPaused(guildId) {
+        const queue = this.player.nodes.get(guildId);
+        return queue ? queue.node.isPaused() : false;
     }
 
     async pause(guildId) {
-        const player = this.players.get(guildId);
-        if (player && player.state.status === AudioPlayerStatus.Playing) {
-            player.pause();
+        const queue = this.player.nodes.get(guildId);
+        if (queue && queue.isPlaying()) {
+            queue.node.pause();
             console.log(`[CUSTOM-PLAYER] Paused playback in ${guildId}`);
             return true;
         }
@@ -239,123 +160,29 @@ class CustomMusicPlayer {
     }
 
     async resume(guildId) {
-        const player = this.players.get(guildId);
-        if (player && player.state.status === AudioPlayerStatus.Paused) {
-            player.unpause();
+        const queue = this.player.nodes.get(guildId);
+        if (queue && queue.node.isPaused()) {
+            queue.node.resume();
             console.log(`[CUSTOM-PLAYER] Resumed playback in ${guildId}`);
             return true;
         }
         return false;
     }
 
-    async skip(guildId) {
-        const player = this.players.get(guildId);
-        if (player) {
-            player.stop();
-            console.log(`[CUSTOM-PLAYER] Skipped track in ${guildId}`);
-            return true;
-        }
-        return false;
-    }
-
-    async setVolume(guildId, volume) {
-        const player = this.players.get(guildId);
-        if (player && player.state.resource) {
-            player.state.resource.volume.setVolume(volume / 100);
-            console.log(`[CUSTOM-PLAYER] Volume set to ${volume}% in ${guildId}`);
-            return true;
-        }
-        return false;
-    }
-
-    getQueue(guildId) {
-        return this.queues.get(guildId) || [];
-    }
-
-    isPlaying(guildId) {
-        const player = this.players.get(guildId);
-        return player && player.state.status === AudioPlayerStatus.Playing;
-    }
-
-    isPaused(guildId) {
-        const player = this.players.get(guildId);
-        return player && player.state.status === AudioPlayerStatus.Paused;
-    }
-
-    getCurrentTrack(guildId) {
-        const queue = this.queues.get(guildId);
-        return queue && queue.length > 0 ? queue[0] : null;
-    }
-
     cleanup(guildId) {
-        this.players.delete(guildId);
-        this.queues.delete(guildId);
-        this.connections.delete(guildId);
+        const queue = this.player.nodes.get(guildId);
+        if (queue) {
+            queue.delete();
+        }
         console.log(`[CUSTOM-PLAYER] Cleaned up ${guildId}`);
     }
 
     async leave(guildId) {
-        const connection = this.connections.get(guildId);
-        if (connection) {
-            connection.destroy();
+        const queue = this.player.nodes.get(guildId);
+        if (queue) {
+            queue.delete();
         }
-        this.cleanup(guildId);
         console.log(`[CUSTOM-PLAYER] Left ${guildId}`);
-    }
-
-    async handleStreamError(track, error) {
-        console.log(`[CUSTOM-PLAYER] Handling stream error for ${track.title}, trying play-dl fallback`);
-        
-        try {
-            // Play-dl ile video info al
-            const videoInfo = await playdl.video_basic_info(track.url);
-            console.log(`[CUSTOM-PLAYER] Video info obtained for fallback: ${videoInfo.video_details.title}`);
-            
-            // Video info'ya URL ekle
-            if (!videoInfo.video_details.url) {
-                videoInfo.video_details.url = track.url;
-            }
-            
-            // Stream oluştur
-            const playdlStream = await playdl.stream_from_info(videoInfo, {
-                discordPlayerCompatibility: true,
-                quality: 2
-            });
-            
-            // Yeni stream ile devam et
-            const player = this.players.get(track.metadata.guild.id);
-            if (player) {
-                const resource = createAudioResource(playdlStream.stream, {
-                    inputType: playdlStream.type,
-                    inlineVolume: true
-                });
-                
-                player.play(resource);
-                console.log(`[CUSTOM-PLAYER] Fallback to play-dl successful for ${track.title}`);
-            }
-        } catch (fallbackError) {
-            console.error(`[CUSTOM-PLAYER] Fallback to play-dl also failed:`, fallbackError.message);
-            
-            // Hata mesajı gönder
-            if (track.metadata) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Çalma Hatası')
-                    .setDescription(`**${track.title}** çalınamadı!`)
-                    .addFields({
-                        name: '🔧 Hata Detayı',
-                        value: `\`\`\`${fallbackError.message}\`\`\``,
-                        inline: false
-                    })
-                    .setTimestamp();
-
-                try {
-                    await track.metadata.send({ embeds: [errorEmbed] });
-                } catch (sendError) {
-                    console.error(`[CUSTOM-PLAYER] Failed to send error message:`, sendError);
-                }
-            }
-        }
     }
 }
 
