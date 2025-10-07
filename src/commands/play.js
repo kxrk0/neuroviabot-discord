@@ -12,8 +12,6 @@ module.exports = {
 
     async execute(interaction) {
         try {
-            await interaction.deferReply();
-
             const query = interaction.options.getString('query');
             const member = interaction.member;
             const voiceChannel = member.voice.channel;
@@ -26,7 +24,7 @@ module.exports = {
                     .setDescription('Önce bir sesli kanala katılman gerekiyor!')
                     .setTimestamp();
 
-                return interaction.editReply({ embeds: [errorEmbed] });
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
             // Bot'un yetkisi var mı kontrol et
@@ -38,10 +36,8 @@ module.exports = {
                     .setDescription('Sesli kanala bağlanma veya konuşma yetkim yok!')
                     .setTimestamp();
 
-                return interaction.editReply({ embeds: [errorEmbed] });
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
-
-            console.log(`[PLAY] Searching for: ${query}`);
 
             // Custom player'ı al
             const customPlayer = interaction.client.customPlayer;
@@ -52,30 +48,15 @@ module.exports = {
                     .setDescription('Müzik sistemi başlatılamadı!')
                     .setTimestamp();
 
-                return interaction.editReply({ embeds: [errorEmbed] });
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
-            // Join voice channel first
-            try {
-                await customPlayer.joinChannel(interaction.guild.id, voiceChannel);
-            } catch (error) {
-                console.error(`[PLAY] Failed to join voice channel:`, error);
-                
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Bağlantı Hatası')
-                    .setDescription('Ses kanalına bağlanılamadı!')
-                    .addFields({
-                        name: '🔧 Hata',
-                        value: error.message,
-                        inline: false
-                    })
-                    .setTimestamp();
+            // Defer reply AFTER validation
+            await interaction.deferReply();
 
-                return interaction.editReply({ embeds: [errorEmbed] });
-            }
+            console.log(`[PLAY] Searching for: ${query}`);
 
-            // Add track to queue
+            // Add track to queue (this will handle joining the voice channel)
             try {
                 await customPlayer.addTrack(
                     interaction.guild.id, 
@@ -124,7 +105,7 @@ module.exports = {
             if (interaction.deferred || interaction.replied) {
                 return interaction.editReply({ embeds: [errorEmbed] });
             } else {
-                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                return interaction.reply({ embeds: [errorEmbed], flags: [4096] });
             }
         }
     }
