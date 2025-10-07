@@ -104,6 +104,18 @@ module.exports = {
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
+        // Leveling sistemi kontrolü
+        const config = require('../config.js');
+        if (!config.features.leveling) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Seviye Sistemi Kapalı')
+                .setDescription('Bu sunucuda seviye sistemi etkin değil!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
         // Yetki kontrolü (admin komutları için)
         const adminCommands = ['setup', 'add-xp', 'remove-xp', 'reset'];
         if (adminCommands.includes(subcommand) && !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {

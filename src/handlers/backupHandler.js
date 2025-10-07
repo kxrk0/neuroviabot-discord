@@ -10,8 +10,10 @@ class BackupHandler {
         this.client = client;
         this.scheduledJobs = new Map();
         
-        this.setupEventListeners();
-        this.initializeScheduledBackups();
+        // Backup sistemi kapalı - handler devre dışı
+        console.log('[BACKUP-HANDLER] Backup sistemi kapalı - handler devre dışı');
+        // this.setupEventListeners();
+        // this.initializeScheduledBackups();
     }
 
     setupEventListeners() {

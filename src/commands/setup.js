@@ -126,9 +126,9 @@ module.exports = {
                 .setTimestamp();
 
             if (interaction.replied) {
-                await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.followUp({ embeds: [errorEmbed], flags: 64 });
             } else {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
     }
@@ -403,7 +403,7 @@ async function handleResetSettings(interaction) {
             .setDescription('Tüm sunucu ayarlarını sıfırlamak istediğinizden emin misiniz?\n\n`/setup reset confirm:True` komutuyla onaylayın.')
             .setTimestamp();
 
-        return interaction.reply({ embeds: [embed], ephemeral: true });
+        return interaction.reply({ embeds: [embed], flags: 64 });
     }
 
     // Default ayarları oluştur

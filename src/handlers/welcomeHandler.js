@@ -157,6 +157,12 @@ class WelcomeHandler {
             const leaveChannel = await member.guild.channels.fetch(guild.leaveChannelId).catch(() => null);
             if (!leaveChannel) return;
 
+            // Bot'un kanala mesaj gönderme izni var mı kontrol et
+            if (!leaveChannel.permissionsFor(member.guild.members.me).has('SendMessages')) {
+                logger.warn(`Leave mesajı gönderilemedi - izin yok: ${member.guild.name} -> ${leaveChannel.name}`);
+                return;
+            }
+
             // Leave mesajını oluştur
             const leaveMessage = this.formatMessage(
                 guild.leaveMessage || '{user} sunucumuzu terk etti. Görüşürüz! 👋',
