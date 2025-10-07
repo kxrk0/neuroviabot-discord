@@ -1,35 +1,43 @@
 const { Player, QueryType } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
+const ffmpegPath = require('ffmpeg-static');
+const ffprobePath = require('ffprobe-static').path;
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
         
-        // Create Discord Player instance
+        // Create Discord Player instance with FFmpeg configuration
         this.player = new Player(client, {
             ytdlOptions: {
                 quality: 'highestaudio',
                 highWaterMark: 1 << 25,
                 filter: 'audioonly'
+            },
+            ffmpeg: {
+                path: ffmpegPath,
+                probe: ffprobePath
             }
         });
 
-        // Load YoutubeiExtractor (note the lowercase 'i')
-        try {
-            const { YoutubeiExtractor } = require('discord-player-youtubei');
-            console.log('[CUSTOM-PLAYER] YoutubeiExtractor loaded:', typeof YoutubeiExtractor);
-            
-            this.player.extractors.register(YoutubeiExtractor, {});
-            console.log('[CUSTOM-PLAYER] YoutubeiExtractor registered successfully');
-        } catch (error) {
-            console.error('[CUSTOM-PLAYER] Failed to load YoutubeiExtractor:', error.message);
-        }
+        // Load extractors from @discord-player/extractor
+        this.loadExtractors();
         
         // Setup event listeners
         this.setupEventListeners();
         
         console.log('[CUSTOM-PLAYER] Discord Player initialized');
         console.log('[CUSTOM-PLAYER] Registered extractors count:', this.player.extractors.store.size);
+    }
+
+    async loadExtractors() {
+        try {
+            const { ext } = await import('@discord-player/extractor');
+            await ext(this.player);
+            console.log('[CUSTOM-PLAYER] ✅ All extractors loaded successfully');
+        } catch (error) {
+            console.error('[CUSTOM-PLAYER] ❌ Failed to load extractors:', error.message);
+        }
     }
     
     setupEventListeners() {
