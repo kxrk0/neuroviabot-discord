@@ -114,7 +114,13 @@ class CustomMusicPlayer {
             // Video bilgilerini al
             let videoInfo;
             try {
-                videoInfo = await ytdl.getInfo(track.url);
+                videoInfo = await ytdl.getInfo(track.url, {
+                    requestOptions: {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                        }
+                    }
+                });
                 console.log(`[CUSTOM-PLAYER] Video info retrieved successfully:`, {
                     title: videoInfo.videoDetails.title,
                     duration: videoInfo.videoDetails.lengthSeconds,
@@ -149,9 +155,11 @@ class CustomMusicPlayer {
                     highWaterMark: 1 << 25,
                     requestOptions: {
                         headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                         }
-                    }
+                    },
+                    // FFmpeg path'i belirt
+                    ffmpegPath: '/usr/bin/ffmpeg'
                 });
                 
                 console.log(`[CUSTOM-PLAYER] Stream created successfully`);
