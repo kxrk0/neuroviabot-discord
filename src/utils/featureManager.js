@@ -30,9 +30,6 @@ class FeatureManager {
             // Config'i yeniden yükle
             this.reloadConfig();
             
-            // Global config'i güncelle
-            global.featureConfig = require('../config.js');
-            
             logger.info(`Özellik ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}: ${feature}`);
             
             return true;

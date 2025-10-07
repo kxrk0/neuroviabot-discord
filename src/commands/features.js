@@ -328,8 +328,6 @@ async function restartHandler(feature, enabled) {
     try {
         // Config'i yeniden yükle
         delete require.cache[require.resolve('../config.js')];
-        const newConfig = require('../config.js');
-        global.featureConfig = newConfig;
         
         // Handler'ları yeniden başlat (client'a erişim olmadan)
         switch (feature) {
@@ -351,9 +349,10 @@ async function restartHandler(feature, enabled) {
         }
         
         console.log(`[FEATURE-MANAGER] ${feature} sistemi ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
-        console.log(`[FEATURE-MANAGER] Bot restart gerekli - handler'lar otomatik güncellenecek`);
+        console.log(`[FEATURE-MANAGER] Handler'lar otomatik güncellenecek`);
         
     } catch (error) {
         logger.error('Handler restart hatası', error);
+        console.error('Handler restart detay:', error.message);
     }
 }
