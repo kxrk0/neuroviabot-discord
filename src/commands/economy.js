@@ -108,7 +108,7 @@ module.exports = {
                 })
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -165,7 +165,7 @@ module.exports = {
                 .setDescription('Bot kullanıcılarının ekonomi verisi yoktur!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         const guildMember = await GuildMember.findOne({
@@ -186,7 +186,7 @@ module.exports = {
                 .setDescription('Bu kullanıcının ekonomi verisi bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         const balance = parseInt(guildMember.balance) || 0;
@@ -226,7 +226,7 @@ module.exports = {
                 .setDescription('Ekonomi verileriniz bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Son daily kontrolü
@@ -249,7 +249,7 @@ module.exports = {
                     })
                     .setTimestamp();
                 
-                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                return interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
 
@@ -328,7 +328,7 @@ module.exports = {
                 .setDescription('Ekonomi verileriniz bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Cooldown kontrolü
@@ -355,7 +355,7 @@ module.exports = {
                     })
                     .setTimestamp();
                 
-                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                return interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
 

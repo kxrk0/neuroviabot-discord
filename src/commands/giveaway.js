@@ -95,6 +95,18 @@ module.exports = {
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
+        // Çekiliş sistemi kontrolü
+        const config = require('../config.js');
+        if (!config.features.giveaways) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Çekiliş Sistemi Kapalı')
+                .setDescription('Bu sunucuda çekiliş sistemi etkin değil!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
         // Yetki kontrolü (create, end, reroll, cancel için)
         const adminCommands = ['create', 'end', 'reroll', 'cancel'];
         if (adminCommands.includes(subcommand) && !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
@@ -104,7 +116,7 @@ module.exports = {
                 .setDescription('Bu komutu kullanabilmek için **Sunucuyu Yönet** yetkisine sahip olmanız gerekiyor!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -166,7 +178,7 @@ module.exports = {
                 })
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         await interaction.deferReply();
@@ -282,7 +294,7 @@ module.exports = {
                 .setDescription('Bu ID ile aktif bir çekiliş bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         await interaction.deferReply();

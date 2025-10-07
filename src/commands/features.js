@@ -328,28 +328,35 @@ async function restartHandler(feature, enabled) {
             case 'tickets':
                 if (client.ticketHandler) {
                     client.ticketHandler.restart();
+                    console.log(`[FEATURE-MANAGER] Ticket handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
                 }
                 break;
             case 'leveling':
                 if (client.levelingHandler) {
                     client.levelingHandler.restart();
+                    console.log(`[FEATURE-MANAGER] Leveling handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
                 }
                 break;
             case 'economy':
                 // Economy handler henüz yok, gelecekte eklenecek
-                console.log('[FEATURE-MANAGER] Economy handler henüz mevcut değil');
+                console.log(`[FEATURE-MANAGER] Economy handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
                 break;
             case 'moderation':
                 // Moderation handler henüz yok, gelecekte eklenecek
-                console.log('[FEATURE-MANAGER] Moderation handler henüz mevcut değil');
+                console.log(`[FEATURE-MANAGER] Moderation handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
                 break;
             case 'giveaways':
                 // Giveaway handler henüz yok, gelecekte eklenecek
-                console.log('[FEATURE-MANAGER] Giveaway handler henüz mevcut değil');
+                console.log(`[FEATURE-MANAGER] Giveaway handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
                 break;
         }
         
-        console.log(`[FEATURE-MANAGER] ${feature} handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
+        // Config'i yeniden yükle
+        delete require.cache[require.resolve('../config.js')];
+        const newConfig = require('../config.js');
+        global.featureConfig = newConfig;
+        
+        console.log(`[FEATURE-MANAGER] ${feature} sistemi ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
     } catch (error) {
         logger.error('Handler restart hatası', error);
     }

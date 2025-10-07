@@ -204,6 +204,18 @@ module.exports = {
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
+        // Moderasyon sistemi kontrolü
+        const config = require('../config.js');
+        if (!config.features.moderation) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Moderasyon Sistemi Kapalı')
+                .setDescription('Bu sunucuda moderasyon sistemi etkin değil!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
         // Yetki kontrolü
         const requiredPermissions = {
             warn: PermissionFlagsBits.ModerateMembers,
@@ -228,7 +240,7 @@ module.exports = {
                 .setDescription('Bu komutu kullanabilmek için gerekli yetkiniz yok!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -300,7 +312,7 @@ module.exports = {
                 .setDescription('Kendinizi uyaramazsınız!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Bot kontrolü
@@ -311,7 +323,7 @@ module.exports = {
                 .setDescription('Bot kullanıcılarını uyaramazsınız!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Guild member kontrolü
@@ -323,7 +335,7 @@ module.exports = {
                 .setDescription('Bu kullanıcı sunucuda bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Yetki kontrolü (uyarılan kişi moderatörden üst rütbede olmamalı)
@@ -334,7 +346,7 @@ module.exports = {
                 .setDescription('Bu kullanıcıyı uyaramazsınız! (Yüksek yetki)')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         await interaction.deferReply();

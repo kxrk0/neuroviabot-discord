@@ -94,6 +94,18 @@ module.exports = {
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
+        // Ticket sistemi kontrolü
+        const config = require('../config.js');
+        if (!config.features.tickets) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Ticket Sistemi Kapalı')
+                .setDescription('Bu sunucuda ticket sistemi etkin değil!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
         // Admin kontrolü (setup hariç diğer komutlar için)
         if (subcommand === 'setup' && !interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             const errorEmbed = new EmbedBuilder()
