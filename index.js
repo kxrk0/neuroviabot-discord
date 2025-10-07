@@ -202,6 +202,8 @@ async function registerSlashCommands() {
     
     try {
         log(`Registering ${commands.length} slash commands...`, 'INFO');
+        console.log(`[REGISTER-COMMANDS] Bot ID: ${process.env.DISCORD_CLIENT_ID}`);
+        console.log(`[REGISTER-COMMANDS] Commands to register: ${commands.map(cmd => cmd.name).join(', ')}`);
         
         // Önce tüm komutları temizle (hem global hem guild)
         try {
@@ -210,8 +212,10 @@ async function registerSlashCommands() {
                 { body: [] }
             );
             log('Cleared global commands', 'INFO');
+            console.log('[REGISTER-COMMANDS] Global commands cleared successfully');
         } catch (error) {
             log(`Error clearing global commands: ${error.message}`, 'WARNING');
+            console.error('[REGISTER-COMMANDS] Error clearing global commands:', error);
         }
         
         // Guild komutlarını da temizle
@@ -231,12 +235,16 @@ async function registerSlashCommands() {
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Sonra yeni komutları kaydet
+        console.log(`[REGISTER-COMMANDS] Registering commands to Discord API...`);
+        console.log(`[REGISTER-COMMANDS] Commands payload:`, JSON.stringify(commands, null, 2));
+        
         const data = await rest.put(
             Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
             { body: commands }
         );
         
         log(`Successfully registered ${data.length} slash commands`, 'SUCCESS');
+        console.log(`[REGISTER-COMMANDS] Discord API response:`, JSON.stringify(data, null, 2));
         
         // Kaydedilen komutları logla
         console.log(`[REGISTER-COMMANDS] Successfully registered ${data.length} commands:`);
