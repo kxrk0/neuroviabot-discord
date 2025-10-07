@@ -206,18 +206,21 @@ class CustomMusicPlayer {
                 throw new Error('Invalid song URL');
             }
             
-            // Get fresh video info for streaming
-            const videoInfo = await playdl.video_info(song.url);
-            console.log(`[CUSTOM-PLAYER] Got video info for streaming`);
-            console.log(`[CUSTOM-PLAYER] VideoInfo type:`, typeof videoInfo);
-            console.log(`[CUSTOM-PLAYER] VideoInfo keys:`, Object.keys(videoInfo));
+            // Validate with play-dl
+            const validation = playdl.yt_validate(song.url);
+            console.log(`[CUSTOM-PLAYER] URL validation result:`, validation);
             
-            // Use video_details from the info object
-            const stream = await playdl.stream_from_info(videoInfo.video_details, { quality: 2 });
-            console.log(`[CUSTOM-PLAYER] Stream created successfully`);
+            if (validation !== 'video') {
+                throw new Error(`Invalid YouTube URL: ${validation}`);
+            }
             
-            const resource = createAudioResource(stream.stream, {
-                inputType: stream.type,
+            // Create stream directly from URL
+            console.log(`[CUSTOM-PLAYER] Creating stream from URL...`);
+            const streamData = await playdl.stream(song.url);
+            console.log(`[CUSTOM-PLAYER] Stream created, type:`, streamData.type);
+            
+            const resource = createAudioResource(streamData.stream, {
+                inputType: streamData.type,
                 inlineVolume: true
             });
 
