@@ -1,12 +1,13 @@
 const { DisTube } = require('distube');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
+const ffmpeg = require('ffmpeg-static');
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
         
-        // DisTube v4 oluştur - Stable YouTube support
+        // DisTube v4 oluştur - Stable YouTube support with FFmpeg
         this.distube = new DisTube(client, {
             leaveOnEmpty: true,
             leaveOnFinish: false,
@@ -16,7 +17,16 @@ class CustomMusicPlayer {
             emitAddSongWhenCreatingQueue: false,
             emitAddListWhenCreatingQueue: false,
             nsfw: false,
-            emptyCooldown: 25
+            emptyCooldown: 25,
+            ffmpeg: {
+                path: ffmpeg
+            },
+            ytdlOptions: {
+                quality: 'highestaudio',
+                filter: 'audioonly',
+                highWaterMark: 1 << 25,
+                dlChunkSize: 0
+            }
         });
         
         // Event listener'ları kur
