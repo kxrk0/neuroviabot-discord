@@ -15,37 +15,31 @@ module.exports = {
 
     async execute(interaction) {
         try {
-            await interaction.deferReply();
-
             const query = interaction.options.getString('query');
             const member = interaction.member;
             const voiceChannel = member?.voice?.channel;
 
             // Kullanıcı sesli kanalda mı kontrol et
             if (!voiceChannel) {
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ff0000')
-                            .setTitle('❌ Hata')
-                            .setDescription('Önce bir sesli kanala katılman gerekiyor!')
-                            .setTimestamp()
-                    ]
-                });
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Hata')
+                    .setDescription('Önce bir sesli kanala katılman gerekiyor!')
+                    .setTimestamp();
+                
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
             // Bot'un yetkisi var mı kontrol et
             const permissions = voiceChannel.permissionsFor(interaction.guild.members.me);
             if (!permissions || !permissions.has(['Connect', 'Speak'])) {
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ff0000')
-                            .setTitle('❌ Yetki Hatası')
-                            .setDescription('Sesli kanala bağlanma veya konuşma yetkim yok!')
-                            .setTimestamp()
-                    ]
-                });
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Yetki Hatası')
+                    .setDescription('Sesli kanala bağlanma veya konuşma yetkim yok!')
+                    .setTimestamp();
+                
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
             // Basit başarı mesajı
@@ -60,7 +54,7 @@ module.exports = {
                 )
                 .setTimestamp();
 
-            await interaction.editReply({ embeds: [successEmbed] });
+            await interaction.reply({ embeds: [successEmbed] });
 
         } catch (error) {
             console.error(`[PLAY-TEST] Command error:`, error);
@@ -75,14 +69,10 @@ module.exports = {
                 })
                 .setTimestamp();
 
-            try {
-                if (interaction.deferred || interaction.replied) {
-                    await interaction.editReply({ embeds: [errorEmbed] });
-                } else {
-                    await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-                }
-            } catch (replyError) {
-                console.error(`[PLAY-TEST] Failed to send error message:`, replyError);
+            if (interaction.replied) {
+                await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
         }
     }
