@@ -70,6 +70,9 @@ module.exports = {
             }
         }
 
+        // Performans izleme - try bloğundan ÖNCE tanımla
+        const startTime = Date.now();
+
         try {
             // Security kontrolü
             if (client.security.isBlacklisted(interaction.user.id)) {
@@ -86,9 +89,6 @@ module.exports = {
                     ephemeral: true
                 });
             }
-
-            // Performans izleme
-            const startTime = Date.now();
             
             // Komutu çalıştır
             await command.execute(interaction);
