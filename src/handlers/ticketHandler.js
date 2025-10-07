@@ -6,7 +6,9 @@ const { v4: uuidv4 } = require('uuid');
 class TicketHandler {
     constructor(client) {
         this.client = client;
-        this.setupEventListeners();
+        // Ticket sistemi kapalı - handler devre dışı
+        console.log('[TICKET-HANDLER] Ticket sistemi kapalı - handler devre dışı');
+        // this.setupEventListeners();
     }
 
     setupEventListeners() {

@@ -49,13 +49,13 @@ module.exports = {
         rateLimitTime: parseInt(process.env.RATE_LIMIT_TIME) || 60000
     },
     
-    // Feature flags
+    // Feature flags - Tüm özellikler kapalı, sadece hoş geldin mesajı aktif
     features: {
-        economy: process.env.FEATURE_ECONOMY !== 'false',
-        moderation: process.env.FEATURE_MODERATION !== 'false',
-        leveling: process.env.FEATURE_LEVELING !== 'false',
-        tickets: process.env.FEATURE_TICKETS !== 'false',
-        giveaways: process.env.FEATURE_GIVEAWAYS !== 'false'
+        economy: false,
+        moderation: false,
+        leveling: false,
+        tickets: false,
+        giveaways: false
     },
     
     // Mesajlar

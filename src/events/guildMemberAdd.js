@@ -71,31 +71,32 @@ async function sendWelcomeMessage(member) {
             return;
         }
 
-        // Karşılama embed'i oluştur
+        // Güzel karşılama embed'i oluştur
         const welcomeEmbed = new EmbedBuilder()
-            .setColor(config.embedColor)
-            .setTitle('🎉 Hoş Geldin!')
-            .setDescription(`**${member.user.tag}** sunucumuza katıldı!`)
+            .setColor('#00ff88')
+            .setTitle('🌟 Hoş Geldin!')
+            .setDescription(`**${member.user.tag}** sunucumuza hoş geldin! 🎉\n\nSunucumuzda keyifli vakit geçirmen dileğiyle!`)
             .addFields(
                 {
-                    name: '👤 Kullanıcı',
-                    value: `${member.user}`,
-                    inline: true
-                },
-                {
-                    name: '📅 Hesap Oluşturulma',
-                    value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`,
+                    name: '👋 Merhaba',
+                    value: `Selam ${member.user}!`,
                     inline: true
                 },
                 {
                     name: '👥 Üye Sayısı',
-                    value: `${guild.memberCount}`,
+                    value: `${guild.memberCount}. üye`,
+                    inline: true
+                },
+                {
+                    name: '📅 Katılım',
+                    value: `<t:${Math.floor(Date.now() / 1000)}:R>`,
                     inline: true
                 }
             )
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+            .setImage('https://cdn.discordapp.com/attachments/1234567890123456789/1234567890123456789/welcome-banner.png')
             .setFooter({ 
-                text: `ID: ${member.user.id}`, 
+                text: `${guild.name} • Hoş geldin!`, 
                 iconURL: guild.iconURL({ dynamic: true }) 
             })
             .setTimestamp();
@@ -112,7 +113,10 @@ async function sendWelcomeMessage(member) {
             });
         }
 
-        await welcomeChannel.send({ embeds: [welcomeEmbed] });
+        await welcomeChannel.send({ 
+            content: `🎉 ${member.user} sunucumuza hoş geldin! 🎉`,
+            embeds: [welcomeEmbed] 
+        });
 
         logger.success(`Karşılama mesajı gönderildi: ${member.user.tag}`, {
             guild: guild.name,

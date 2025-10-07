@@ -5,6 +5,8 @@ const { logger } = require('../utils/logger');
 class LevelingHandler {
     constructor(client) {
         this.client = client;
+        // Leveling sistemi kapalı - handler devre dışı
+        console.log('[LEVELING-HANDLER] Leveling sistemi kapalı - handler devre dışı');
         this.xpCooldowns = new Map(); // User cooldown tracking
         // NO setupEventListeners - event handled in messageCreate.js
     }

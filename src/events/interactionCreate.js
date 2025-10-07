@@ -65,7 +65,7 @@ module.exports = {
             if (!member.permissions.has(command.data.default_member_permissions)) {
                 return await interaction.reply({
                     content: config.messages.noPermission,
-                    ephemeral: true
+                    flags: 64
                 });
             }
         }
@@ -78,7 +78,7 @@ module.exports = {
             if (client.security.isBlacklisted(interaction.user.id)) {
                 return await interaction.reply({
                     content: '❌ Bu bot ile etkileşimde bulunma yetkiniz kısıtlanmıştır.',
-                    ephemeral: true
+                    flags: 64
                 });
             }
 
@@ -86,7 +86,7 @@ module.exports = {
             if (client.security.isRateLimited(interaction.user.id, 'commands')) {
                 return await interaction.reply({
                     content: '⏰ Çok hızlı komut kullanıyorsunuz! Lütfen biraz bekleyin.',
-                    ephemeral: true
+                    flags: 64
                 });
             }
             
