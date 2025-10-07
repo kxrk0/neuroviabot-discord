@@ -1,6 +1,7 @@
 const { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, joinVoiceChannel, VoiceConnectionStatus } = require('@discordjs/voice');
 const { EmbedBuilder } = require('discord.js');
 const playdl = require('play-dl');
+const ytdl = require('ytdl-core');
 const { logger } = require('../utils/logger');
 
 class CustomMusicPlayer {
@@ -101,12 +102,37 @@ class CustomMusicPlayer {
             // Play-dl ile stream oluştur
             console.log(`[CUSTOM-PLAYER] Creating stream for: ${track.url}`);
             
-            // Direkt stream oluştur (video_basic_info bypass)
-            console.log(`[CUSTOM-PLAYER] Creating direct stream for: ${track.url}`);
-            const stream = await playdl.stream(track.url, {
-                discordPlayerCompatibility: true,
-                quality: 2
-            });
+            // ytdl-core ile stream oluştur (play-dl fallback)
+            console.log(`[CUSTOM-PLAYER] Creating stream with ytdl-core for: ${track.url}`);
+            let stream;
+            
+            try {
+                // Önce ytdl-core dene
+                const ytdlStream = ytdl(track.url, {
+                    quality: 'highestaudio',
+                    highWaterMark: 1 << 25,
+                    filter: 'audioonly',
+                    opusEncoded: false
+                });
+                
+                stream = {
+                    stream: ytdlStream,
+                    type: 'opus'
+                };
+                console.log(`[CUSTOM-PLAYER] ytdl-core stream created successfully`);
+                
+            } catch (ytdlError) {
+                console.log(`[CUSTOM-PLAYER] ytdl-core failed, trying play-dl:`, ytdlError.message);
+                
+                // Fallback to play-dl
+                const playdlStream = await playdl.stream(track.url, {
+                    discordPlayerCompatibility: true,
+                    quality: 2
+                });
+                
+                stream = playdlStream;
+                console.log(`[CUSTOM-PLAYER] play-dl stream created successfully`);
+            }
             console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
 
             const resource = createAudioResource(stream.stream, {
