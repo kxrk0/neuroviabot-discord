@@ -206,7 +206,13 @@ class CustomMusicPlayer {
                 throw new Error('Invalid song URL');
             }
             
-            const stream = await playdl.stream(song.url, { quality: 2 });
+            // Get fresh video info for streaming
+            const videoInfo = await playdl.video_info(song.url);
+            console.log(`[CUSTOM-PLAYER] Got video info for streaming`);
+            
+            const stream = await playdl.stream_from_info(videoInfo, { quality: 2 });
+            console.log(`[CUSTOM-PLAYER] Stream created successfully`);
+            
             const resource = createAudioResource(stream.stream, {
                 inputType: stream.type,
                 inlineVolume: true
