@@ -167,6 +167,9 @@ module.exports = {
             return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
+        // Defer reply - işlem uzun sürebilir
+        await interaction.deferReply();
+
         // simple-db'den ayarları al
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
@@ -178,7 +181,7 @@ module.exports = {
                 .setDescription('Bu sunucuda seviye sistemi etkin değil!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+            return interaction.editReply({ embeds: [errorEmbed] });
         }
 
         // Kullanıcı verisini al
@@ -192,7 +195,7 @@ module.exports = {
                 .setDescription('Bu kullanıcının seviye verisi bulunamadı!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+            return interaction.editReply({ embeds: [errorEmbed] });
         }
 
         const currentXp = parseInt(guildMember.xp) || 0;
@@ -232,7 +235,7 @@ module.exports = {
             })
             .setTimestamp();
 
-        await interaction.reply({ embeds: [rankEmbed] });
+        await interaction.editReply({ embeds: [rankEmbed] });
     },
 
     async handleLeaderboard(interaction) {
