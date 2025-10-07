@@ -6,22 +6,10 @@ class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
         
-        // DisTube oluştur - Built-in YouTube support (no plugins needed)
+        // DisTube oluştur - Built-in YouTube support (DisTube v5 config)
         this.distube = new DisTube(client, {
-            leaveOnEmpty: true,
-            leaveOnFinish: false,
-            leaveOnStop: true,
-            savePreviousSongs: true,
             emitNewSongOnly: true,
-            emitAddSongWhenCreatingQueue: false,
-            emitAddListWhenCreatingQueue: false,
-            nsfw: false,
-            emptyCooldown: 25,
-            ytdlOptions: {
-                quality: 'highestaudio',
-                highWaterMark: 1 << 25,
-                dlChunkSize: 0
-            }
+            nsfw: false
         });
         
         // Event listener'ları kur
