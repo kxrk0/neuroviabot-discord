@@ -1,11 +1,23 @@
-const { useMainPlayer } = require('discord-player');
+const { Player } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
-        this.player = useMainPlayer();
+        
+        // Player instance oluştur
+        this.player = new Player(client, {
+            ytdlOptions: {
+                quality: 'highestaudio',
+                highWaterMark: 1 << 25,
+                requestOptions: {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                }
+            }
+        });
         
         // Extractors'ları yükle
         console.log('[CUSTOM-PLAYER] Loading extractors...');
