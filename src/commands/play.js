@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const playdl = require('play-dl');
 const { logger } = require('../utils/logger');
 
 module.exports = {
@@ -42,37 +41,9 @@ module.exports = {
                 return interaction.editReply({ embeds: [errorEmbed] });
             }
 
-            console.log(`[CUSTOM-PLAY] Searching for: ${query}`);
+            console.log(`[PLAY] Searching for: ${query}`);
 
-            // Şarkı ara
-            let searchResult;
-            try {
-                // Önce YouTube'da ara
-                const ytInfo = await playdl.search(query, { limit: 1 });
-                if (ytInfo && ytInfo.length > 0) {
-                    searchResult = ytInfo[0];
-                    console.log(`[CUSTOM-PLAY] Found YouTube result: ${searchResult.title}`);
-                } else {
-                    throw new Error('No results found');
-                }
-            } catch (error) {
-                console.error(`[CUSTOM-PLAY] Search error:`, error);
-                
-                const notFoundEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Şarkı Bulunamadı')
-                    .setDescription(`**${query}** için sonuç bulunamadı!`)
-                    .addFields({
-                        name: '🔍 Arama Önerileri',
-                        value: '• Şarkı adını daha spesifik yaz\n• Sanatçı adını ekle\n• YouTube linkini dene',
-                        inline: false
-                    })
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [notFoundEmbed] });
-            }
-
-            // Custom player'ı al veya oluştur
+            // Custom player'ı al
             const customPlayer = interaction.client.customPlayer;
             if (!customPlayer) {
                 const errorEmbed = new EmbedBuilder()
@@ -84,83 +55,58 @@ module.exports = {
                 return interaction.editReply({ embeds: [errorEmbed] });
             }
 
-            // Sesli kanala bağlan
-            const connected = await customPlayer.joinChannel(interaction.guild.id, voiceChannel);
-            if (!connected) {
+            // DisTube ile şarkıyı çal (otomatik arama ve çalma)
+            try {
+                await customPlayer.addTrack(interaction.guild.id, query, {
+                    channel: interaction.channel,
+                    member: interaction.member
+                });
+
+                // Başarılı yanıt
+                const successEmbed = new EmbedBuilder()
+                    .setColor('#00ff00')
+                    .setTitle('🔍 Aranıyor...')
+                    .setDescription(`**${query}** için arama yapılıyor...`)
+                    .addFields({
+                        name: '⏳ Durum',
+                        value: 'Şarkı bulunuyor ve çalma listesine ekleniyor...',
+                        inline: false
+                    })
+                    .setTimestamp();
+
+                return interaction.editReply({ embeds: [successEmbed] });
+
+            } catch (error) {
+                console.error(`[PLAY] Failed to play:`, error);
+                
                 const errorEmbed = new EmbedBuilder()
                     .setColor('#ff0000')
-                    .setTitle('❌ Bağlantı Hatası')
-                    .setDescription('Sesli kanala bağlanılamadı!')
+                    .setTitle('❌ Çalma Hatası')
+                    .setDescription('Şarkı çalınamadı!')
+                    .addFields({
+                        name: '🔧 Hata Detayı',
+                        value: `\`\`\`${error.message}\`\`\``,
+                        inline: false
+                    })
                     .setTimestamp();
 
                 return interaction.editReply({ embeds: [errorEmbed] });
             }
 
-            // Track bilgilerini hazırla
-            console.log(`[CUSTOM-PLAY] Search result keys:`, Object.keys(searchResult));
-            console.log(`[CUSTOM-PLAY] Search result URL:`, searchResult.url);
-            console.log(`[CUSTOM-PLAY] Search result ID:`, searchResult.id);
-            
-            // URL'yi doğru formatta oluştur
-            let trackUrl;
-            if (searchResult.url) {
-                trackUrl = searchResult.url;
-            } else if (searchResult.id) {
-                trackUrl = `https://www.youtube.com/watch?v=${searchResult.id}`;
-            } else {
-                throw new Error('No valid URL or ID found in search result');
-            }
-            
-            const track = {
-                title: searchResult.title,
-                author: searchResult.channel?.name || 'Bilinmiyor',
-                duration: searchResult.durationFormatted || 'Bilinmiyor',
-                url: trackUrl,
-                thumbnail: searchResult.thumbnails?.[0]?.url || null
-            };
-            
-            console.log(`[CUSTOM-PLAY] Track URL:`, track.url);
-
-            // Kuyruğa ekle
-            await customPlayer.addTrack(interaction.guild.id, track, interaction.channel);
-
-            // Başarı mesajı
-            const successEmbed = new EmbedBuilder()
-                .setColor('#00ff00')
-                .setTitle('✅ Şarkı Eklendi')
-                .setDescription(`**${track.title}** kuyruğa eklendi!`)
-                .addFields(
-                    { name: '👤 Sanatçı', value: track.author, inline: true },
-                    { name: '⏱️ Süre', value: track.duration, inline: true },
-                    { name: '🔗 Kaynak', value: 'YouTube', inline: true }
-                )
-                .setThumbnail(track.thumbnail)
-                .setFooter({ text: `İsteyen: ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
-                .setTimestamp();
-
-            console.log(`[CUSTOM-PLAY] Sending success reply for: ${track.title}`);
-            await interaction.editReply({ embeds: [successEmbed] });
-            console.log(`[CUSTOM-PLAY] Success reply sent successfully`);
-
         } catch (error) {
-            console.error(`[CUSTOM-PLAY] Command error:`, error);
-            logger.error('Play komutu hatası', error);
+            console.error('[PLAY] Command error:', error);
+            logger.error('Play command error:', error);
 
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('❌ Komut Hatası')
+                .setTitle('❌ Beklenmeyen Hata')
                 .setDescription('Komut çalıştırılırken bir hata oluştu!')
-                .addFields({
-                    name: '🔧 Hata Detayı',
-                    value: `\`\`\`${error.message}\`\`\``,
-                    inline: false
-                })
                 .setTimestamp();
 
-            if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            if (interaction.deferred || interaction.replied) {
+                return interaction.editReply({ embeds: [errorEmbed] });
             } else {
-                await interaction.editReply({ embeds: [errorEmbed] });
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
         }
     }
