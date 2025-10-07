@@ -38,14 +38,18 @@ class CustomMusicPlayer {
             await this.player.extractors.loadDefault();
             console.log('[CUSTOM-PLAYER] Default extractors loaded successfully');
             
+            // YouTube extractor'ını manuel olarak kaydet
+            try {
+                const { YoutubeExtractor } = require('discord-player-youtubei');
+                await this.player.extractors.register(YoutubeExtractor);
+                console.log('[CUSTOM-PLAYER] YouTube extractor registered successfully');
+            } catch (youtubeError) {
+                console.error('[CUSTOM-PLAYER] Failed to register YouTube extractor:', youtubeError);
+            }
+            
             // Extractors listesini kontrol et
             const extractors = this.player.extractors.store;
             console.log('[CUSTOM-PLAYER] Available extractors:', Object.keys(extractors));
-            
-            // Eğer extractor yoksa, discord-player'ın built-in extractor'larını kullan
-            if (Object.keys(extractors).length === 0) {
-                console.log('[CUSTOM-PLAYER] No external extractors found, using built-in extractors');
-            }
             
         } catch (error) {
             console.error('[CUSTOM-PLAYER] Failed to load extractors:', error);
