@@ -1,6 +1,5 @@
 const { Player, QueryType } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
-const YouTubeExtractor = require('discord-player-youtubei').default || require('discord-player-youtubei');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -15,13 +14,30 @@ class CustomMusicPlayer {
             }
         });
 
-        // Register YouTubeI extractor (most stable for YouTube)
-        this.player.extractors.register(YouTubeExtractor, {});
+        // Load YouTubeI extractor with detailed logging
+        try {
+            const youtubeModule = require('discord-player-youtubei');
+            console.log('[CUSTOM-PLAYER] youtube module keys:', Object.keys(youtubeModule));
+            
+            const YouTubeExtractor = youtubeModule.YouTubeExtractor || youtubeModule.default || youtubeModule;
+            console.log('[CUSTOM-PLAYER] YouTubeExtractor type:', typeof YouTubeExtractor);
+            console.log('[CUSTOM-PLAYER] YouTubeExtractor:', YouTubeExtractor);
+            
+            if (YouTubeExtractor) {
+                this.player.extractors.register(YouTubeExtractor, {});
+                console.log('[CUSTOM-PLAYER] YouTubeExtractor registered successfully');
+            } else {
+                console.error('[CUSTOM-PLAYER] YouTubeExtractor is undefined!');
+            }
+        } catch (error) {
+            console.error('[CUSTOM-PLAYER] Failed to load YouTubeExtractor:', error.message);
+        }
         
         // Setup event listeners
         this.setupEventListeners();
         
-        console.log('[CUSTOM-PLAYER] Discord Player with YouTubeI initialized successfully');
+        console.log('[CUSTOM-PLAYER] Discord Player initialized');
+        console.log('[CUSTOM-PLAYER] Registered extractors count:', this.player.extractors.store.size);
     }
     
     setupEventListeners() {
