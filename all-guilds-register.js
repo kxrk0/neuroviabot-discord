@@ -31,7 +31,12 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
     try {
         console.log(`🔄 ${commands.length} slash komutu kaydediliyor...`);
 
+        // Rate limit için bekleme ekle
+        console.log('⏳ Rate limit için 2 saniye bekleniyor...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         // Global komutları kaydet
+        console.log('[1/2] Registering global commands...');
         const data = await rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands },
@@ -44,7 +49,19 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
             console.log(`  - ${cmd.name}: ${cmd.description}`);
         });
 
+        console.log('🎉 Komut kaydı tamamlandı! Bot yeniden başlatılabilir.');
+
     } catch (error) {
         console.error('❌ Komut kaydetme hatası:', error);
+        
+        if (error.code === 50035) {
+            console.log('💡 CLIENT_ID environment variable kontrol edin!');
+        } else if (error.code === 401) {
+            console.log('💡 DISCORD_TOKEN kontrol edin!');
+        } else if (error.code === 429) {
+            console.log('💡 Rate limit - 1 dakika bekleyip tekrar deneyin!');
+        }
+        
+        console.log('🔧 Manuel çözüm: Bot\'u restart edin ve Discord\'u yenileyin');
     }
 })();
