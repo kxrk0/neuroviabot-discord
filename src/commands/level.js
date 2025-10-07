@@ -105,6 +105,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         // Leveling sistemi kontrolü
+        // Config cache'ini temizle ve yeniden yükle
+        delete require.cache[require.resolve('../config.js')];
         const config = require('../config.js');
         if (!config.features.leveling) {
             const errorEmbed = new EmbedBuilder()

@@ -94,16 +94,18 @@ module.exports = {
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
-        // Ekonomi sistemi aktif mi kontrol et
-        const guild = await Guild.findOne({ where: { id: interaction.guild.id } });
-        if (!guild || !guild.economyEnabled) {
+        // Ekonomi sistemi kontrolü
+        // Config cache'ini temizle ve yeniden yükle
+        delete require.cache[require.resolve('../config.js')];
+        const config = require('../config.js');
+        if (!config.features.economy) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Ekonomi Sistemi Kapalı')
                 .setDescription('Bu sunucuda ekonomi sistemi etkin değil!')
                 .addFields({
                     name: '💡 Yöneticiler İçin',
-                    value: 'Ekonomi sistemini etkinleştirmek için web panelini kullanın.',
+                    value: 'Ekonomi sistemini etkinleştirmek için `/özellikler aç economy` komutunu kullanın.',
                     inline: false
                 })
                 .setTimestamp();

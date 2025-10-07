@@ -205,6 +205,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         // Moderasyon sistemi kontrolü
+        // Config cache'ini temizle ve yeniden yükle
+        delete require.cache[require.resolve('../config.js')];
         const config = require('../config.js');
         if (!config.features.moderation) {
             const errorEmbed = new EmbedBuilder()
