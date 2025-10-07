@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz:5000';
 
 interface UseSocketOptions {
   guildId?: string;
@@ -28,6 +28,7 @@ export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilesto
     newSocket.on('connect', () => {
       console.log('[Socket.IO] Connected:', newSocket.id);
       console.log('[Socket.IO] Frontend connected to backend');
+      console.log('[Socket.IO] Connection URL:', SOCKET_URL);
       setConnected(true);
     });
 
@@ -38,6 +39,7 @@ export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilesto
 
     newSocket.on('connect_error', (error) => {
       console.error('[Socket.IO] Connection error:', error);
+      console.error('[Socket.IO] Connection URL:', SOCKET_URL);
     });
 
     socketRef.current = newSocket;
@@ -52,12 +54,15 @@ export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilesto
   useEffect(() => {
     if (socket && connected && guildId) {
       console.log(`[Socket.IO] Joining guild room: ${guildId}`);
+      console.log(`[Socket.IO] Socket connected: ${connected}, Socket ID: ${socket.id}`);
       socket.emit('join_guild', guildId);
 
       return () => {
         console.log(`[Socket.IO] Leaving guild room: ${guildId}`);
         socket.emit('leave_guild', guildId);
       };
+    } else {
+      console.log(`[Socket.IO] Cannot join guild room - Socket: ${!!socket}, Connected: ${connected}, GuildId: ${guildId}`);
     }
   }, [socket, connected, guildId]);
 
