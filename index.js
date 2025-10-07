@@ -200,12 +200,28 @@ async function registerSlashCommands() {
     try {
         log(`Registering ${commands.length} slash commands...`, 'INFO');
         
-        const data = await rest.put(
+        // Önce global komutları kaydet
+        const globalData = await rest.put(
             Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
             { body: commands }
         );
         
-        log(`Successfully registered ${data.length} slash commands`, 'SUCCESS');
+        log(`Successfully registered ${globalData.length} global slash commands`, 'SUCCESS');
+        
+        // Her sunucu için ayrı ayrı da kaydet (daha hızlı görünmesi için)
+        for (const [guildId, guild] of client.guilds.cache) {
+            try {
+                const guildData = await rest.put(
+                    Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, guildId),
+                    { body: commands }
+                );
+                
+                log(`Successfully registered ${guildData.length} slash commands for guild: ${guild.name}`, 'SUCCESS');
+            } catch (guildError) {
+                log(`Error registering commands for guild ${guild.name}: ${guildError.message}`, 'WARNING');
+            }
+        }
+        
     } catch (error) {
         log(`Error registering slash commands: ${error.message}`, 'ERROR');
     }
