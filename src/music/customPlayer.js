@@ -112,7 +112,20 @@ class CustomMusicPlayer {
                     quality: 'highestaudio',
                     highWaterMark: 1 << 25,
                     filter: 'audioonly',
-                    opusEncoded: false
+                    opusEncoded: false,
+                    // YouTube signature extraction için ek ayarlar
+                    requestOptions: {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        }
+                    }
+                });
+                
+                // Stream error handler ekle
+                ytdlStream.on('error', (error) => {
+                    console.error(`[CUSTOM-PLAYER] ytdl-core stream error:`, error.message);
+                    // Stream hatası durumunda play-dl'e geç
+                    this.handleStreamError(track, error);
                 });
                 
                 stream = {
@@ -125,13 +138,18 @@ class CustomMusicPlayer {
                 console.log(`[CUSTOM-PLAYER] ytdl-core failed, trying play-dl:`, ytdlError.message);
                 
                 // Fallback to play-dl
-                const playdlStream = await playdl.stream(track.url, {
-                    discordPlayerCompatibility: true,
-                    quality: 2
-                });
-                
-                stream = playdlStream;
-                console.log(`[CUSTOM-PLAYER] play-dl stream created successfully`);
+                try {
+                    const playdlStream = await playdl.stream(track.url, {
+                        discordPlayerCompatibility: true,
+                        quality: 2
+                    });
+                    
+                    stream = playdlStream;
+                    console.log(`[CUSTOM-PLAYER] play-dl stream created successfully`);
+                } catch (playdlError) {
+                    console.error(`[CUSTOM-PLAYER] Both ytdl-core and play-dl failed:`, playdlError.message);
+                    throw new Error(`Stream extraction failed: ${playdlError.message}`);
+                }
             }
             console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
 
@@ -283,6 +301,51 @@ class CustomMusicPlayer {
         }
         this.cleanup(guildId);
         console.log(`[CUSTOM-PLAYER] Left ${guildId}`);
+    }
+
+    async handleStreamError(track, error) {
+        console.log(`[CUSTOM-PLAYER] Handling stream error for ${track.title}, trying play-dl fallback`);
+        
+        try {
+            const playdlStream = await playdl.stream(track.url, {
+                discordPlayerCompatibility: true,
+                quality: 2
+            });
+            
+            // Yeni stream ile devam et
+            const player = this.players.get(track.metadata.guild.id);
+            if (player) {
+                const resource = createAudioResource(playdlStream.stream, {
+                    inputType: playdlStream.type,
+                    inlineVolume: true
+                });
+                
+                player.play(resource);
+                console.log(`[CUSTOM-PLAYER] Fallback to play-dl successful for ${track.title}`);
+            }
+        } catch (fallbackError) {
+            console.error(`[CUSTOM-PLAYER] Fallback to play-dl also failed:`, fallbackError.message);
+            
+            // Hata mesajı gönder
+            if (track.metadata) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Çalma Hatası')
+                    .setDescription(`**${track.title}** çalınamadı!`)
+                    .addFields({
+                        name: '🔧 Hata Detayı',
+                        value: `\`\`\`${fallbackError.message}\`\`\``,
+                        inline: false
+                    })
+                    .setTimestamp();
+
+                try {
+                    await track.metadata.send({ embeds: [errorEmbed] });
+                } catch (sendError) {
+                    console.error(`[CUSTOM-PLAYER] Failed to send error message:`, sendError);
+                }
+            }
+        }
     }
 }
 
