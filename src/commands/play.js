@@ -55,23 +55,41 @@ module.exports = {
                 return interaction.editReply({ embeds: [errorEmbed] });
             }
 
-            // DisTube ile şarkıyı çal (otomatik arama ve çalma)
+            // Join voice channel first
             try {
-                await customPlayer.addTrack(interaction.guild.id, query, {
-                    channel: interaction.channel,
-                    member: interaction.member
-                });
+                await customPlayer.joinChannel(interaction.guild.id, voiceChannel);
+            } catch (error) {
+                console.error(`[PLAY] Failed to join voice channel:`, error);
+                
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Bağlantı Hatası')
+                    .setDescription('Ses kanalına bağlanılamadı!')
+                    .addFields({
+                        name: '🔧 Hata',
+                        value: error.message,
+                        inline: false
+                    })
+                    .setTimestamp();
+
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            // Add track to queue
+            try {
+                await customPlayer.addTrack(
+                    interaction.guild.id, 
+                    query, 
+                    interaction.channel, 
+                    interaction.user
+                );
 
                 // Başarılı yanıt
                 const successEmbed = new EmbedBuilder()
                     .setColor('#00ff00')
                     .setTitle('🔍 Aranıyor...')
                     .setDescription(`**${query}** için arama yapılıyor...`)
-                    .addFields({
-                        name: '⏳ Durum',
-                        value: 'Şarkı bulunuyor ve çalma listesine ekleniyor...',
-                        inline: false
-                    })
+                    .setFooter({ text: `İsteyen: ${interaction.user.tag}` })
                     .setTimestamp();
 
                 return interaction.editReply({ embeds: [successEmbed] });
