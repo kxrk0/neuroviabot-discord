@@ -1,5 +1,4 @@
 const { DisTube } = require('distube');
-const { YtDlpPlugin } = require('@distube/yt-dlp');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
 
@@ -7,7 +6,7 @@ class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
         
-        // DisTube oluştur - En güncel ve çalışan müzik sistemi (Sadece YouTube)
+        // DisTube oluştur - Built-in YouTube support (no plugins needed)
         this.distube = new DisTube(client, {
             leaveOnEmpty: true,
             leaveOnFinish: false,
@@ -16,9 +15,8 @@ class CustomMusicPlayer {
             emitNewSongOnly: true,
             emitAddSongWhenCreatingQueue: false,
             emitAddListWhenCreatingQueue: false,
-            plugins: [
-                new YtDlpPlugin()
-            ],
+            nsfw: false,
+            emptyCooldown: 25,
             ytdlOptions: {
                 quality: 'highestaudio',
                 highWaterMark: 1 << 25,
