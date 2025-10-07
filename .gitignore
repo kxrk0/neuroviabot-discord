@@ -102,3 +102,6 @@ coverage/
 # Documentation (optional)
 docs/_build/
 site/
+
+# MD Files Directory
+md-files/
