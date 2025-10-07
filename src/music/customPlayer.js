@@ -99,88 +99,47 @@ class CustomMusicPlayer {
 
             console.log(`[CUSTOM-PLAYER] YouTube URL validated successfully`);
 
-            // play-dl ile stream oluştur
+            // play-dl ile stream oluştur - farklı yaklaşım
             let stream;
             try {
                 console.log(`[CUSTOM-PLAYER] Attempting to create stream for URL: ${track.url}`);
-                stream = await playdl.stream(track.url);
-                console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
-            } catch (streamError) {
-                console.error(`[CUSTOM-PLAYER] Failed to create stream:`, streamError);
                 
-                // Alternatif yöntem: video_basic_info ile deneme
+                // Önce video info al
+                const videoInfo = await playdl.video_basic_info(track.url);
+                console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
+                
+                // Stream'i info'dan oluştur
+                stream = await playdl.stream_from_info(videoInfo);
+                console.log(`[CUSTOM-PLAYER] Stream created successfully from info, type: ${stream.type}`);
+            } catch (streamError) {
+                console.error(`[CUSTOM-PLAYER] Failed to create stream from info:`, streamError);
+                
+                // Alternatif yöntem: Direkt stream
                 try {
-                    console.log(`[CUSTOM-PLAYER] Trying alternative method with video_basic_info for URL: ${track.url}`);
+                    console.log(`[CUSTOM-PLAYER] Trying direct stream for URL: ${track.url}`);
+                    stream = await playdl.stream(track.url);
+                    console.log(`[CUSTOM-PLAYER] Direct stream created successfully, type: ${stream.type}`);
+                } catch (directError) {
+                    console.error(`[CUSTOM-PLAYER] Direct stream also failed:`, directError);
                     
-                    // URL'yi tekrar kontrol et
-                    if (!track.url || typeof track.url !== 'string') {
-                        console.error(`[CUSTOM-PLAYER] Track URL is still invalid: ${track.url}`);
-                        await this.playNext(guildId);
-                        return false;
-                    }
-                    
-                    const videoInfo = await playdl.video_basic_info(track.url);
-                    console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
-                    console.log(`[CUSTOM-PLAYER] Video info structure:`, {
-                        hasVideoDetails: !!videoInfo.video_details,
-                        videoDetailsUrl: videoInfo.video_details?.url,
-                        videoDetailsId: videoInfo.video_details?.id,
-                        trackUrl: track.url
-                    });
-                    
-                    // videoInfo.video_details.url'yi kontrol et ve gerekirse düzelt
-                    if (!videoInfo.video_details.url) {
-                        console.log(`[CUSTOM-PLAYER] video_details.url is missing, setting to track.url: ${track.url}`);
-                        videoInfo.video_details.url = track.url;
-                    }
-                    
-                    // videoInfo.video_details.id'yi de kontrol et
-                    if (!videoInfo.video_details.id && track.url.includes('watch?v=')) {
-                        const videoId = track.url.split('watch?v=')[1].split('&')[0];
-                        console.log(`[CUSTOM-PLAYER] Setting video_details.id to: ${videoId}`);
-                        videoInfo.video_details.id = videoId;
-                    }
-                    
-                    console.log(`[CUSTOM-PLAYER] Attempting stream_from_info with:`, {
-                        url: videoInfo.video_details.url,
-                        id: videoInfo.video_details.id
-                    });
-                    
-                    stream = await playdl.stream_from_info(videoInfo);
-                    console.log(`[CUSTOM-PLAYER] Alternative stream created successfully`);
-                } catch (altError) {
-                    console.error(`[CUSTOM-PLAYER] Alternative method also failed:`, altError);
-                    
-                    // Son çare: Basit URL ile tekrar deneme
+                    // Son çare: Video ID ile deneme
                     try {
-                        console.log(`[CUSTOM-PLAYER] Trying simple URL approach for: ${track.url}`);
-                        
-                        // URL'yi temizle ve tekrar dene
-                        const cleanUrl = track.url.replace(/&.*$/, ''); // Query parametrelerini temizle
-                        console.log(`[CUSTOM-PLAYER] Clean URL: ${cleanUrl}`);
-                        
-                        // play-dl ile tekrar dene
-                        stream = await playdl.stream(cleanUrl);
-                        console.log(`[CUSTOM-PLAYER] Simple URL stream created successfully`);
-                    } catch (simpleError) {
-                        console.error(`[CUSTOM-PLAYER] Simple URL approach also failed:`, simpleError);
-                        
-                        // Son çare: Video ID ile deneme
-                        try {
-                            const videoId = track.url.split('watch?v=')[1]?.split('&')[0];
-                            if (videoId) {
-                                console.log(`[CUSTOM-PLAYER] Trying with video ID: ${videoId}`);
-                                const directUrl = `https://www.youtube.com/watch?v=${videoId}`;
-                                stream = await playdl.stream(directUrl);
-                                console.log(`[CUSTOM-PLAYER] Video ID stream created successfully`);
-                            } else {
-                                throw new Error('No video ID found');
-                            }
-                        } catch (idError) {
-                            console.error(`[CUSTOM-PLAYER] Video ID approach also failed:`, idError);
-                            await this.playNext(guildId); // Sıradaki şarkıyı çal
-                            return false;
+                        const videoId = track.url.split('watch?v=')[1]?.split('&')[0];
+                        if (videoId) {
+                            console.log(`[CUSTOM-PLAYER] Trying with video ID: ${videoId}`);
+                            const directUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                            
+                            // Video info ile deneme
+                            const videoInfo = await playdl.video_basic_info(directUrl);
+                            stream = await playdl.stream_from_info(videoInfo);
+                            console.log(`[CUSTOM-PLAYER] Video ID stream created successfully`);
+                        } else {
+                            throw new Error('No video ID found');
                         }
+                    } catch (idError) {
+                        console.error(`[CUSTOM-PLAYER] Video ID approach also failed:`, idError);
+                        await this.playNext(guildId); // Sıradaki şarkıyı çal
+                        return false;
                     }
                 }
             }
