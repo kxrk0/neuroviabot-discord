@@ -6,9 +6,30 @@ const { v4: uuidv4 } = require('uuid');
 class TicketHandler {
     constructor(client) {
         this.client = client;
-        // Ticket sistemi kapalı - handler devre dışı
-        console.log('[TICKET-HANDLER] Ticket sistemi kapalı - handler devre dışı');
-        // this.setupEventListeners();
+        this.isEnabled = false;
+        this.checkAndSetup();
+    }
+
+    checkAndSetup() {
+        try {
+            const config = require('../config.js');
+            this.isEnabled = config.features.tickets;
+            
+            if (this.isEnabled) {
+                this.setupEventListeners();
+                console.log('[TICKET-HANDLER] Ticket sistemi aktif - handler başlatıldı');
+            } else {
+                console.log('[TICKET-HANDLER] Ticket sistemi kapalı - handler devre dışı');
+            }
+        } catch (error) {
+            console.error('[TICKET-HANDLER] Config okuma hatası:', error);
+            this.isEnabled = false;
+        }
+    }
+
+    // Handler'ı yeniden başlat
+    restart() {
+        this.checkAndSetup();
     }
 
     setupEventListeners() {

@@ -5,14 +5,37 @@ const { logger } = require('../utils/logger');
 class LevelingHandler {
     constructor(client) {
         this.client = client;
-        // Leveling sistemi kapalı - handler devre dışı
-        console.log('[LEVELING-HANDLER] Leveling sistemi kapalı - handler devre dışı');
+        this.isEnabled = false;
         this.xpCooldowns = new Map(); // User cooldown tracking
-        // NO setupEventListeners - event handled in messageCreate.js
+        this.checkAndSetup();
+    }
+
+    checkAndSetup() {
+        try {
+            const config = require('../config.js');
+            this.isEnabled = config.features.leveling;
+            
+            if (this.isEnabled) {
+                console.log('[LEVELING-HANDLER] Leveling sistemi aktif - handler başlatıldı');
+            } else {
+                console.log('[LEVELING-HANDLER] Leveling sistemi kapalı - handler devre dışı');
+            }
+        } catch (error) {
+            console.error('[LEVELING-HANDLER] Config okuma hatası:', error);
+            this.isEnabled = false;
+        }
+    }
+
+    // Handler'ı yeniden başlat
+    restart() {
+        this.checkAndSetup();
     }
 
     async handleMessageXp(message) {
         try {
+            // Leveling sistemi kapalıysa çık
+            if (!this.isEnabled) return;
+            
             // Bot mesajlarını ve DM'leri görmezden gel
             if (message.author.bot || !message.guild) return;
 
