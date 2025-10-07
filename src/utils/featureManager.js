@@ -127,21 +127,6 @@ class FeatureManager {
         }
     }
 
-    // Handler'ı yeniden başlat
-    async restartHandler(handlerName, enabled) {
-        try {
-            const handlerPath = path.join(__dirname, '..', 'handlers', `${handlerName}.js`);
-            
-            if (fs.existsSync(handlerPath)) {
-                // Handler cache'ini temizle
-                delete require.cache[require.resolve(handlerPath)];
-                
-                logger.info(`Handler ${handlerName} ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
-            }
-        } catch (error) {
-            logger.error(`Handler ${handlerName} yeniden başlatma hatası`, error);
-        }
-    }
 
     // Özellik adlarını al
     getFeatureNames() {
@@ -154,16 +139,6 @@ class FeatureManager {
         };
     }
 
-    // Handler eşleştirmeleri
-    getHandlerMapping() {
-        return {
-            tickets: 'ticketHandler',
-            economy: 'economyHandler',
-            moderation: 'moderationHandler',
-            leveling: 'levelingHandler',
-            giveaways: 'giveawayHandler'
-        };
-    }
 }
 
 module.exports = new FeatureManager();

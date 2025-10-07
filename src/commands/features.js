@@ -103,6 +103,9 @@ module.exports = {
 
 // Özellik durumlarını göster
 async function handleStatus(interaction) {
+    // Config cache'ini temizle ve yeniden yükle
+    delete require.cache[require.resolve('../config.js')];
+    const config = require('../config.js');
     const features = config.features;
     
     const statusEmbed = new EmbedBuilder()
