@@ -28,13 +28,12 @@
   "dependencies": {
     "express": "^4.18.2",
     "discord.js": "^14.14.1",
-    "distube": "^5.0.2",
     "@discordjs/voice": "^0.16.1",
+    "play-dl": "^1.9.7",
     "opusscript": "^0.1.1",
     "libsodium-wrappers": "^0.7.13",
     "tweetnacl": "^1.0.3",
-    "debug": "^4.3.4",
-    "youtube-sr": "^4.3.11",
+    "ffmpeg-static": "^5.2.0",
     "sequelize": "^6.35.1",
     "sqlite3": "^5.1.6",
     "winston": "^3.11.0",
@@ -42,9 +41,7 @@
     "dotenv": "^16.3.1",
     "moment": "^2.29.4",
     "node-fetch": "^3.3.2",
-    "socket.io-client": "^4.5.4",
-    "ffmpeg-static": "^5.2.0",
-    "ffprobe-static": "^3.1.0"
+    "socket.io-client": "^4.5.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
