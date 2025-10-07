@@ -13,8 +13,32 @@ class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
         this.queues = new Map(); // guildId -> { connection, player, songs: [], textChannel }
+        this.initialized = false;
+        
+        // Initialize play-dl with YouTube cookies if available
+        this.initializePlayDl();
         
         console.log('[CUSTOM-PLAYER] Pure @discordjs/voice player initialized');
+    }
+    
+    async initializePlayDl() {
+        try {
+            // Check if YouTube cookies are set via environment variable
+            if (process.env.YOUTUBE_COOKIE) {
+                await play.setToken({
+                    youtube: {
+                        cookie: process.env.YOUTUBE_COOKIE
+                    }
+                });
+                console.log('[CUSTOM-PLAYER] YouTube cookies authenticated');
+            } else {
+                console.warn('[CUSTOM-PLAYER] No YouTube cookies found, may encounter rate limits');
+            }
+            this.initialized = true;
+        } catch (error) {
+            console.error('[CUSTOM-PLAYER] Failed to initialize play-dl:', error);
+            this.initialized = true; // Continue anyway
+        }
     }
     
     async addTrack(guildId, query, textChannel, user) {
