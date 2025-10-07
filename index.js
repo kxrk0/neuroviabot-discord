@@ -96,10 +96,8 @@ async function loadCommands() {
                 client.commands.set(command.data.name, command);
                 commandCount++;
                 log(`Loaded command: ${command.data.name}`, 'DEBUG');
-                console.log(`[LOAD-COMMANDS] Loaded: ${command.data.name} from ${file}`);
             } else {
                 log(`Command ${file} is missing required properties (data & execute)`, 'WARNING');
-                console.log(`[LOAD-COMMANDS] Failed to load ${file}: missing data or execute`);
             }
         } catch (error) {
             log(`Error loading command ${file}: ${error.message}`, 'ERROR');
@@ -107,7 +105,6 @@ async function loadCommands() {
     }
     
     log(`Loaded ${commandCount} commands successfully`, 'SUCCESS');
-    console.log(`[LOAD-COMMANDS] Final command list: ${Array.from(client.commands.keys()).join(', ')}`);
 }
 
 // Event'leri yükleme fonksiyonu
@@ -202,41 +199,6 @@ async function registerSlashCommands() {
     
     try {
         log(`Registering ${commands.length} slash commands...`, 'INFO');
-        console.log(`[REGISTER-COMMANDS] Bot ID: ${process.env.DISCORD_CLIENT_ID}`);
-        console.log(`[REGISTER-COMMANDS] Commands to register: ${commands.map(cmd => cmd.name).join(', ')}`);
-        
-        // Önce tüm komutları temizle (hem global hem guild)
-        try {
-            await rest.put(
-                Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
-                { body: [] }
-            );
-            log('Cleared global commands', 'INFO');
-            console.log('[REGISTER-COMMANDS] Global commands cleared successfully');
-        } catch (error) {
-            log(`Error clearing global commands: ${error.message}`, 'WARNING');
-            console.error('[REGISTER-COMMANDS] Error clearing global commands:', error);
-        }
-        
-        // Guild komutlarını da temizle
-        for (const guild of client.guilds.cache.values()) {
-            try {
-                await rest.put(
-                    Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, guild.id),
-                    { body: [] }
-                );
-                log(`Cleared commands for guild: ${guild.name}`, 'DEBUG');
-            } catch (error) {
-                log(`Error clearing guild commands for ${guild.name}: ${error.message}`, 'WARNING');
-            }
-        }
-        
-        // 2 saniye bekle
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Sonra yeni komutları kaydet
-        console.log(`[REGISTER-COMMANDS] Registering commands to Discord API...`);
-        console.log(`[REGISTER-COMMANDS] Commands payload:`, JSON.stringify(commands, null, 2));
         
         const data = await rest.put(
             Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
@@ -244,19 +206,6 @@ async function registerSlashCommands() {
         );
         
         log(`Successfully registered ${data.length} slash commands`, 'SUCCESS');
-        console.log(`[REGISTER-COMMANDS] Discord API response:`, JSON.stringify(data, null, 2));
-        
-        // Kaydedilen komutları logla
-        console.log(`[REGISTER-COMMANDS] Successfully registered ${data.length} commands:`);
-        for (const cmd of data) {
-            console.log(`[REGISTER-COMMANDS] - ${cmd.name}: ${cmd.description}`);
-            log(`Registered: ${cmd.name}`, 'DEBUG');
-        }
-        
-        // Komut listesini karşılaştır
-        console.log(`[REGISTER-COMMANDS] Expected commands: ${commands.length}`);
-        console.log(`[REGISTER-COMMANDS] Expected command names: ${commands.map(cmd => cmd.name).join(', ')}`);
-        
     } catch (error) {
         log(`Error registering slash commands: ${error.message}`, 'ERROR');
     }
@@ -269,10 +218,10 @@ client.once('clientReady', async () => {
     log(`Guilds: ${client.guilds.cache.size}`, 'INFO');
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
-    // Slash komutlarını kaydet
-    await registerSlashCommands();
-    
     // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
+    
+    // Slash komutları kaydet
+    await registerSlashCommands();
     
     log('Bot is ready and operational!', 'SUCCESS');
 });
@@ -432,7 +381,11 @@ async function startBot() {
         const { initializeModels } = require('./src/models/index');
         await initializeModels();
         
-        // Music System - yeni sistem implement edilecek
+        // Music Player'ı başlat
+        const CustomMusicPlayer = require('./src/music/customPlayer');
+        client.customPlayer = new CustomMusicPlayer(client);
+        
+        log('Custom Music Player başlatıldı!', 'SUCCESS');
         
         // Security ve Analytics sistemlerini başlat
         const { security } = require('./src/utils/security');
@@ -449,11 +402,6 @@ async function startBot() {
         // Real-time updates sistemini başlat
         const { realtimeUpdates } = require('./src/utils/realtime');
         global.realtimeUpdates = realtimeUpdates;
-        
-        // Yeni müzik sistemi başlat
-        const MusicManager = require('./src/music/MusicManager');
-        client.musicManager = new MusicManager(client);
-        log('Modern müzik sistemi başlatıldı!', 'SUCCESS');
         
         // Broadcast fonksiyonlarını set et
         realtimeUpdates.setBroadcastFunctions(
