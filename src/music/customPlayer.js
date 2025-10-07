@@ -1,10 +1,15 @@
 const { DisTube } = require('distube');
 const { EmbedBuilder } = require('discord.js');
+const { VoiceConnectionStatus, entersState, joinVoiceChannel } = require('@discordjs/voice');
 const ffmpegPath = require('ffmpeg-static');
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
+        
+        // Enable @discordjs/voice debug logs
+        const voiceDebug = require('debug');
+        voiceDebug.enable('@discordjs/voice:*');
         
         // Create DisTube instance (minimal config for v5)
         this.distube = new DisTube(client, {
@@ -14,7 +19,7 @@ class CustomMusicPlayer {
         // Setup event listeners
         this.setupEventListeners();
         
-        console.log('[CUSTOM-PLAYER] DisTube initialized');
+        console.log('[CUSTOM-PLAYER] DisTube initialized with voice debugging');
     }
     
     setupEventListeners() {
