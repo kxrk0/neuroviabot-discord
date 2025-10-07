@@ -16,10 +16,6 @@ class CustomMusicPlayer {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                     }
                 }
-            },
-            bridgeProvider: 'ffmpeg',
-            bridgeProviderOptions: {
-                ffmpeg: 'ffmpeg-static'
             }
         });
         
@@ -38,7 +34,7 @@ class CustomMusicPlayer {
     async initializeExtractors() {
         console.log('[CUSTOM-PLAYER] Loading extractors...');
         try {
-            // Discord-player v6.7.0 için uyumlu extractor yükleme
+            // Discord-player v6.7.0 için basit extractor yükleme
             await this.player.extractors.loadDefault();
             console.log('[CUSTOM-PLAYER] Default extractors loaded successfully');
             
@@ -46,22 +42,14 @@ class CustomMusicPlayer {
             const extractors = this.player.extractors.store;
             console.log('[CUSTOM-PLAYER] Available extractors:', Object.keys(extractors));
             
-            // YouTube extractor'ın yüklü olduğunu kontrol et
-            if (extractors.YouTubeExtractor) {
-                console.log('[CUSTOM-PLAYER] YouTube extractor is available');
-            } else {
-                console.warn('[CUSTOM-PLAYER] YouTube extractor not found, attempting manual registration');
-                try {
-                    const { YouTubeExtractor } = require('@discord-player/extractor');
-                    this.player.extractors.register(YouTubeExtractor, {});
-                    console.log('[CUSTOM-PLAYER] YouTube extractor registered manually');
-                } catch (manualError) {
-                    console.error('[CUSTOM-PLAYER] Manual extractor registration failed:', manualError);
-                }
+            // Eğer extractor yoksa, discord-player'ın built-in extractor'larını kullan
+            if (Object.keys(extractors).length === 0) {
+                console.log('[CUSTOM-PLAYER] No external extractors found, using built-in extractors');
             }
             
         } catch (error) {
             console.error('[CUSTOM-PLAYER] Failed to load extractors:', error);
+            console.log('[CUSTOM-PLAYER] Continuing with built-in extractors');
         }
     }
 
