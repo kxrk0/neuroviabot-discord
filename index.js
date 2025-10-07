@@ -218,10 +218,10 @@ client.once('clientReady', async () => {
     log(`Guilds: ${client.guilds.cache.size}`, 'INFO');
     log(`Users: ${client.users.cache.size}`, 'INFO');
     
-    // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
+    // Slash komutlarını kaydet
+    await deployCommands();
     
-    // Slash komutları kaydet
-    await registerSlashCommands();
+    // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
     
     log('Bot is ready and operational!', 'SUCCESS');
 });
