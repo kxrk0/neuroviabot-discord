@@ -24,7 +24,13 @@ module.exports = {
         }
 
         // Queue var mı kontrol et
-        if (!queue || (!queue.isPlaying() && !queue.node.isPaused())) {
+        console.log(`[DEBUG-STOP] Queue exists: ${!!queue}`);
+        console.log(`[DEBUG-STOP] Queue isPlaying: ${queue?.isPlaying()}`);
+        console.log(`[DEBUG-STOP] Queue isPaused: ${queue?.node?.isPaused()}`);
+        console.log(`[DEBUG-STOP] Queue currentTrack: ${queue?.currentTrack?.title || 'None'}`);
+        console.log(`[DEBUG-STOP] Queue tracks size: ${queue?.tracks?.size || 0}`);
+        
+        if (!queue || (!queue.isPlaying() && !queue.node.isPaused() && !queue.currentTrack)) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Hata')

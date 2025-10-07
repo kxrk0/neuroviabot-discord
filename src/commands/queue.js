@@ -19,6 +19,11 @@ module.exports = {
         const page = interaction.options.getInteger('sayfa') || 1;
 
         // Queue var mı kontrol et
+        console.log(`[DEBUG-QUEUE] Queue exists: ${!!queue}`);
+        console.log(`[DEBUG-QUEUE] Queue tracks size: ${queue?.tracks?.size || 0}`);
+        console.log(`[DEBUG-QUEUE] Queue currentTrack: ${queue?.currentTrack?.title || 'None'}`);
+        console.log(`[DEBUG-QUEUE] Queue isPlaying: ${queue?.isPlaying()}`);
+        
         if (!queue || (!queue.currentTrack && queue.tracks.size === 0)) {
             const emptyQueueEmbed = new EmbedBuilder()
                 .setColor('#ffa500')

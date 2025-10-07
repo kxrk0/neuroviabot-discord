@@ -232,14 +232,25 @@ module.exports = {
             }
 
             // Eğer şu anda çalmıyorsa çalmaya başla
+            console.log(`[DEBUG-PLAY] Queue state before playback: isPlaying=${queue.isPlaying()}, currentTrack=${queue.currentTrack?.title || 'None'}, tracksSize=${queue.tracks.size}`);
+            
             if (!queue.isPlaying()) {
                 try {
                     console.log(`[DEBUG-PLAY] Starting playback for track: ${searchResult.tracks[0]?.title}`);
                     console.log(`[DEBUG-PLAY] Queue connection status: ${queue.connection ? 'Connected' : 'Not connected'}`);
                     console.log(`[DEBUG-PLAY] Voice channel: ${voiceChannel.name} (${voiceChannel.id})`);
                     
+                    // Kısa bir bekleme ekle - track'in queue'ya eklenmesini bekle
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
                     await queue.node.play();
                     console.log(`[DEBUG-PLAY] Playback started successfully`);
+                    
+                    // Playback başladıktan sonra queue durumunu kontrol et
+                    setTimeout(() => {
+                        console.log(`[DEBUG-PLAY] Queue state after playback: isPlaying=${queue.isPlaying()}, currentTrack=${queue.currentTrack?.title || 'None'}, tracksSize=${queue.tracks.size}`);
+                    }, 1000);
+                    
                 } catch (playError) {
                     console.error(`[DEBUG-PLAY] Playback error:`, playError);
                     
