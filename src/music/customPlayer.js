@@ -7,6 +7,11 @@ class CustomMusicPlayer {
         this.client = client;
         this.player = useMainPlayer();
         
+        // Extractors'ları yükle
+        console.log('[CUSTOM-PLAYER] Loading extractors...');
+        this.player.extractors.loadDefault();
+        console.log('[CUSTOM-PLAYER] Extractors loaded successfully');
+        
         // Bağımlılık raporunu kontrol et
         console.log('[CUSTOM-PLAYER] Dependency report:', this.player.scanDeps());
         
