@@ -200,12 +200,27 @@ async function registerSlashCommands() {
     try {
         log(`Registering ${commands.length} slash commands...`, 'INFO');
         
+        // Önce tüm komutları temizle
+        await rest.put(
+            Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+            { body: [] }
+        );
+        
+        log('Cleared existing commands', 'INFO');
+        
+        // Sonra yeni komutları kaydet
         const data = await rest.put(
             Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
             { body: commands }
         );
         
         log(`Successfully registered ${data.length} slash commands`, 'SUCCESS');
+        
+        // Kaydedilen komutları logla
+        for (const cmd of data) {
+            log(`Registered: ${cmd.name}`, 'DEBUG');
+        }
+        
     } catch (error) {
         log(`Error registering slash commands: ${error.message}`, 'ERROR');
     }
