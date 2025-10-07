@@ -67,6 +67,24 @@ class CustomMusicPlayer {
 
             const track = queue.shift();
             console.log(`[CUSTOM-PLAYER] Playing: ${track.title}`);
+            console.log(`[CUSTOM-PLAYER] Track URL: ${track.url}`);
+
+            // URL doğrulama
+            if (!track.url || typeof track.url !== 'string') {
+                console.error(`[CUSTOM-PLAYER] Invalid track URL: ${track.url}`);
+                await this.playNext(guildId); // Sıradaki şarkıyı çal
+                return false;
+            }
+
+            // YouTube URL doğrulama
+            const isValidYouTube = await playdl.yt_validate(track.url);
+            if (isValidYouTube !== 'video') {
+                console.error(`[CUSTOM-PLAYER] Invalid YouTube URL: ${track.url}, validation result: ${isValidYouTube}`);
+                await this.playNext(guildId); // Sıradaki şarkıyı çal
+                return false;
+            }
+
+            console.log(`[CUSTOM-PLAYER] YouTube URL validated successfully`);
 
             // play-dl ile stream oluştur
             const stream = await playdl.stream(track.url);
