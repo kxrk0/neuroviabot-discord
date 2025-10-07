@@ -1,6 +1,6 @@
 const { Player, QueryType } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
-const { YouTubeExtractor } = require('discord-player-youtubei');
+const YouTubeExtractor = require('discord-player-youtubei').default || require('discord-player-youtubei');
 
 class CustomMusicPlayer {
     constructor(client) {
