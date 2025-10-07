@@ -13,7 +13,9 @@ class CustomMusicPlayer {
         
         // Create DisTube instance (minimal config for v5)
         this.distube = new DisTube(client, {
-            emitNewSongOnly: false
+            emitNewSongOnly: false,
+            nsfw: false,
+            savePreviousSongs: false
         });
         
         // Setup event listeners

@@ -55,6 +55,12 @@ const client = new Client({
     ]
 });
 
+// Discord.js v14 voice adapter for DisTube
+client.on('raw', (packet) => {
+    if (!['VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'].includes(packet.t)) return;
+    client.emit(packet.t.toLowerCase(), packet.d);
+});
+
 // Collections for commands and events
 client.commands = new Collection();
 client.events = new Collection();
