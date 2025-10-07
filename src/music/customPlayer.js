@@ -1,7 +1,7 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
-const ytdl = require('ytdl-core');
+const playdl = require('play-dl');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -89,20 +89,34 @@ class CustomMusicPlayer {
                 return false;
             }
 
-            // ytdl-core ile stream oluştur
-            const stream = ytdl(track.url, {
-                filter: 'audioonly',
-                quality: 'highestaudio',
-                highWaterMark: 1 << 25,
-                requestOptions: {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                    }
+            // play-dl ile stream oluştur
+            console.log(`[CUSTOM-PLAYER] Creating stream for URL: ${track.url}`);
+            
+            let stream;
+            try {
+                // Önce video info al
+                const videoInfo = await playdl.video_basic_info(track.url);
+                console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
+                
+                // Stream'i info'dan oluştur
+                stream = await playdl.stream_from_info(videoInfo);
+                console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
+            } catch (streamError) {
+                console.error(`[CUSTOM-PLAYER] Failed to create stream from info:`, streamError);
+                
+                // Alternatif yöntem: Direkt stream
+                try {
+                    console.log(`[CUSTOM-PLAYER] Trying direct stream for URL: ${track.url}`);
+                    stream = await playdl.stream(track.url);
+                    console.log(`[CUSTOM-PLAYER] Direct stream created successfully, type: ${stream.type}`);
+                } catch (directError) {
+                    console.error(`[CUSTOM-PLAYER] Direct stream also failed:`, directError);
+                    throw new Error('Failed to create stream with both methods');
                 }
-            });
+            }
 
-            const resource = createAudioResource(stream, {
-                inputType: 'webm/opus'
+            const resource = createAudioResource(stream.stream, {
+                inputType: stream.type
             });
 
             // Audio player oluştur
