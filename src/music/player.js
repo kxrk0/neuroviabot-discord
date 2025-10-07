@@ -111,8 +111,9 @@ class MusicPlayer {
     setupEventListeners() {
         console.log(`[DEBUG-PLAYER] Setting up event listeners...`);
         
+        // Discord Player v6'da event listener'lar player.events.on ile kurulur
         // Player ready
-        this.player.on('playerStart', (queue, track) => {
+        this.player.events.on('playerStart', (queue, track) => {
             console.log(`[DEBUG-PLAYER] Track started: ${track.title} in ${queue.guild.name}`);
             logger.musicEvent('Track Started', {
                 title: track.title,
@@ -126,7 +127,7 @@ class MusicPlayer {
         });
 
         // Player ready event
-        this.player.on('playerReady', (queue) => {
+        this.player.events.on('playerReady', (queue) => {
             console.log(`[DEBUG-PLAYER] Player ready in ${queue.guild.name}`);
             logger.musicEvent('Player Ready', {
                 guild: queue.guild.name
@@ -134,7 +135,7 @@ class MusicPlayer {
         });
 
         // Track ended
-        this.player.on('playerFinish', (queue, track) => {
+        this.player.events.on('playerFinish', (queue, track) => {
             console.log(`[DEBUG-PLAYER] Track finished: ${track.title} in ${queue.guild.name}`);
             logger.musicEvent('Track Finished', {
                 title: track.title,
@@ -143,7 +144,7 @@ class MusicPlayer {
         });
 
         // Queue ended
-        this.player.on('emptyQueue', (queue) => {
+        this.player.events.on('emptyQueue', (queue) => {
             console.log(`[DEBUG-PLAYER] Queue empty in ${queue.guild.name}`);
             logger.musicEvent('Queue Empty', {
                 guild: queue.guild.name
@@ -156,7 +157,7 @@ class MusicPlayer {
         });
 
         // Connection error
-        this.player.on('connectionError', (queue, error) => {
+        this.player.events.on('connectionError', (queue, error) => {
             console.error(`[DEBUG-PLAYER] Connection error in ${queue.guild.name}:`, error);
             logger.playerError(error, {
                 guild: queue.guild.name,
@@ -165,7 +166,7 @@ class MusicPlayer {
         });
 
         // Track error - Discord Player v6'da hem 'error' hem 'playerError' event'leri var
-        this.player.on('error', (queue, error, track) => {
+        this.player.events.on('error', (queue, error, track) => {
             console.error(`[DEBUG-PLAYER] Player error in ${queue.guild.name} for track ${track?.title}:`, error);
             console.error(`[DEBUG-PLAYER] Error details:`, {
                 message: error.message,
@@ -185,7 +186,7 @@ class MusicPlayer {
         });
 
         // PlayerError event listener (Discord Player v6'da bu da var)
-        this.player.on('playerError', (queue, error, track) => {
+        this.player.events.on('playerError', (queue, error, track) => {
             console.error(`[DEBUG-PLAYER] PlayerError in ${queue.guild.name} for track ${track?.title}:`, error);
             console.error(`[DEBUG-PLAYER] PlayerError details:`, {
                 message: error.message,
@@ -205,7 +206,7 @@ class MusicPlayer {
         });
 
         // Bot disconnected
-        this.player.on('disconnect', (queue) => {
+        this.player.events.on('disconnect', (queue) => {
             console.log(`[DEBUG-PLAYER] Bot disconnected from ${queue.guild.name}`);
             logger.musicEvent('Bot Disconnected', {
                 guild: queue.guild.name
@@ -217,7 +218,7 @@ class MusicPlayer {
         });
 
         // No results
-        this.player.on('noResults', (queue, query) => {
+        this.player.events.on('noResults', (queue, query) => {
             logger.warn(`Arama sonucu bulunamadı: ${query}`, {
                 guild: queue.guild.name
             });
@@ -230,7 +231,7 @@ class MusicPlayer {
 
         // Debug events (sadece development'ta)
         if (process.env.NODE_ENV === 'development') {
-            this.player.on('debug', (queue, message) => {
+            this.player.events.on('debug', (queue, message) => {
                 logger.debug(`Player Debug: ${message}`, {
                     guild: queue?.guild?.name || 'Unknown'
                 });
