@@ -352,6 +352,8 @@ module.exports = {
 
         try {
             const client = interaction.client;
+            const { getDatabase } = require('../database/simple-db');
+            const db = getDatabase();
             
             // Bot başlangıç süresi
             const uptime = this.formatDuration(client.uptime || 0);
@@ -366,18 +368,11 @@ module.exports = {
             const usedMemory = Math.round(memoryUsage.heapUsed / 1024 / 1024);
             const totalMemory = Math.round(memoryUsage.heapTotal / 1024 / 1024);
             
-            // Bot komut istatistikleri
-            const totalCommands = await User.sum('totalCommands') || 0;
-            const totalMessages = await User.sum('totalMessages') || 0;
-            
-            // Database istatistikleri
-            const dbStats = await Promise.all([
-                User.count(),
-                Guild.count(),
-                GuildMember.count(),
-                Ticket.count(),
-                ModerationCase.count()
-            ]);
+            // Database istatistikleri (simple-db'den)
+            const userCount = db.data.users?.size || 0;
+            const guildCount = db.data.guilds?.size || 0;
+            const memberCount = db.data.members?.size || 0;
+            const ticketCount = db.data.tickets?.size || 0;
 
             const botEmbed = new EmbedBuilder()
                 .setColor('#00ff88')
@@ -397,18 +392,12 @@ module.exports = {
                     { name: '👥 Kullanıcı Sayısı', value: users.toLocaleString(), inline: true },
                     { name: '📺 Kanal Sayısı', value: channels.toLocaleString(), inline: true },
                     
-                    { name: '📈 Kullanım İstatistikleri', value: '\u200B', inline: false },
-                    { name: '⌨️ Toplam Komut', value: totalCommands.toLocaleString(), inline: true },
-                    { name: '💬 İşlenen Mesaj', value: totalMessages.toLocaleString(), inline: true },
-                    { name: '🎵 Müzik Oturumu', value: this.getMusicSessionCount(client), inline: true },
-                    
                     { name: '🗄️ Database İstatistikleri', value: '\u200B', inline: false },
-                    { name: '👤 Kullanıcı Kaydı', value: dbStats[0].toLocaleString(), inline: true },
-                    { name: '🏠 Sunucu Kaydı', value: dbStats[1].toLocaleString(), inline: true },
-                    { name: '👥 Üye Kaydı', value: dbStats[2].toLocaleString(), inline: true },
-                    { name: '🎫 Ticket Kaydı', value: dbStats[3].toLocaleString(), inline: true },
-                    { name: '🛡️ Moderasyon Kaydı', value: dbStats[4].toLocaleString(), inline: true },
-                    { name: '📊 Database Boyutu', value: await this.getDatabaseSize(), inline: true }
+                    { name: '👤 Kullanıcı Kaydı', value: userCount.toLocaleString(), inline: true },
+                    { name: '🏠 Sunucu Kaydı', value: guildCount.toLocaleString(), inline: true },
+                    { name: '👥 Üye Kaydı', value: memberCount.toLocaleString(), inline: true },
+                    { name: '🎫 Ticket Kaydı', value: ticketCount.toLocaleString(), inline: true },
+                    { name: '🎵 Müzik Oturumu', value: this.getMusicSessionCount(client), inline: true }
                 )
                 .setFooter({
                     text: `${client.user.tag} • Versiyon 2.0.0`,
@@ -420,6 +409,14 @@ module.exports = {
 
         } catch (error) {
             logger.error('Bot stats hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ İstatistik Hatası')
+                .setDescription('Bot istatistikleri alınırken bir hata oluştu!')
+                .setTimestamp();
+            
+            await interaction.editReply({ embeds: [errorEmbed] });
         }
     },
 
