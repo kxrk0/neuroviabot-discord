@@ -1,6 +1,7 @@
 const { Player } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
+const { YoutubeiExtractor } = require('discord-player-youtubei');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -20,6 +21,7 @@ class CustomMusicPlayer {
         });
         
         // Extractors yükle
+        this.player.extractors.register(YoutubeiExtractor, {});
         this.player.extractors.loadDefault();
         
         // Event listeners kur
