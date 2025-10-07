@@ -7,6 +7,15 @@ const { YoutubeiExtractor, YouTubeExtractor } = require('@discord-player/extract
 const { logger } = require('../utils/logger');
 const config = require('../config.js');
 
+// Play-dl import (alternatif YouTube stream için)
+let playdl = null;
+try {
+    playdl = require('play-dl');
+    logger.success('Play-dl yüklendi - alternatif YouTube stream aktif');
+} catch (error) {
+    logger.warn('Play-dl yüklenemedi - sadece ytdl-core kullanılacak');
+}
+
 class MusicPlayer {
     constructor(client) {
         this.client = client;
@@ -41,6 +50,25 @@ class MusicPlayer {
                 initialVolume: config.defaultVolume || 50,
                 bufferingTimeout: 3000
             });
+
+            // Play-dl stream handler ekle (eğer mevcutsa)
+            if (playdl) {
+                this.player.events.on('beforeCreateStream', async (track, source, _queue) => {
+                    if (source === 'youtube') {
+                        try {
+                            console.log(`[DEBUG-PLAYER] Using play-dl for YouTube stream: ${track.title}`);
+                            const stream = await playdl.stream(track.url, { 
+                                discordPlayerCompatibility: true 
+                            });
+                            return stream.stream;
+                        } catch (error) {
+                            console.error(`[DEBUG-PLAYER] Play-dl stream error:`, error);
+                            // Fallback to default extractor
+                            return null;
+                        }
+                    }
+                });
+            }
 
             // Event listener'ları hemen kur (Player oluşturulur oluşturulmaz)
             if (!this.eventListenersSetup) {
