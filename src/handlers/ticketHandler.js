@@ -12,6 +12,8 @@ class TicketHandler {
 
     checkAndSetup() {
         try {
+            // Config cache'ini temizle ve yeniden yükle
+            delete require.cache[require.resolve('../config.js')];
             const config = require('../config.js');
             this.isEnabled = config.features.tickets;
             

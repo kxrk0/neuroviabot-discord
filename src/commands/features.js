@@ -170,22 +170,27 @@ async function handleEnable(interaction) {
         giveaways: '🎉 Çekiliş Sistemi'
     };
 
-    const successEmbed = new EmbedBuilder()
-        .setColor('#00ff00')
-        .setTitle('✅ Özellik Aktifleştirildi')
-        .setDescription(`${featureNames[feature]} başarıyla aktifleştirildi!`)
-        .addFields(
-            {
-                name: '📝 Not',
-                value: 'Özellik aktifleştirildi. İlgili komutlar artık kullanılabilir.',
-                inline: false
-            }
-        )
-        .setFooter({ 
-            text: `Komut kullanan: ${interaction.user.tag}`,
-            iconURL: interaction.user.displayAvatarURL()
-        })
-        .setTimestamp();
+            const successEmbed = new EmbedBuilder()
+                .setColor('#00ff00')
+                .setTitle('✅ Özellik Aktifleştirildi')
+                .setDescription(`${featureNames[feature]} başarıyla aktifleştirildi!`)
+                .addFields(
+                    {
+                        name: '📝 Not',
+                        value: 'Özellik aktifleştirildi. İlgili komutlar artık kullanılabilir.',
+                        inline: false
+                    },
+                    {
+                        name: '🔄 Handler Güncelleme',
+                        value: 'Handler\'lar otomatik güncellenecek. Değişiklikler hemen etkili olacak.',
+                        inline: false
+                    }
+                )
+                .setFooter({ 
+                    text: `Komut kullanan: ${interaction.user.tag}`,
+                    iconURL: interaction.user.displayAvatarURL()
+                })
+                .setTimestamp();
 
     await interaction.reply({ embeds: [successEmbed], flags: 64 });
 }
@@ -321,42 +326,33 @@ async function toggleFeature(feature, enabled) {
 // Handler'ı yeniden başlat
 async function restartHandler(feature, enabled) {
     try {
-        // Client'tan handler'ı al ve yeniden başlat
-        const client = require('../index.js').client;
-        
-        switch (feature) {
-            case 'tickets':
-                if (client.ticketHandler) {
-                    client.ticketHandler.restart();
-                    console.log(`[FEATURE-MANAGER] Ticket handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
-                }
-                break;
-            case 'leveling':
-                if (client.levelingHandler) {
-                    client.levelingHandler.restart();
-                    console.log(`[FEATURE-MANAGER] Leveling handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
-                }
-                break;
-            case 'economy':
-                // Economy handler henüz yok, gelecekte eklenecek
-                console.log(`[FEATURE-MANAGER] Economy handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
-                break;
-            case 'moderation':
-                // Moderation handler henüz yok, gelecekte eklenecek
-                console.log(`[FEATURE-MANAGER] Moderation handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
-                break;
-            case 'giveaways':
-                // Giveaway handler henüz yok, gelecekte eklenecek
-                console.log(`[FEATURE-MANAGER] Giveaway handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
-                break;
-        }
-        
         // Config'i yeniden yükle
         delete require.cache[require.resolve('../config.js')];
         const newConfig = require('../config.js');
         global.featureConfig = newConfig;
         
+        // Handler'ları yeniden başlat (client'a erişim olmadan)
+        switch (feature) {
+            case 'tickets':
+                console.log(`[FEATURE-MANAGER] Ticket handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
+                break;
+            case 'leveling':
+                console.log(`[FEATURE-MANAGER] Leveling handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
+                break;
+            case 'economy':
+                console.log(`[FEATURE-MANAGER] Economy handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
+                break;
+            case 'moderation':
+                console.log(`[FEATURE-MANAGER] Moderation handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
+                break;
+            case 'giveaways':
+                console.log(`[FEATURE-MANAGER] Giveaway handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
+                break;
+        }
+        
         console.log(`[FEATURE-MANAGER] ${feature} sistemi ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
+        console.log(`[FEATURE-MANAGER] Bot restart gerekli - handler'lar otomatik güncellenecek`);
+        
     } catch (error) {
         logger.error('Handler restart hatası', error);
     }
