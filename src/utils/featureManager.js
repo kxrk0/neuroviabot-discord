@@ -52,22 +52,26 @@ class FeatureManager {
 
     // Config içeriğinde feature flag'i güncelle
     updateFeatureFlag(content, feature, enabled) {
-        // Feature flag pattern'ini bul
-        const featurePattern = new RegExp(
-            `(${feature}:\\s*)(true|false)`,
-            'g'
-        );
+        // Feature flag'i bul ve değiştir - basit string replace
+        const lines = content.split('\n');
+        let found = false;
         
-        const replacement = `$1${enabled}`;
-        const updatedContent = content.replace(featurePattern, replacement);
+        for (let i = 0; i < lines.length; i++) {
+            // tickets: false veya tickets: true şeklindeki satırı bul
+            if (lines[i].includes(`${feature}:`) && (lines[i].includes('true') || lines[i].includes('false'))) {
+                // Satırı güncelle
+                lines[i] = lines[i].replace(/:\s*(true|false)/, `: ${enabled}`);
+                found = true;
+                break;
+            }
+        }
         
-        // Eğer değişiklik yapılmadıysa, manuel olarak ekle
-        if (updatedContent === content) {
+        if (!found) {
             logger.warn(`Feature flag bulunamadı: ${feature}, manuel ekleme yapılıyor`);
             return this.addFeatureFlagManually(content, feature, enabled);
         }
         
-        return updatedContent;
+        return lines.join('\n');
     }
 
     // Manuel olarak feature flag ekle
@@ -92,12 +96,6 @@ class FeatureManager {
         try {
             // Config cache'ini temizle
             delete require.cache[require.resolve('../config.js')];
-            
-            // Yeniden yükle
-            const newConfig = require('../config.js');
-            
-            // Global config'i güncelle
-            global.featureConfig = newConfig;
             
             logger.info('Config başarıyla yeniden yüklendi');
         } catch (error) {
