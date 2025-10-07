@@ -179,11 +179,6 @@ async function handleEnable(interaction) {
                         name: '📝 Not',
                         value: 'Özellik aktifleştirildi. İlgili komutlar artık kullanılabilir.',
                         inline: false
-                    },
-                    {
-                        name: '🔄 Handler Güncelleme',
-                        value: 'Handler\'lar otomatik güncellenecek. Değişiklikler hemen etkili olacak.',
-                        inline: false
                     }
                 )
                 .setFooter({ 
@@ -308,9 +303,6 @@ async function toggleFeature(feature, enabled) {
         const success = await featureManager.toggleFeature(feature, enabled);
         
         if (success) {
-            // Handler'ı yeniden başlat
-            await restartHandler(feature, enabled);
-            
             logger.info(`Özellik ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}: ${feature}`);
             return true;
         } else {
@@ -323,36 +315,3 @@ async function toggleFeature(feature, enabled) {
     }
 }
 
-// Handler'ı yeniden başlat
-async function restartHandler(feature, enabled) {
-    try {
-        // Config'i yeniden yükle
-        delete require.cache[require.resolve('../config.js')];
-        
-        // Handler'ları yeniden başlat (client'a erişim olmadan)
-        switch (feature) {
-            case 'tickets':
-                console.log(`[FEATURE-MANAGER] Ticket handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
-                break;
-            case 'leveling':
-                console.log(`[FEATURE-MANAGER] Leveling handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
-                break;
-            case 'economy':
-                console.log(`[FEATURE-MANAGER] Economy handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
-                break;
-            case 'moderation':
-                console.log(`[FEATURE-MANAGER] Moderation handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
-                break;
-            case 'giveaways':
-                console.log(`[FEATURE-MANAGER] Giveaway handler ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'} (handler henüz mevcut değil)`);
-                break;
-        }
-        
-        console.log(`[FEATURE-MANAGER] ${feature} sistemi ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}`);
-        console.log(`[FEATURE-MANAGER] Handler'lar otomatik güncellenecek`);
-        
-    } catch (error) {
-        logger.error('Handler restart hatası', error);
-        console.error('Handler restart detay:', error.message);
-    }
-}
