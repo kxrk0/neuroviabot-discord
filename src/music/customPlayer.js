@@ -112,7 +112,7 @@ class CustomMusicPlayer {
                     quality: 'highestaudio',
                     highWaterMark: 1 << 25,
                     filter: 'audioonly',
-                    opusEncoded: false,
+                    opusEncoded: true, // Opus encoding aktif
                     // YouTube signature extraction için ek ayarlar
                     requestOptions: {
                         headers: {
@@ -307,7 +307,17 @@ class CustomMusicPlayer {
         console.log(`[CUSTOM-PLAYER] Handling stream error for ${track.title}, trying play-dl fallback`);
         
         try {
-            const playdlStream = await playdl.stream(track.url, {
+            // Play-dl ile video info al
+            const videoInfo = await playdl.video_basic_info(track.url);
+            console.log(`[CUSTOM-PLAYER] Video info obtained for fallback: ${videoInfo.video_details.title}`);
+            
+            // Video info'ya URL ekle
+            if (!videoInfo.video_details.url) {
+                videoInfo.video_details.url = track.url;
+            }
+            
+            // Stream oluştur
+            const playdlStream = await playdl.stream_from_info(videoInfo, {
                 discordPlayerCompatibility: true,
                 quality: 2
             });
