@@ -1,7 +1,7 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
-const ytdl = require('ytdl-core');
+const playdl = require('play-dl');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -10,7 +10,7 @@ class CustomMusicPlayer {
         this.players = new Map();
         this.queues = new Map();
         
-        console.log('[CUSTOM-PLAYER] Custom Music Player initialized with @discordjs/voice + ytdl-core');
+        console.log('[CUSTOM-PLAYER] Custom Music Player initialized with @discordjs/voice + play-dl');
     }
     
     
@@ -104,27 +104,40 @@ class CustomMusicPlayer {
                 return false;
             }
 
-            // Basit stream oluşturma - ytdl-core ile
+            // Stream oluşturma - play-dl ile
             console.log(`[CUSTOM-PLAYER] Creating stream for URL: ${track.url}`);
             
             let stream;
             try {
-                // Basit ytdl-core kullanımı
-                stream = ytdl(track.url, {
-                    filter: 'audioonly',
-                    quality: 'highestaudio',
-                    highWaterMark: 1 << 25
+                // play-dl ile stream oluşturma
+                stream = await playdl.stream(track.url, {
+                    quality: 2, // Audio quality
+                    seek: 0
                 });
                 
-                console.log(`[CUSTOM-PLAYER] Stream created successfully`);
+                console.log(`[CUSTOM-PLAYER] Stream created successfully with play-dl`);
                 
             } catch (streamError) {
-                console.error(`[CUSTOM-PLAYER] Failed to create stream:`, streamError);
-                throw new Error(`Failed to create stream: ${streamError.message}`);
+                console.error(`[CUSTOM-PLAYER] Failed to create stream with play-dl:`, streamError);
+                
+                // Fallback: video_basic_info + stream_from_info
+                try {
+                    console.log(`[CUSTOM-PLAYER] Trying fallback method...`);
+                    const videoInfo = await playdl.video_basic_info(track.url);
+                    stream = await playdl.stream_from_info(videoInfo, {
+                        quality: 2,
+                        seek: 0
+                    });
+                    console.log(`[CUSTOM-PLAYER] Fallback stream created successfully`);
+                } catch (fallbackError) {
+                    console.error(`[CUSTOM-PLAYER] Fallback also failed:`, fallbackError);
+                    throw new Error(`Failed to create stream: ${streamError.message}`);
+                }
             }
 
-            const resource = createAudioResource(stream, {
-                inputType: 'arbitrary'
+            const resource = createAudioResource(stream.stream, {
+                inputType: 'arbitrary',
+                inlineVolume: true
             });
 
             console.log(`[CUSTOM-PLAYER] Audio resource created successfully`);
