@@ -38,7 +38,7 @@ class LevelingHandler {
             this.xpCooldowns.set(cooldownKey, now);
 
             // Guild member verilerini al/oluştur (simple-db kullanarak)
-            const memberKey = `${userId}_${guildId}`;
+            const memberKey = `${guildId}-${userId}`;
             let memberData = db.data.members?.get(memberKey) || {
                 userId,
                 guildId,
