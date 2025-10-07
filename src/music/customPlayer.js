@@ -1,7 +1,7 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
-const playdl = require('play-dl');
+const ytdl = require('ytdl-core');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -11,6 +11,20 @@ class CustomMusicPlayer {
         this.queues = new Map();
         
         console.log('[CUSTOM-PLAYER] Custom Music Player initialized with @discordjs/voice');
+    }
+    
+    formatDuration(seconds) {
+        if (!seconds || isNaN(seconds)) return 'Bilinmiyor';
+        
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
     }
     
     async joinChannel(guildId, voiceChannel) {
@@ -89,93 +103,79 @@ class CustomMusicPlayer {
                 return false;
             }
 
-            // play-dl ile stream oluştur
+            // ytdl-core ile stream oluştur
             console.log(`[CUSTOM-PLAYER] Creating stream for URL: ${track.url}`);
             
-            let stream;
-            try {
-                // Önce video info al
-                const videoInfo = await playdl.video_basic_info(track.url);
-                console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
-                console.log(`[CUSTOM-PLAYER] Video info structure:`, {
-                    hasVideoDetails: !!videoInfo.video_details,
-                    videoDetailsUrl: videoInfo.video_details?.url,
-                    videoDetailsId: videoInfo.video_details?.id,
-                    trackUrl: track.url
-                });
-                
-                // videoInfo.video_details.url'yi kontrol et ve gerekirse düzelt
-                if (!videoInfo.video_details.url) {
-                    console.log(`[CUSTOM-PLAYER] video_details.url is missing, setting to track.url: ${track.url}`);
-                    videoInfo.video_details.url = track.url;
-                }
-                
-                // videoInfo.video_details.id'yi de kontrol et
-                if (!videoInfo.video_details.id && track.url.includes('watch?v=')) {
-                    const videoId = track.url.split('watch?v=')[1].split('&')[0];
-                    console.log(`[CUSTOM-PLAYER] Setting video_details.id to: ${videoId}`);
-                    videoInfo.video_details.id = videoId;
-                }
-                
-                console.log(`[CUSTOM-PLAYER] Attempting stream_from_info with:`, {
-                    url: videoInfo.video_details.url,
-                    id: videoInfo.video_details.id
-                });
-                
-                // Stream'i info'dan oluştur
-                stream = await playdl.stream_from_info(videoInfo);
-                console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
-            } catch (streamError) {
-                console.error(`[CUSTOM-PLAYER] Failed to create stream from info:`, streamError);
-                
-                // Alternatif yöntem: Direkt stream
-                try {
-                    console.log(`[CUSTOM-PLAYER] Trying direct stream for URL: ${track.url}`);
-                    stream = await playdl.stream(track.url);
-                    console.log(`[CUSTOM-PLAYER] Direct stream created successfully, type: ${stream.type}`);
-                } catch (directError) {
-                    console.error(`[CUSTOM-PLAYER] Direct stream also failed:`, directError);
-                    
-                    // Son çare: Video ID ile deneme
-                    try {
-                        const videoId = track.url.split('watch?v=')[1]?.split('&')[0];
-                        if (videoId) {
-                            console.log(`[CUSTOM-PLAYER] Trying with video ID: ${videoId}`);
-                            const directUrl = `https://www.youtube.com/watch?v=${videoId}`;
-                            
-                            // Video info ile deneme
-                            const videoInfo = await playdl.video_basic_info(directUrl);
-                            if (!videoInfo.video_details.url) {
-                                videoInfo.video_details.url = directUrl;
-                            }
-                            stream = await playdl.stream_from_info(videoInfo);
-                            console.log(`[CUSTOM-PLAYER] Video ID stream created successfully`);
-                        } else {
-                            throw new Error('No video ID found');
-                        }
-                    } catch (idError) {
-                        console.error(`[CUSTOM-PLAYER] Video ID approach also failed:`, idError);
-                        throw new Error('Failed to create stream with all methods');
-                    }
-                }
-            }
-
-            // Stream tipini kontrol et ve düzelt
-            let inputType = stream.type;
-            if (!inputType || inputType === 'unknown') {
-                inputType = 'arbitrary'; // Varsayılan tip
-                console.log(`[CUSTOM-PLAYER] Stream type unknown, using 'arbitrary'`);
+            // URL doğrulama
+            if (!ytdl.validateURL(track.url)) {
+                throw new Error(`Invalid YouTube URL: ${track.url}`);
             }
             
-            console.log(`[CUSTOM-PLAYER] Creating audio resource with type: ${inputType}`);
+            // Video bilgilerini al
+            let videoInfo;
+            try {
+                videoInfo = await ytdl.getInfo(track.url);
+                console.log(`[CUSTOM-PLAYER] Video info retrieved successfully:`, {
+                    title: videoInfo.videoDetails.title,
+                    duration: videoInfo.videoDetails.lengthSeconds,
+                    url: videoInfo.videoDetails.video_url
+                });
+                
+                // Track bilgilerini güncelle
+                track.title = videoInfo.videoDetails.title || track.title;
+                track.duration = videoInfo.videoDetails.lengthSeconds ? this.formatDuration(videoInfo.videoDetails.lengthSeconds) : 'Bilinmiyor';
+                track.thumbnail = videoInfo.videoDetails.thumbnails?.[0]?.url || null;
+                track.author = videoInfo.videoDetails.author?.name || 'Bilinmiyor';
+                
+                console.log(`[CUSTOM-PLAYER] Track updated with video info:`, {
+                    title: track.title,
+                    duration: track.duration,
+                    author: track.author
+                });
+                
+            } catch (infoError) {
+                console.error(`[CUSTOM-PLAYER] Failed to get video info:`, infoError);
+                // Video info alınamazsa varsayılan değerler kullan
+                track.duration = 'Bilinmiyor';
+                track.author = 'Bilinmiyor';
+            }
+            
+            // Stream oluştur
+            let stream;
+            try {
+                stream = ytdl(track.url, {
+                    filter: 'audioonly',
+                    quality: 'highestaudio',
+                    highWaterMark: 1 << 25,
+                    requestOptions: {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        }
+                    }
+                });
+                
+                console.log(`[CUSTOM-PLAYER] Stream created successfully with ytdl-core`);
+                
+                // Stream hata yakalama
+                stream.on('error', (error) => {
+                    console.error(`[CUSTOM-PLAYER] Stream error:`, error);
+                    player.stop();
+                });
+                
+            } catch (streamError) {
+                console.error(`[CUSTOM-PLAYER] Failed to create stream:`, streamError);
+                throw new Error(`Failed to create stream: ${streamError.message}`);
+            }
+
+            console.log(`[CUSTOM-PLAYER] Creating audio resource with ytdl-core stream`);
             console.log(`[CUSTOM-PLAYER] Stream info:`, {
-                hasStream: !!stream.stream,
-                streamType: stream.type,
-                inputType: inputType
+                hasStream: !!stream,
+                streamType: 'ytdl-core',
+                inputType: 'arbitrary'
             });
 
-            const resource = createAudioResource(stream.stream, {
-                inputType: inputType,
+            const resource = createAudioResource(stream, {
+                inputType: 'arbitrary',
                 inlineVolume: true
             });
 
