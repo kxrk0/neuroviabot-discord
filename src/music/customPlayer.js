@@ -1,103 +1,27 @@
-const { Player } = require('discord-player');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
-const { YoutubeiExtractor } = require('discord-player-youtubei');
+const ytdl = require('ytdl-core');
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
+        this.connections = new Map();
+        this.players = new Map();
+        this.queues = new Map();
         
-        // Discord Player instance oluştur
-        this.player = new Player(client, {
-            ytdlOptions: {
-                quality: 'highestaudio',
-                highWaterMark: 1 << 25,
-                requestOptions: {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                    }
-                }
-            },
-            ffmpegPath: require('@ffmpeg-installer/ffmpeg').path,
-            ffprobePath: require('ffprobe-static').path,
-            skipFFmpeg: false,
-            useLegacyFFmpeg: false
-        });
-        
-        console.log(`[CUSTOM-PLAYER] FFmpeg path: ${require('@ffmpeg-installer/ffmpeg').path}`);
-        console.log(`[CUSTOM-PLAYER] FFprobe path: ${require('ffprobe-static').path}`);
-        
-        // Extractors yükle
-        this.player.extractors.register(YoutubeiExtractor, {});
-        this.player.extractors.loadDefault();
-        
-        // Event listeners kur
-        this.setupEventListeners();
-        
-        console.log('[CUSTOM-PLAYER] Custom Music Player initialized with discord-player');
+        console.log('[CUSTOM-PLAYER] Custom Music Player initialized with @discordjs/voice');
     }
     
-    setupEventListeners() {
-        this.player.events.on('playerStart', (queue, track) => {
-            console.log(`[CUSTOM-PLAYER] Started playing: ${track.title}`);
-            console.log(`[CUSTOM-PLAYER] PlayerStart event triggered for guild: ${queue.guild.id}`);
-            
-            const nowPlayingEmbed = new EmbedBuilder()
-                .setColor('#00ff00')
-                .setTitle('🎵 Şimdi Çalıyor')
-                .setDescription(`**${track.title}**`)
-                .addFields(
-                    { name: '👤 Sanatçı', value: track.author || 'Bilinmiyor', inline: true },
-                    { name: '⏱️ Süre', value: track.duration || 'Bilinmiyor', inline: true },
-                    { name: '🔗 Kaynak', value: 'YouTube', inline: true }
-                )
-                .setThumbnail(track.thumbnail || null)
-                .setTimestamp();
-
-            queue.metadata.channel.send({ embeds: [nowPlayingEmbed] }).catch(console.error);
-        });
-
-        this.player.events.on('playerFinish', (queue, track) => {
-            console.log(`[CUSTOM-PLAYER] Finished playing: ${track.title}`);
-        });
-
-        this.player.events.on('playerError', (queue, error, track) => {
-            console.error(`[CUSTOM-PLAYER] Player error:`, error);
-            
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Çalma Hatası')
-                .setDescription('Şarkı çalınamadı!')
-                .addFields({
-                    name: '🔧 Hata Detayı',
-                    value: `\`\`\`${error.message}\`\`\``,
-                    inline: false
-                })
-                .setTimestamp();
-
-            queue.metadata.channel.send({ embeds: [errorEmbed] }).catch(console.error);
-        });
-
-        this.player.events.on('queueEnd', (queue) => {
-            console.log(`[CUSTOM-PLAYER] Queue ended for ${queue.guild.id}`);
-        });
-
-        this.player.events.on('connectionError', (queue, error) => {
-            console.error(`[CUSTOM-PLAYER] Connection error:`, error);
-        });
-    }
-
     async joinChannel(guildId, voiceChannel) {
         try {
-            const queue = this.player.nodes.create(guildId, {
-                metadata: {
-                    channel: voiceChannel,
-                    client: this.client,
-                    requestedBy: null
-                }
+            const connection = joinVoiceChannel({
+                channelId: voiceChannel.id,
+                guildId: voiceChannel.guild.id,
+                adapterCreator: voiceChannel.guild.voiceAdapterCreator,
             });
 
-            await queue.connect(voiceChannel);
+            this.connections.set(guildId, connection);
             console.log(`[CUSTOM-PLAYER] Connected to ${voiceChannel.name}`);
             return true;
         } catch (error) {
@@ -121,61 +45,22 @@ class CustomMusicPlayer {
                 return false;
             }
 
-            const queue = this.player.nodes.get(guildId);
+            let queue = this.queues.get(guildId);
             if (!queue) {
-                console.error(`[CUSTOM-PLAYER] No queue found for guild ${guildId}`);
-                return false;
+                queue = [];
+                this.queues.set(guildId, queue);
             }
 
-            // Discord Player ile track ekle
-            const searchResult = await this.player.search(track.url, {
-                requestedBy: metadata.user || null,
-                searchEngine: 'youtube'
+            queue.push({
+                ...track,
+                metadata: metadata
             });
 
-            if (!searchResult.hasTracks()) {
-                console.error(`[CUSTOM-PLAYER] No tracks found for: ${track.url}`);
-                return false;
-            }
-
-            const foundTrack = searchResult.tracks[0];
-            queue.addTrack(foundTrack);
-
-            console.log(`[CUSTOM-PLAYER] Added track to queue: ${foundTrack.title} (URL: ${foundTrack.url})`);
+            console.log(`[CUSTOM-PLAYER] Added track to queue: ${track.title} (URL: ${track.url})`);
 
             // Eğer şu anda çalan şarkı yoksa, çalmaya başla
-            console.log(`[CUSTOM-PLAYER] Queue isPlaying status: ${queue.isPlaying()}`);
-            console.log(`[CUSTOM-PLAYER] Queue tracks count: ${queue.tracks.size}`);
-            
-            if (!queue.isPlaying()) {
-                console.log(`[CUSTOM-PLAYER] Starting playback...`);
-                
-                // Timeout ile playback başlatma
-                const playbackPromise = queue.node.play();
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Playback timeout')), 10000)
-                );
-                
-                try {
-                    await Promise.race([playbackPromise, timeoutPromise]);
-                    console.log(`[CUSTOM-PLAYER] Playback started successfully`);
-                } catch (error) {
-                    console.error(`[CUSTOM-PLAYER] Playback failed:`, error);
-                    
-                    // Fallback: Manuel olarak track'i çalmaya çalış
-                    try {
-                        console.log(`[CUSTOM-PLAYER] Trying manual playback...`);
-                        const track = queue.tracks.at(0);
-                        if (track) {
-                            await queue.node.play(track);
-                            console.log(`[CUSTOM-PLAYER] Manual playback started`);
-                        }
-                    } catch (manualError) {
-                        console.error(`[CUSTOM-PLAYER] Manual playback also failed:`, manualError);
-                    }
-                }
-            } else {
-                console.log(`[CUSTOM-PLAYER] Already playing, track added to queue`);
+            if (!this.players.has(guildId)) {
+                await this.playNext(guildId);
             }
 
             return true;
@@ -186,23 +71,124 @@ class CustomMusicPlayer {
     }
 
     async playNext(guildId) {
-        // Discord Player otomatik olarak sıradaki şarkıyı çalar
-        const queue = this.player.nodes.get(guildId);
-        if (queue && !queue.isPlaying()) {
-            await queue.node.play();
+        try {
+            const queue = this.queues.get(guildId);
+            if (!queue || queue.length === 0) {
+                console.log(`[CUSTOM-PLAYER] No tracks in queue for ${guildId}`);
+                return false;
+            }
+
+            const track = queue.shift();
+            console.log(`[CUSTOM-PLAYER] Playing: ${track.title}`);
+            console.log(`[CUSTOM-PLAYER] Track URL: ${track.url}`);
+
+            // URL doğrulama
+            if (!track.url || typeof track.url !== 'string') {
+                console.error(`[CUSTOM-PLAYER] Invalid track URL: ${track.url}`);
+                await this.playNext(guildId); // Sıradaki şarkıyı çal
+                return false;
+            }
+
+            // ytdl-core ile stream oluştur
+            const stream = ytdl(track.url, {
+                filter: 'audioonly',
+                quality: 'highestaudio',
+                highWaterMark: 1 << 25,
+                requestOptions: {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                }
+            });
+
+            const resource = createAudioResource(stream, {
+                inputType: 'webm/opus'
+            });
+
+            // Audio player oluştur
+            const player = createAudioPlayer();
+            this.players.set(guildId, player);
+
+            // Connection'a player'ı bağla
+            const connection = this.connections.get(guildId);
+            if (connection) {
+                connection.subscribe(player);
+            }
+
+            // Player event listeners
+            player.on(AudioPlayerStatus.Playing, () => {
+                console.log(`[CUSTOM-PLAYER] Started playing: ${track.title}`);
+                
+                const nowPlayingEmbed = new EmbedBuilder()
+                    .setColor('#00ff00')
+                    .setTitle('🎵 Şimdi Çalıyor')
+                    .setDescription(`**${track.title}**`)
+                    .addFields(
+                        { name: '👤 Sanatçı', value: track.author || 'Bilinmiyor', inline: true },
+                        { name: '⏱️ Süre', value: track.duration || 'Bilinmiyor', inline: true },
+                        { name: '🔗 Kaynak', value: 'YouTube', inline: true }
+                    )
+                    .setThumbnail(track.thumbnail || null)
+                    .setTimestamp();
+
+                track.metadata.send({ embeds: [nowPlayingEmbed] }).catch(console.error);
+            });
+
+            player.on(AudioPlayerStatus.Idle, () => {
+                console.log(`[CUSTOM-PLAYER] Finished playing: ${track.title}`);
+                this.players.delete(guildId);
+                
+                // Sıradaki şarkıyı çal
+                setTimeout(() => {
+                    this.playNext(guildId);
+                }, 1000);
+            });
+
+            player.on('error', (error) => {
+                console.error(`[CUSTOM-PLAYER] Player error:`, error);
+                
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Çalma Hatası')
+                    .setDescription('Şarkı çalınamadı!')
+                    .addFields({
+                        name: '🔧 Hata Detayı',
+                        value: `\`\`\`${error.message}\`\`\``,
+                        inline: false
+                    })
+                    .setTimestamp();
+
+                track.metadata.send({ embeds: [errorEmbed] }).catch(console.error);
+                
+                this.players.delete(guildId);
+                this.playNext(guildId);
+            });
+
+            // Şarkıyı çalmaya başla
+            player.play(resource);
+            return true;
+
+        } catch (error) {
+            console.error(`[CUSTOM-PLAYER] Failed to play track:`, error);
+            return false;
         }
-        return true;
     }
 
     async stop(guildId) {
         try {
-            const queue = this.player.nodes.get(guildId);
-            if (queue) {
-                queue.delete();
-                console.log(`[CUSTOM-PLAYER] Stopped playback for ${guildId}`);
-                return true;
+            const player = this.players.get(guildId);
+            if (player) {
+                player.stop();
+                this.players.delete(guildId);
             }
-            return false;
+            
+            const queue = this.queues.get(guildId);
+            if (queue) {
+                queue.length = 0; // Queue'yu temizle
+            }
+            
+            console.log(`[CUSTOM-PLAYER] Stopped playback for ${guildId}`);
+            return true;
         } catch (error) {
             console.error(`[CUSTOM-PLAYER] Failed to stop playback:`, error);
             return false;
@@ -210,30 +196,29 @@ class CustomMusicPlayer {
     }
 
     getQueue(guildId) {
-        const queue = this.player.nodes.get(guildId);
-        return queue ? queue.tracks.toArray() : [];
+        const queue = this.queues.get(guildId);
+        return queue || [];
     }
 
     getCurrentTrack(guildId) {
-        const queue = this.player.nodes.get(guildId);
-        return queue ? queue.currentTrack : null;
+        // Basit implementasyon - şu anda çalan track'i döndür
+        return null;
     }
 
     isPlaying(guildId) {
-        const queue = this.player.nodes.get(guildId);
-        return queue ? queue.isPlaying() : false;
+        return this.players.has(guildId);
     }
 
     isPaused(guildId) {
-        const queue = this.player.nodes.get(guildId);
-        return queue ? queue.node.isPaused() : false;
+        const player = this.players.get(guildId);
+        return player ? player.state.status === AudioPlayerStatus.Paused : false;
     }
 
     async pause(guildId) {
         try {
-            const queue = this.player.nodes.get(guildId);
-            if (queue) {
-                queue.node.pause();
+            const player = this.players.get(guildId);
+            if (player) {
+                player.pause();
                 console.log(`[CUSTOM-PLAYER] Paused playback in ${guildId}`);
                 return true;
             }
@@ -246,9 +231,9 @@ class CustomMusicPlayer {
 
     async resume(guildId) {
         try {
-            const queue = this.player.nodes.get(guildId);
-            if (queue) {
-                queue.node.resume();
+            const player = this.players.get(guildId);
+            if (player) {
+                player.unpause();
                 console.log(`[CUSTOM-PLAYER] Resumed playback in ${guildId}`);
                 return true;
             }
@@ -261,10 +246,23 @@ class CustomMusicPlayer {
 
     cleanup(guildId) {
         try {
-            const queue = this.player.nodes.get(guildId);
-            if (queue) {
-                queue.delete();
+            const player = this.players.get(guildId);
+            if (player) {
+                player.stop();
+                this.players.delete(guildId);
             }
+            
+            const connection = this.connections.get(guildId);
+            if (connection) {
+                connection.destroy();
+                this.connections.delete(guildId);
+            }
+            
+            const queue = this.queues.get(guildId);
+            if (queue) {
+                queue.length = 0;
+            }
+            
             console.log(`[CUSTOM-PLAYER] Cleaned up ${guildId}`);
         } catch (error) {
             console.error(`[CUSTOM-PLAYER] Failed to cleanup:`, error);
@@ -273,10 +271,14 @@ class CustomMusicPlayer {
 
     async leave(guildId) {
         try {
-            const queue = this.player.nodes.get(guildId);
-            if (queue) {
-                queue.delete();
+            await this.stop(guildId);
+            
+            const connection = this.connections.get(guildId);
+            if (connection) {
+                connection.destroy();
+                this.connections.delete(guildId);
             }
+            
             console.log(`[CUSTOM-PLAYER] Left ${guildId}`);
             return true;
         } catch (error) {

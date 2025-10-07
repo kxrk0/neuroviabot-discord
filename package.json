@@ -41,11 +41,7 @@
     "moment": "^2.29.4",
     "node-fetch": "^3.3.2",
     "play-dl": "^1.9.7",
-    "discord-player": "^6.7.0",
-    "discord-player-youtubei": "^1.0.0",
-    "ffmpeg-static": "^5.2.0",
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "ffprobe-static": "^3.1.0",
+    "ytdl-core": "^4.11.5",
     "socket.io-client": "^4.5.4",
     "@discordjs/voice": "^0.16.1",
     "opusscript": "^0.0.8"
