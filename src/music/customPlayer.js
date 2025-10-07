@@ -129,21 +129,26 @@ class CustomMusicPlayer {
     async addToQueue(guildId, videoDetails, textChannel, user, isPlaylist) {
         const queue = this.queues.get(guildId) || { songs: [] };
         
+        // Ensure we have a valid URL
+        const videoUrl = videoDetails.url || videoDetails.video_url || `https://www.youtube.com/watch?v=${videoDetails.id}`;
+        
         const song = {
             title: videoDetails.title,
-            url: videoDetails.url,
+            url: videoUrl,
+            id: videoDetails.id,
             thumbnail: videoDetails.thumbnails?.[0]?.url || null,
             duration: this.formatDuration(videoDetails.durationInSec),
             durationRaw: videoDetails.durationInSec,
             requester: user,
-            channelName: videoDetails.channel?.name || 'Unknown'
+            channelName: videoDetails.channel?.name || 'Unknown',
+            videoDetails: videoDetails // Store full details for streaming
         };
 
         queue.songs.push(song);
         queue.textChannel = textChannel;
         this.queues.set(guildId, queue);
 
-        console.log(`[CUSTOM-PLAYER] Added to queue: ${song.title}`);
+        console.log(`[CUSTOM-PLAYER] Added to queue: ${song.title} (URL: ${song.url})`);
 
         // If nothing is playing, start playing
         if (!queue.currentSong && queue.connection && queue.player) {
@@ -194,7 +199,12 @@ class CustomMusicPlayer {
         this.queues.set(guildId, queue);
 
         try {
-            console.log(`[CUSTOM-PLAYER] Playing: ${song.title}`);
+            console.log(`[CUSTOM-PLAYER] Playing: ${song.title} (URL: ${song.url})`);
+            
+            // Validate URL before streaming
+            if (!song.url || song.url === 'undefined') {
+                throw new Error('Invalid song URL');
+            }
             
             const stream = await playdl.stream(song.url, { quality: 2 });
             const resource = createAudioResource(stream.stream, {
