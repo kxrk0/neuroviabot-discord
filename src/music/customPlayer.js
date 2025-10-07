@@ -109,11 +109,16 @@ class CustomMusicPlayer {
             
             let stream;
             try {
-                // play-dl ile stream oluşturma
-                stream = await playdl.stream(track.url, {
-                    quality: 2, // Audio quality
-                    seek: 0
-                });
+                // URL doğrulama
+                const isValidUrl = playdl.yt_validate(track.url);
+                console.log(`[CUSTOM-PLAYER] URL validation result: ${isValidUrl}`);
+                
+                if (!isValidUrl) {
+                    throw new Error(`Invalid YouTube URL: ${track.url}`);
+                }
+                
+                // play-dl ile stream oluşturma - basit yaklaşım
+                stream = await playdl.stream(track.url);
                 
                 console.log(`[CUSTOM-PLAYER] Stream created successfully with play-dl`);
                 
@@ -123,15 +128,34 @@ class CustomMusicPlayer {
                 // Fallback: video_basic_info + stream_from_info
                 try {
                     console.log(`[CUSTOM-PLAYER] Trying fallback method...`);
+                    
+                    // URL'yi tekrar kontrol et
+                    if (!playdl.yt_validate(track.url)) {
+                        throw new Error(`Invalid YouTube URL: ${track.url}`);
+                    }
+                    
                     const videoInfo = await playdl.video_basic_info(track.url);
-                    stream = await playdl.stream_from_info(videoInfo, {
-                        quality: 2,
-                        seek: 0
+                    console.log(`[CUSTOM-PLAYER] Video info retrieved:`, {
+                        title: videoInfo.video_details.title,
+                        url: videoInfo.video_details.url
                     });
+                    
+                    // Video info'dan stream oluştur
+                    stream = await playdl.stream_from_info(videoInfo);
                     console.log(`[CUSTOM-PLAYER] Fallback stream created successfully`);
+                    
                 } catch (fallbackError) {
                     console.error(`[CUSTOM-PLAYER] Fallback also failed:`, fallbackError);
-                    throw new Error(`Failed to create stream: ${streamError.message}`);
+                    
+                    // Son çare: basit stream oluşturma
+                    try {
+                        console.log(`[CUSTOM-PLAYER] Trying simple stream method...`);
+                        stream = await playdl.stream(track.url, { quality: 1 });
+                        console.log(`[CUSTOM-PLAYER] Simple stream created successfully`);
+                    } catch (simpleError) {
+                        console.error(`[CUSTOM-PLAYER] Simple stream also failed:`, simpleError);
+                        throw new Error(`All stream methods failed: ${streamError.message}`);
+                    }
                 }
             }
 
