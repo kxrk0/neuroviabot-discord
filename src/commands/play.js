@@ -122,7 +122,9 @@ module.exports = {
                 .setFooter({ text: `İsteyen: ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
                 .setTimestamp();
 
+            console.log(`[CUSTOM-PLAY] Sending success reply for: ${track.title}`);
             await interaction.editReply({ embeds: [successEmbed] });
+            console.log(`[CUSTOM-PLAY] Success reply sent successfully`);
 
         } catch (error) {
             console.error(`[CUSTOM-PLAY] Command error:`, error);

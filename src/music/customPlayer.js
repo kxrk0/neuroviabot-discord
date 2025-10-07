@@ -94,20 +94,25 @@ class CustomMusicPlayer {
 
         try {
             // Play-dl ile stream oluştur
+            console.log(`[CUSTOM-PLAYER] Creating stream for: ${track.url}`);
             const stream = await playdl.stream(track.url, {
                 discordPlayerCompatibility: true,
                 quality: 2
             });
+            console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
 
             const resource = createAudioResource(stream.stream, {
                 inputType: stream.type,
                 inlineVolume: true
             });
+            console.log(`[CUSTOM-PLAYER] Audio resource created successfully`);
 
             player.play(resource);
+            console.log(`[CUSTOM-PLAYER] Player.play() called successfully`);
             
             // Şimdi çalıyor mesajı gönder
             if (track.metadata) {
+                console.log(`[CUSTOM-PLAYER] Sending now playing message for: ${track.title}`);
                 const nowPlayingEmbed = new EmbedBuilder()
                     .setColor('#00ff00')
                     .setTitle('🎵 Şimdi Çalıyor')
@@ -120,7 +125,12 @@ class CustomMusicPlayer {
                     .setThumbnail(track.thumbnail || null)
                     .setTimestamp();
 
-                await track.metadata.send({ embeds: [nowPlayingEmbed] });
+                try {
+                    await track.metadata.send({ embeds: [nowPlayingEmbed] });
+                    console.log(`[CUSTOM-PLAYER] Now playing message sent successfully`);
+                } catch (error) {
+                    console.error(`[CUSTOM-PLAYER] Failed to send now playing message:`, error);
+                }
             }
 
         } catch (error) {
@@ -128,6 +138,7 @@ class CustomMusicPlayer {
             
             // Hata mesajı gönder
             if (track.metadata) {
+                console.log(`[CUSTOM-PLAYER] Sending error message for: ${track.title}`);
                 const errorEmbed = new EmbedBuilder()
                     .setColor('#ff0000')
                     .setTitle('❌ Çalma Hatası')
@@ -139,7 +150,12 @@ class CustomMusicPlayer {
                     })
                     .setTimestamp();
 
-                await track.metadata.send({ embeds: [errorEmbed] });
+                try {
+                    await track.metadata.send({ embeds: [errorEmbed] });
+                    console.log(`[CUSTOM-PLAYER] Error message sent successfully`);
+                } catch (sendError) {
+                    console.error(`[CUSTOM-PLAYER] Failed to send error message:`, sendError);
+                }
             }
 
             // Sonraki şarkıya geç
