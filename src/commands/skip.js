@@ -1,153 +1,162 @@
+// ==========================================
+// 🎵 NeuroVia Music System - Skip Command
+// = ==========================================
+
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { useMainPlayer } = require('discord-player');
-const config = require('../config.js');
+const { logger } = require('../utils/logger');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('skip')
-        .setDescription('⏭️ Şu anda çalan şarkıyı atla')
+        .setDescription('⏭️ Şarkıyı atla')
         .addIntegerOption(option =>
-            option.setName('sayı')
-                .setDescription('Atlanacak şarkı sayısı (varsayılan: 1)')
+            option.setName('count')
+                .setDescription('Kaç şarkı atlanacak (varsayılan: 1)')
                 .setMinValue(1)
                 .setMaxValue(10)
-                .setRequired(false)
-        ),
+                .setRequired(false)),
 
     async execute(interaction) {
-        const player = useMainPlayer();
-        const queue = player.nodes.get(interaction.guild);
-        const skipCount = interaction.options.getInteger('sayı') || 1;
-
-        // Kullanıcının sesli kanalda olup olmadığını kontrol et
-        const voiceChannel = interaction.member?.voice?.channel;
-        if (!voiceChannel) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Bu komutu kullanabilmek için bir sesli kanalda olmanız gerekiyor!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Queue var mı kontrol et
-        if (!queue || !queue.isPlaying()) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Şu anda çalan bir şarkı yok!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Bot ve kullanıcı aynı kanalda mı
-        const botChannel = interaction.guild.members.me?.voice?.channel;
-        if (botChannel && voiceChannel.id !== botChannel.id) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Benimle aynı sesli kanalda olmanız gerekiyor!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Atlanacak şarkı sayısı queue'dan fazla mı
-        if (skipCount > 1 && skipCount > queue.tracks.size + 1) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Geçersiz Sayı')
-                .setDescription(`Kuyrukte sadece ${queue.tracks.size + 1} şarkı var! En fazla ${queue.tracks.size + 1} şarkı atlayabilirsiniz.`)
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
         try {
-            const currentTrack = queue.currentTrack;
-            
-            if (skipCount === 1) {
-                // Tek şarkı atla
-                const success = queue.node.skip();
-                
-                if (!success) {
-                    const errorEmbed = new EmbedBuilder()
-                        .setColor('#ff0000')
-                        .setTitle('❌ Atlama Hatası')
-                        .setDescription('Şarkı atlanırken bir hata oluştu!')
-                        .setTimestamp();
-                    
-                    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-                }
+            await interaction.deferReply();
 
-                const skippedEmbed = new EmbedBuilder()
-                    .setColor(config.embedColor)
-                    .setTitle('⏭️ Şarkı Atlandı')
-                    .setDescription(`**${currentTrack.title}** atlandı!`)
-                    .setThumbnail(currentTrack.thumbnail)
-                    .addFields(
-                        { name: '🎤 Sanatçı', value: currentTrack.author, inline: true },
-                        { name: '👤 Atlayan', value: interaction.user.username, inline: true },
-                        { name: '📊 Kalan Şarkı', value: queue.tracks.size.toString(), inline: true }
-                    )
-                    .setTimestamp();
+            const guildId = interaction.guild.id;
+            const count = interaction.options.getInteger('count') || 1;
+            const musicManager = interaction.client.musicManager;
 
-                await interaction.reply({ embeds: [skippedEmbed] });
-
-            } else {
-                // Çoklu şarkı atla
-                const skippedTracks = [currentTrack];
-                
-                // Kuyruktaki şarkıları da listeye ekle
-                for (let i = 0; i < skipCount - 1; i++) {
-                    if (queue.tracks.at(i)) {
-                        skippedTracks.push(queue.tracks.at(i));
-                    }
-                }
-
-                // Şarkıları atla
-                for (let i = 0; i < skipCount - 1; i++) {
-                    if (queue.tracks.size > 0) {
-                        queue.node.skipTo(0);
-                    }
-                }
-                
-                // Son şarkıyı atla
-                queue.node.skip();
-
-                const skippedListEmbed = new EmbedBuilder()
-                    .setColor(config.embedColor)
-                    .setTitle(`⏭️ ${skipCount} Şarkı Atlandı`)
-                    .setDescription(`${skipCount} şarkı başarıyla atlandı!`)
-                    .addFields(
-                        { name: '👤 Atlayan', value: interaction.user.username, inline: true },
-                        { name: '📊 Kalan Şarkı', value: queue.tracks.size.toString(), inline: true },
-                        { 
-                            name: '📋 Atlanan Şarkılar', 
-                            value: skippedTracks.slice(0, 5).map((track, index) => 
-                                `${index + 1}. **${track.title}** - ${track.author}`
-                            ).join('\n') + (skippedTracks.length > 5 ? `\n... ve ${skippedTracks.length - 5} şarkı daha` : ''),
-                            inline: false 
-                        }
-                    )
-                    .setTimestamp();
-
-                await interaction.reply({ embeds: [skippedListEmbed] });
+            // Music manager kontrolü
+            if (!musicManager) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Sistem Hatası')
+                            .setDescription('Müzik sistemi başlatılamadı!')
+                            .setTimestamp()
+                    ]
+                });
             }
+
+            // Bot'un sesli kanalda olup olmadığını kontrol et
+            if (!musicManager.isConnected(guildId)) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ffa500')
+                            .setTitle('❌ Bağlantı Yok')
+                            .setDescription('Bot hiçbir sesli kanala bağlı değil!')
+                            .addFields({
+                                name: '💡 Çözüm',
+                                value: 'Önce `/play` komutunu kullanarak şarkı çalmaya başlayın'
+                            })
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Kuyruk var mı kontrol et
+            const queueSize = musicManager.getQueueSize(guildId);
+            if (queueSize === 0) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ffa500')
+                            .setTitle('❌ Kuyruk Boş')
+                            .setDescription('Atlanacak şarkı yok!')
+                            .addFields({
+                                name: '💡 Çözüm',
+                                value: 'Önce `/play` komutunu kullanarak şarkı ekleyin'
+                            })
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Atlanacak şarkı sayısı kuyruktan fazla mı kontrol et
+            if (count > queueSize) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ffa500')
+                            .setTitle('❌ Geçersiz Sayı')
+                            .setDescription(`Kuyrukta sadece **${queueSize}** şarkı var!`)
+                            .addFields({
+                                name: '💡 Çözüm',
+                                value: `1-${queueSize} arasında bir sayı girin`
+                            })
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Şarkıyı atla
+            console.log(`[SKIP-NEW] Skipping ${count} track(s) for guild: ${guildId}`);
             
-        } catch (error) {
-            console.error('Skip komutunda hata:', error);
-            
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Atlama Hatası')
-                .setDescription('Şarkı atlanırken bir hata oluştu!')
+            const currentTrack = musicManager.getCurrentTrack(guildId);
+            const skipped = musicManager.skip(guildId);
+
+            if (!skipped) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Atlama Hatası')
+                            .setDescription('Şarkı atlanamadı!')
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Başarı mesajı
+            const successEmbed = new EmbedBuilder()
+                .setColor('#1db954')
+                .setTitle('⏭️ Şarkı Atlatıldı')
+                .setDescription(`**${count}** şarkı başarıyla atlatıldı!`)
+                .addFields({
+                    name: '🎵 Atlatılan Şarkı',
+                    value: currentTrack ? `**${currentTrack.title}** - ${currentTrack.author}` : 'Bilinmiyor'
+                })
+                .addFields({
+                    name: '📋 Kalan Kuyruk',
+                    value: `${musicManager.getQueueSize(guildId)} şarkı`
+                })
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-    },
-};
+            if (currentTrack && currentTrack.thumbnail) {
+                successEmbed.setThumbnail(currentTrack.thumbnail);
+            }
 
+            successEmbed.setFooter({ 
+                text: `NeuroVia Music System`, 
+                iconURL: interaction.client.user.displayAvatarURL() 
+            });
+
+            console.log(`[SKIP-NEW] Track(s) skipped successfully`);
+            await interaction.editReply({ embeds: [successEmbed] });
+
+        } catch (error) {
+            console.error(`[SKIP-NEW] Command error:`, error);
+            logger.error('Skip command error', error);
+
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Hata')
+                .setDescription('Şarkı atlanırken bir hata oluştu!')
+                .addFields({
+                    name: '🔧 Hata Detayı',
+                    value: `\`\`\`${error.message || 'Bilinmeyen hata'}\`\`\``
+                })
+                .setTimestamp();
+
+            try {
+                if (interaction.deferred || interaction.replied) {
+                    await interaction.editReply({ embeds: [errorEmbed] });
+                } else {
+                    await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                }
+            } catch (replyError) {
+                console.error(`[SKIP-NEW] Failed to send error message:`, replyError);
+            }
+        }
+    }
+};

@@ -1,92 +1,153 @@
+// ==========================================
+// 🎵 NeuroVia Music System - Pause Command
+// ==========================================
+
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { useMainPlayer } = require('discord-player');
-const config = require('../config.js');
+const { logger } = require('../utils/logger');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('pause')
-        .setDescription('⏸️ Şu anda çalan şarkıyı duraklat'),
+        .setDescription('⏸️ Müziği duraklat'),
 
     async execute(interaction) {
-        const player = useMainPlayer();
-        const queue = player.nodes.get(interaction.guild);
-
-        // Kullanıcının sesli kanalda olup olmadığını kontrol et
-        const voiceChannel = interaction.member?.voice?.channel;
-        if (!voiceChannel) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Bu komutu kullanabilmek için bir sesli kanalda olmanız gerekiyor!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Queue var mı kontrol et
-        if (!queue || !queue.isPlaying()) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Şu anda çalan bir şarkı yok!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Bot ve kullanıcı aynı kanalda mı
-        const botChannel = interaction.guild.members.me?.voice?.channel;
-        if (botChannel && voiceChannel.id !== botChannel.id) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Benimle aynı sesli kanalda olmanız gerekiyor!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Zaten duraklatılmış mı kontrol et
-        if (queue.node.isPaused()) {
-            const alreadyPausedEmbed = new EmbedBuilder()
-                .setColor('#ffa500')
-                .setTitle('⏸️ Zaten Duraklatılmış')
-                .setDescription('Müzik zaten duraklatılmış! Devam ettirmek için `/resume` komutunu kullanın.')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [alreadyPausedEmbed], ephemeral: true });
-        }
-
         try {
-            // Müziği duraklat
-            queue.node.pause();
+            await interaction.deferReply();
 
-            const currentTrack = queue.currentTrack;
-            const pausedEmbed = new EmbedBuilder()
-                .setColor(config.embedColor)
+            const guildId = interaction.guild.id;
+            const musicManager = interaction.client.musicManager;
+
+            // Music manager kontrolü
+            if (!musicManager) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Sistem Hatası')
+                            .setDescription('Müzik sistemi başlatılamadı!')
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Bot'un sesli kanalda olup olmadığını kontrol et
+            if (!musicManager.isConnected(guildId)) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ffa500')
+                            .setTitle('❌ Bağlantı Yok')
+                            .setDescription('Bot hiçbir sesli kanala bağlı değil!')
+                            .addFields({
+                                name: '💡 Çözüm',
+                                value: 'Önce `/play` komutunu kullanarak şarkı çalmaya başlayın'
+                            })
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Müzik çalıyor mu kontrol et
+            if (!musicManager.isPlaying(guildId)) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ffa500')
+                            .setTitle('❌ Müzik Çalmıyor')
+                            .setDescription('Şu anda hiçbir şarkı çalmıyor!')
+                            .addFields({
+                                name: '💡 Çözüm',
+                                value: 'Önce `/play` komutunu kullanarak şarkı çalmaya başlayın'
+                            })
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Zaten duraklatılmış mı kontrol et
+            if (musicManager.isPaused(guildId)) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ffa500')
+                            .setTitle('⏸️ Zaten Duraklatılmış')
+                            .setDescription('Müzik zaten duraklatılmış durumda!')
+                            .addFields({
+                                name: '💡 Çözüm',
+                                value: 'Müziği devam ettirmek için `/resume` komutunu kullanın'
+                            })
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Müziği duraklat
+            console.log(`[PAUSE-NEW] Pausing music for guild: ${guildId}`);
+            const paused = musicManager.pause(guildId);
+
+            if (!paused) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Duraklatma Hatası')
+                            .setDescription('Müzik duraklatılamadı!')
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            // Başarı mesajı
+            const currentTrack = musicManager.getCurrentTrack(guildId);
+            const successEmbed = new EmbedBuilder()
+                .setColor('#ffa500')
                 .setTitle('⏸️ Müzik Duraklatıldı')
-                .setDescription(`**${currentTrack.title}** duraklatıldı!`)
-                .setThumbnail(currentTrack.thumbnail)
-                .addFields(
-                    { name: '🎤 Sanatçı', value: currentTrack.author, inline: true },
-                    { name: '👤 Duraklatan', value: interaction.user.username, inline: true },
-                    { name: '💡 İpucu', value: 'Devam ettirmek için `/resume` kullanın', inline: false }
-                )
+                .setDescription('Müzik başarıyla duraklatıldı!')
+                .addFields({
+                    name: '🎵 Duraklatılan Şarkı',
+                    value: currentTrack ? `**${currentTrack.title}** - ${currentTrack.author}` : 'Bilinmiyor'
+                })
+                .addFields({
+                    name: '💡 Devam Ettirmek İçin',
+                    value: '`/resume` komutunu kullanın'
+                })
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [pausedEmbed] });
-            
+            if (currentTrack && currentTrack.thumbnail) {
+                successEmbed.setThumbnail(currentTrack.thumbnail);
+            }
+
+            successEmbed.setFooter({ 
+                text: `NeuroVia Music System`, 
+                iconURL: interaction.client.user.displayAvatarURL() 
+            });
+
+            console.log(`[PAUSE-NEW] Music paused successfully`);
+            await interaction.editReply({ embeds: [successEmbed] });
+
         } catch (error) {
-            console.error('Pause komutunda hata:', error);
-            
+            console.error(`[PAUSE-NEW] Command error:`, error);
+            logger.error('Pause command error', error);
+
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('❌ Duraklatma Hatası')
-                .setDescription('Müziği duraklatırken bir hata oluştu!')
+                .setTitle('❌ Hata')
+                .setDescription('Müzik duraklatılırken bir hata oluştu!')
+                .addFields({
+                    name: '🔧 Hata Detayı',
+                    value: `\`\`\`${error.message || 'Bilinmeyen hata'}\`\`\``
+                })
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            try {
+                if (interaction.deferred || interaction.replied) {
+                    await interaction.editReply({ embeds: [errorEmbed] });
+                } else {
+                    await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                }
+            } catch (replyError) {
+                console.error(`[PAUSE-NEW] Failed to send error message:`, replyError);
+            }
         }
-    },
+    }
 };
-

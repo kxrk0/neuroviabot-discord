@@ -403,6 +403,10 @@ async function startBot() {
         const { realtimeUpdates } = require('./src/utils/realtime');
         global.realtimeUpdates = realtimeUpdates;
         
+        // Yeni müzik sistemi başlat
+        const MusicManager = require('./src/music/MusicManager');
+        client.musicManager = new MusicManager(client);
+        
         // Broadcast fonksiyonlarını set et
         realtimeUpdates.setBroadcastFunctions(
             (guildId, event, data) => {
