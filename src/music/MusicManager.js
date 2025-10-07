@@ -1,374 +1,132 @@
-// ==========================================
-// 🎵 NeuroVia Music System - Core Manager
-// ==========================================
-
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, getVoiceConnection } = require('@discordjs/voice');
-const { EmbedBuilder } = require('discord.js');
-const { logger } = require('../utils/logger');
-const StreamExtractor = require('./StreamExtractor');
+const { Collection } = require('discord.js');
+const StreamManager = require('./StreamManager');
+const VoiceManager = require('./VoiceManager');
 const QueueManager = require('./QueueManager');
-const AudioProcessor = require('./AudioProcessor');
-const EventHandler = require('./EventHandler');
+const EventManager = require('./EventManager');
 
+/**
+ * Modern Music Manager - Discord.js v14 + yt-dlp tabanlı
+ * Native dependency'lerden kaçınır, pure JavaScript kullanır
+ */
 class MusicManager {
     constructor(client) {
         this.client = client;
-        this.connections = new Map(); // Guild ID -> VoiceConnection
-        this.players = new Map(); // Guild ID -> AudioPlayer
-        this.queues = new Map(); // Guild ID -> QueueManager
-        this.extractor = new StreamExtractor();
-        this.processor = new AudioProcessor();
-        this.eventHandler = new EventHandler(this);
+        this.guilds = new Collection();
         
-        this.initialize();
-        console.log('[MUSIC-MANAGER] 🎵 NeuroVia Music System initialized');
-    }
-
-    initialize() {
-        // Event handler'ı başlat
-        this.eventHandler.setupEventListeners();
+        // Manager'ları başlat
+        this.streamManager = new StreamManager();
+        this.voiceManager = new VoiceManager(client);
+        this.queueManager = new QueueManager();
+        this.eventManager = new EventManager();
         
-        // Periodic cleanup
-        setInterval(() => this.cleanup(), 300000); // 5 dakikada bir
-        
-        console.log('[MUSIC-MANAGER] ✅ System initialized successfully');
+        console.log('[MUSIC-MANAGER] Modern müzik sistemi başlatıldı');
     }
 
-    // ==========================================
-    // Voice Connection Management
-    // ==========================================
-
-    async joinChannel(guildId, voiceChannel, textChannel) {
+    /**
+     * Guild için müzik sistemi başlat
+     */
+    async initializeGuild(guildId) {
         try {
-            console.log(`[MUSIC-MANAGER] Joining voice channel: ${voiceChannel.name} (${guildId})`);
-
-            // Mevcut bağlantıyı kontrol et
-            const existingConnection = getVoiceConnection(guildId);
-            if (existingConnection) {
-                console.log(`[MUSIC-MANAGER] Already connected to voice channel`);
-                return true;
+            if (this.guilds.has(guildId)) {
+                return this.guilds.get(guildId);
             }
 
-            // Yeni bağlantı oluştur
-            const connection = joinVoiceChannel({
-                channelId: voiceChannel.id,
-                guildId: voiceChannel.guild.id,
-                adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-                selfDeaf: true,
-                selfMute: false
-            });
-
-            // Bağlantıyı kaydet
-            this.connections.set(guildId, connection);
-
-            // Audio player oluştur
-            const player = createAudioPlayer();
-            this.players.set(guildId, player);
-
-            // Kuyruk yöneticisi oluştur
-            const queue = new QueueManager(guildId, textChannel, this);
-            this.queues.set(guildId, queue);
-
-            // Bağlantı event listener'ları
-            connection.on(VoiceConnectionStatus.Ready, () => {
-                console.log(`[MUSIC-MANAGER] ✅ Connected to voice channel: ${voiceChannel.name}`);
-                connection.subscribe(player);
-            });
-
-            connection.on(VoiceConnectionStatus.Disconnected, () => {
-                console.log(`[MUSIC-MANAGER] ❌ Disconnected from voice channel`);
-                this.cleanupGuild(guildId);
-            });
-
-            connection.on('error', (error) => {
-                console.error(`[MUSIC-MANAGER] Voice connection error:`, error);
-                this.cleanupGuild(guildId);
-            });
-
-            return true;
-
-        } catch (error) {
-            console.error(`[MUSIC-MANAGER] Failed to join voice channel:`, error);
-            return false;
-        }
-    }
-
-    async leaveChannel(guildId) {
-        try {
-            console.log(`[MUSIC-MANAGER] Leaving voice channel (${guildId})`);
-
-            const connection = this.connections.get(guildId);
-            if (connection) {
-                connection.destroy();
-            }
-
-            this.cleanupGuild(guildId);
-            return true;
-
-        } catch (error) {
-            console.error(`[MUSIC-MANAGER] Failed to leave voice channel:`, error);
-            return false;
-        }
-    }
-
-    // ==========================================
-    // Track Management
-    // ==========================================
-
-    async addTrack(guildId, query, requester) {
-        try {
-            console.log(`[MUSIC-MANAGER] Adding track: ${query} (${guildId})`);
-
-            const queue = this.queues.get(guildId);
-            if (!queue) {
-                throw new Error('Queue not found. Please join a voice channel first.');
-            }
-
-            // Track bilgilerini çıkar
-            const trackInfo = await this.extractor.extractTrackInfo(query);
-            if (!trackInfo) {
-                throw new Error('Failed to extract track information');
-            }
-
-            // Track'i kuyruğa ekle
-            const track = {
-                ...trackInfo,
-                requester: requester,
-                addedAt: Date.now(),
-                guildId: guildId
+            const guildData = {
+                id: guildId,
+                queue: [],
+                currentTrack: null,
+                isPlaying: false,
+                isPaused: false,
+                volume: 50,
+                loopMode: 'none', // none, track, queue
+                voiceConnection: null,
+                audioPlayer: null,
+                textChannel: null,
+                voiceChannel: null,
+                createdAt: new Date(),
+                lastActivity: new Date()
             };
 
-            const added = queue.addTrack(track);
-            if (!added) {
-                throw new Error('Failed to add track to queue');
-            }
-
-            // Eğer hiçbir şey çalmıyorsa, çalmaya başla
-            if (!queue.isPlaying()) {
-                await this.playNext(guildId);
-            }
-
-            return track;
-
+            this.guilds.set(guildId, guildData);
+            console.log(`[MUSIC-MANAGER] Guild ${guildId} için müzik sistemi başlatıldı`);
+            
+            return guildData;
         } catch (error) {
-            console.error(`[MUSIC-MANAGER] Failed to add track:`, error);
+            console.error(`[MUSIC-MANAGER] Guild ${guildId} başlatma hatası:`, error);
             throw error;
         }
     }
 
-    async playNext(guildId) {
+    /**
+     * Guild müzik verilerini al
+     */
+    getGuildData(guildId) {
+        return this.guilds.get(guildId) || null;
+    }
+
+    /**
+     * Guild müzik verilerini güncelle
+     */
+    updateGuildData(guildId, data) {
+        const guildData = this.getGuildData(guildId);
+        if (guildData) {
+            Object.assign(guildData, data);
+            guildData.lastActivity = new Date();
+            return guildData;
+        }
+        return null;
+    }
+
+    /**
+     * Guild müzik sistemini temizle
+     */
+    async cleanupGuild(guildId) {
         try {
-            console.log(`[MUSIC-MANAGER] Playing next track (${guildId})`);
-
-            const queue = this.queues.get(guildId);
-            const player = this.players.get(guildId);
-            const connection = this.connections.get(guildId);
-
-            if (!queue || !player || !connection) {
-                throw new Error('Missing components for playback');
+            const guildData = this.getGuildData(guildId);
+            if (guildData) {
+                // Voice connection'ı kapat
+                if (guildData.voiceConnection) {
+                    await this.voiceManager.disconnect(guildData.voiceConnection);
+                }
+                
+                // Audio player'ı durdur
+                if (guildData.audioPlayer) {
+                    guildData.audioPlayer.stop();
+                }
+                
+                // Guild verilerini temizle
+                this.guilds.delete(guildId);
+                console.log(`[MUSIC-MANAGER] Guild ${guildId} müzik sistemi temizlendi`);
             }
-
-            // Sıradaki track'i al
-            const track = queue.getNextTrack();
-            if (!track) {
-                console.log(`[MUSIC-MANAGER] No tracks in queue`);
-                return false;
-            }
-
-            console.log(`[MUSIC-MANAGER] Playing: ${track.title}`);
-
-            // Stream çıkar
-            const stream = await this.extractor.createStream(track.url);
-            if (!stream) {
-                throw new Error('Failed to create audio stream');
-            }
-
-            // Audio resource oluştur
-            const resource = createAudioResource(stream, {
-                inputType: 'arbitrary',
-                inlineVolume: true
-            });
-
-            // Ses işleme uygula
-            this.processor.processAudio(resource, track);
-
-            // Çalmaya başla
-            player.play(resource);
-
-            // Track'i aktif olarak işaretle
-            queue.setCurrentTrack(track);
-
-            // Event gönder
-            this.eventHandler.emit('trackStart', { guildId, track });
-
-            return true;
-
         } catch (error) {
-            console.error(`[MUSIC-MANAGER] Failed to play next track:`, error);
-            
-            // Hata durumunda sıradaki track'e geç
-            const queue = this.queues.get(guildId);
-            if (queue) {
-                queue.skipTrack();
-                setTimeout(() => this.playNext(guildId), 1000);
-            }
-            
-            return false;
+            console.error(`[MUSIC-MANAGER] Guild ${guildId} temizleme hatası:`, error);
         }
     }
 
-    // ==========================================
-    // Player Controls
-    // ==========================================
-
-    pause(guildId) {
-        const player = this.players.get(guildId);
-        if (player && player.state.status === AudioPlayerStatus.Playing) {
-            player.pause();
-            return true;
-        }
-        return false;
-    }
-
-    resume(guildId) {
-        const player = this.players.get(guildId);
-        if (player && player.state.status === AudioPlayerStatus.Paused) {
-            player.unpause();
-            return true;
-        }
-        return false;
-    }
-
-    stop(guildId) {
-        const player = this.players.get(guildId);
-        if (player) {
-            player.stop();
-            return true;
-        }
-        return false;
-    }
-
-    skip(guildId) {
-        const queue = this.queues.get(guildId);
-        if (queue) {
-            queue.skipTrack();
-            this.playNext(guildId);
-            return true;
-        }
-        return false;
-    }
-
-    setVolume(guildId, volume) {
-        const player = this.players.get(guildId);
-        if (player) {
-            player.state.resource?.volume?.setVolume(volume / 100);
-            return true;
-        }
-        return false;
-    }
-
-    // ==========================================
-    // Queue Management
-    // ==========================================
-
-    getQueue(guildId) {
-        return this.queues.get(guildId);
-    }
-
-    clearQueue(guildId) {
-        const queue = this.queues.get(guildId);
-        if (queue) {
-            queue.clear();
-            return true;
-        }
-        return false;
-    }
-
-    shuffleQueue(guildId) {
-        const queue = this.queues.get(guildId);
-        if (queue) {
-            queue.shuffle();
-            return true;
-        }
-        return false;
-    }
-
-    removeTrack(guildId, index) {
-        const queue = this.queues.get(guildId);
-        if (queue) {
-            return queue.removeTrack(index);
-        }
-        return false;
-    }
-
-    // ==========================================
-    // Status & Information
-    // ==========================================
-
-    isConnected(guildId) {
-        return this.connections.has(guildId);
-    }
-
-    isPlaying(guildId) {
-        const player = this.players.get(guildId);
-        return player && player.state.status === AudioPlayerStatus.Playing;
-    }
-
-    isPaused(guildId) {
-        const player = this.players.get(guildId);
-        return player && player.state.status === AudioPlayerStatus.Paused;
-    }
-
-    getCurrentTrack(guildId) {
-        const queue = this.queues.get(guildId);
-        return queue ? queue.getCurrentTrack() : null;
-    }
-
-    getQueueSize(guildId) {
-        const queue = this.queues.get(guildId);
-        return queue ? queue.getSize() : 0;
-    }
-
-    // ==========================================
-    // Cleanup & Maintenance
-    // ==========================================
-
-    cleanupGuild(guildId) {
-        console.log(`[MUSIC-MANAGER] Cleaning up guild: ${guildId}`);
-
-        // Player'ı durdur
-        const player = this.players.get(guildId);
-        if (player) {
-            player.stop();
-        }
-
-        // Bağlantıları temizle
-        this.connections.delete(guildId);
-        this.players.delete(guildId);
-        this.queues.delete(guildId);
-    }
-
-    cleanup() {
-        console.log(`[MUSIC-MANAGER] Running periodic cleanup`);
-
-        for (const [guildId, connection] of this.connections) {
-            if (connection.state.status === VoiceConnectionStatus.Disconnected) {
-                this.cleanupGuild(guildId);
-            }
-        }
-    }
-
-    // ==========================================
-    // Statistics
-    // ==========================================
-
-    getStatistics() {
+    /**
+     * Sistem durumunu kontrol et
+     */
+    getSystemStatus() {
         return {
-            totalConnections: this.connections.size,
-            totalPlayers: this.players.size,
-            totalQueues: this.queues.size,
-            uptime: process.uptime(),
-            memoryUsage: process.memoryUsage()
+            totalGuilds: this.guilds.size,
+            activeGuilds: Array.from(this.guilds.values()).filter(g => g.isPlaying || g.queue.length > 0).length,
+            streamManager: this.streamManager.getStatus(),
+            voiceManager: this.voiceManager.getStatus(),
+            queueManager: this.queueManager.getStatus()
+        };
+    }
+
+    /**
+     * Sistem istatistiklerini al
+     */
+    getStatistics() {
+        const guilds = Array.from(this.guilds.values());
+        return {
+            totalGuilds: guilds.length,
+            playingGuilds: guilds.filter(g => g.isPlaying).length,
+            pausedGuilds: guilds.filter(g => g.isPaused).length,
+            totalTracks: guilds.reduce((sum, g) => sum + g.queue.length, 0),
+            averageQueueSize: guilds.length > 0 ? guilds.reduce((sum, g) => sum + g.queue.length, 0) / guilds.length : 0
         };
     }
 }

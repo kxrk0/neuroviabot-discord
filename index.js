@@ -424,9 +424,7 @@ async function startBot() {
         const { initializeModels } = require('./src/models/index');
         await initializeModels();
         
-        // Eski CustomMusicPlayer devre dışı - yeni MusicManager kullanılıyor
-        
-        log('Music System başlatıldı!', 'SUCCESS');
+        // Music System - yeni sistem implement edilecek
         
         // Security ve Analytics sistemlerini başlat
         const { security } = require('./src/utils/security');
@@ -447,6 +445,7 @@ async function startBot() {
         // Yeni müzik sistemi başlat
         const MusicManager = require('./src/music/MusicManager');
         client.musicManager = new MusicManager(client);
+        log('Modern müzik sistemi başlatıldı!', 'SUCCESS');
         
         // Broadcast fonksiyonlarını set et
         realtimeUpdates.setBroadcastFunctions(

@@ -1,213 +1,173 @@
-// ==========================================
-// 🎵 NeuroVia Music System - Queue Command
-// ==========================================
-
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { logger } = require('../utils/logger');
 
+/**
+ * Modern Queue Command
+ * Müzik kuyruğunu gösterir
+ */
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('queue')
-        .setDescription('📋 Müzik kuyruğunu görüntüle')
+        .setDescription('📋 Müzik kuyruğunu göster')
         .addIntegerOption(option =>
             option.setName('page')
-                .setDescription('Görüntülenecek sayfa numarası')
+                .setDescription('Sayfa numarası (varsayılan: 1)')
                 .setMinValue(1)
+                .setMaxValue(10)
                 .setRequired(false)),
 
     async execute(interaction) {
         try {
-            await interaction.deferReply();
+            console.log(`[QUEUE] Komut çalıştırıldı: ${interaction.user.tag} - ${interaction.guild.name}`);
 
-            const guildId = interaction.guild.id;
-            const page = interaction.options.getInteger('page') || 1;
+            // Music Manager'ı al
             const musicManager = interaction.client.musicManager;
-
-            // Music manager kontrolü
             if (!musicManager) {
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ff0000')
-                            .setTitle('❌ Sistem Hatası')
-                            .setDescription('Müzik sistemi başlatılamadı!')
-                            .setTimestamp()
-                    ]
-                });
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Sistem Hatası')
+                    .setDescription('Müzik sistemi henüz başlatılmadı!')
+                    .setTimestamp();
+
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
-            // Bot'un sesli kanalda olup olmadığını kontrol et
-            if (!musicManager.isConnected(guildId)) {
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ffa500')
-                            .setTitle('❌ Bağlantı Yok')
-                            .setDescription('Bot hiçbir sesli kanala bağlı değil!')
-                            .addFields({
-                                name: '💡 Çözüm',
-                                value: 'Önce `/play` komutunu kullanarak şarkı çalmaya başlayın'
-                            })
-                            .setTimestamp()
-                    ]
-                });
+            // Guild verilerini al
+            const guildData = musicManager.getGuildData(interaction.guild.id);
+            const queue = musicManager.queueManager.getQueue(interaction.guild.id);
+
+            if (!guildData || queue.tracks.length === 0) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Kuyruk Boş')
+                    .setDescription('Kuyrukta şarkı bulunmuyor!')
+                    .setTimestamp();
+
+                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
-            // Kuyruk bilgilerini al
-            const queue = musicManager.getQueue(guildId);
-            if (!queue) {
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ffa500')
-                            .setTitle('❌ Kuyruk Bulunamadı')
-                            .setDescription('Müzik kuyruğu bulunamadı!')
-                            .setTimestamp()
-                    ]
-                });
-            }
-
-            const queueSize = queue.getSize();
-            const currentTrack = queue.getCurrentTrack();
-            const queueInfo = queue.getQueueInfo();
-
-            // Kuyruk boş mu kontrol et
-            if (queueSize === 0 && !currentTrack) {
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ffa500')
-                            .setTitle('📋 Kuyruk Boş')
-                            .setDescription('Müzik kuyruğu boş!')
-                            .addFields({
-                                name: '💡 Çözüm',
-                                value: '`/play` komutunu kullanarak şarkı ekleyin'
-                            })
-                            .setTimestamp()
-                    ]
-                });
-            }
-
-            // Sayfa kontrolü
+            // Sayfa numarasını al
+            const page = interaction.options.getInteger('page') || 1;
             const tracksPerPage = 10;
-            const totalPages = Math.ceil(queueSize / tracksPerPage);
-            
-            if (page > totalPages && queueSize > 0) {
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor('#ffa500')
-                            .setTitle('❌ Geçersiz Sayfa')
-                            .setDescription(`Toplam **${totalPages}** sayfa var!`)
-                            .addFields({
-                                name: '💡 Çözüm',
-                                value: `1-${totalPages} arasında bir sayfa numarası girin`
-                            })
-                            .setTimestamp()
-                    ]
-                });
-            }
+            const startIndex = (page - 1) * tracksPerPage;
+            const endIndex = startIndex + tracksPerPage;
+            const pageTracks = queue.tracks.slice(startIndex, endIndex);
 
-            // Kuyruk embed'ini oluştur
+            // Kuyruk embed'i oluştur
             const queueEmbed = new EmbedBuilder()
                 .setColor('#1db954')
                 .setTitle('📋 Müzik Kuyruğu')
-                .setDescription(`**${queueSize}** şarkı kuyrukta`)
-                .setFooter({ 
-                    text: `Sayfa ${page}/${totalPages} • ${queueInfo.isPlaying ? 'Çalıyor' : queueInfo.isPaused ? 'Duraklatıldı' : 'Durduruldu'}`,
-                    iconURL: interaction.client.user.displayAvatarURL()
-                })
-                .setTimestamp();
+                .setDescription(`Toplam **${queue.tracks.length}** şarkı`)
+                .setTimestamp()
+                .setFooter({ text: `Sayfa ${page} • NeuroVia Music System` });
 
-            // Şu anda çalan şarkı
-            if (currentTrack) {
+            // Mevcut şarkıyı göster
+            if (guildData.currentTrack) {
                 queueEmbed.addFields({
                     name: '🎵 Şu Anda Çalan',
-                    value: `**${currentTrack.title}**\n👤 ${currentTrack.author}\n⏱️ ${currentTrack.duration}`,
+                    value: `**${guildData.currentTrack.title}**\n` +
+                           `👤 ${guildData.currentTrack.uploader || 'Bilinmiyor'}\n` +
+                           `⏱️ ${this.formatDuration(guildData.currentTrack.duration)}\n` +
+                           `🔊 ${guildData.volume}%`,
                     inline: false
                 });
-
-                if (currentTrack.thumbnail) {
-                    queueEmbed.setThumbnail(currentTrack.thumbnail);
-                }
             }
 
-            // Kuyruk listesi
-            if (queueSize > 0) {
-                const startIndex = (page - 1) * tracksPerPage;
-                const endIndex = Math.min(startIndex + tracksPerPage, queueSize);
-                const pageTracks = queue.getTracks().slice(startIndex, endIndex);
+            // Kuyruktaki şarkıları göster
+            if (pageTracks.length > 0) {
+                const queueList = pageTracks.map((track, index) => {
+                    const position = startIndex + index + 1;
+                    const duration = this.formatDuration(track.duration);
+                    const addedBy = track.addedBy ? `<@${track.addedBy}>` : 'Bilinmiyor';
+                    
+                    return `**${position}.** ${track.title}\n` +
+                           `👤 ${track.uploader || 'Bilinmiyor'} • ⏱️ ${duration} • 👤 ${addedBy}`;
+                }).join('\n\n');
 
-                if (pageTracks.length > 0) {
-                    const trackList = pageTracks.map((track, index) => {
-                        const position = startIndex + index + 1;
-                        const emoji = position === queueInfo.currentIndex + 1 ? '▶️' : '🎵';
-                        return `${emoji} **${position}.** ${track.title} - ${track.author}`;
-                    }).join('\n');
-
-                    queueEmbed.addFields({
-                        name: '📋 Kuyruk',
-                        value: trackList,
-                        inline: false
-                    });
-                }
-            }
-
-            // Kuyruk bilgileri
-            const infoFields = [];
-            
-            if (queueInfo.loopMode !== 'none') {
-                infoFields.push({
-                    name: '🔄 Döngü Modu',
-                    value: queueInfo.loopMode === 'track' ? 'Şarkı' : 'Kuyruk',
-                    inline: true
+                queueEmbed.addFields({
+                    name: `📋 Kuyruk (${startIndex + 1}-${Math.min(endIndex, queue.tracks.length)})`,
+                    value: queueList,
+                    inline: false
                 });
             }
 
-            if (queueInfo.shuffled) {
-                infoFields.push({
-                    name: '🔀 Karışık',
-                    value: 'Aktif',
+            // Kuyruk bilgilerini ekle
+            const queueInfo = musicManager.queueManager.getQueueInfo(interaction.guild.id);
+            queueEmbed.addFields(
+                {
+                    name: '🔄 Loop Modu',
+                    value: this.getLoopModeText(queueInfo.loopMode),
                     inline: true
-                });
+                },
+                {
+                    name: '🔀 Karıştırma',
+                    value: queueInfo.shuffleMode ? 'Açık' : 'Kapalı',
+                    inline: true
+                },
+                {
+                    name: '📊 Toplam',
+                    value: `${queueInfo.totalTracks} şarkı`,
+                    inline: true
+                }
+            );
+
+            // Sayfa bilgisi
+            const totalPages = Math.ceil(queue.tracks.length / tracksPerPage);
+            if (totalPages > 1) {
+                queueEmbed.setFooter({ text: `Sayfa ${page}/${totalPages} • NeuroVia Music System` });
             }
 
-            infoFields.push({
-                name: '🔊 Ses Seviyesi',
-                value: `${queueInfo.volume}%`,
-                inline: true
-            });
-
-            if (infoFields.length > 0) {
-                queueEmbed.addFields(infoFields);
-            }
-
-            console.log(`[QUEUE-NEW] Queue displayed successfully`);
-            await interaction.editReply({ embeds: [queueEmbed] });
+            await interaction.reply({ embeds: [queueEmbed] });
+            console.log(`[QUEUE] Kuyruk gösterildi: ${queue.tracks.length} şarkı`);
 
         } catch (error) {
-            console.error(`[QUEUE-NEW] Command error:`, error);
-            logger.error('Queue command error', error);
+            console.error('[QUEUE] Komut hatası:', error);
 
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Hata')
-                .setDescription('Kuyruk görüntülenirken bir hata oluştu!')
+                .setDescription('Komut çalıştırılırken bir hata oluştu!')
                 .addFields({
                     name: '🔧 Hata Detayı',
-                    value: `\`\`\`${error.message || 'Bilinmeyen hata'}\`\`\``
+                    value: `\`\`\`${error.message}\`\`\``
                 })
                 .setTimestamp();
 
             try {
-                if (interaction.deferred || interaction.replied) {
-                    await interaction.editReply({ embeds: [errorEmbed] });
-                } else {
-                    await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-                }
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             } catch (replyError) {
-                console.error(`[QUEUE-NEW] Failed to send error message:`, replyError);
+                console.error('[QUEUE] Hata mesajı gönderilemedi:', replyError);
             }
+        }
+    },
+
+    /**
+     * Süre formatla
+     */
+    formatDuration(seconds) {
+        if (!seconds || seconds === 0) return 'Bilinmiyor';
+        
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+    },
+
+    /**
+     * Loop modu metnini al
+     */
+    getLoopModeText(mode) {
+        switch (mode) {
+            case 'track':
+                return '🔄 Tekrar';
+            case 'queue':
+                return '🔁 Kuyruk';
+            default:
+                return '❌ Kapalı';
         }
     }
 };

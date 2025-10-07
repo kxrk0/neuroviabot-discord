@@ -1,436 +1,394 @@
-// ==========================================
-// 🎵 NeuroVia Music System - Queue Manager
-// ==========================================
+const { Collection } = require('discord.js');
 
-const { EmbedBuilder } = require('discord.js');
-const { logger } = require('../utils/logger');
-
+/**
+ * Modern Queue Manager
+ * Müzik kuyruğu yönetimi ve track organizasyonu
+ */
 class QueueManager {
-    constructor(guildId, textChannel, musicManager) {
-        this.guildId = guildId;
-        this.textChannel = textChannel;
-        this.musicManager = musicManager;
+    constructor() {
+        this.queues = new Collection();
+        this.maxQueueSize = 100;
+        this.maxHistorySize = 50;
         
-        this.tracks = [];
-        this.currentTrack = null;
-        this.currentIndex = -1;
-        this.isPlaying = false;
-        this.isPaused = false;
-        this.isLooping = false;
-        this.loopMode = 'none'; // 'none', 'track', 'queue'
-        this.volume = 50;
-        this.shuffled = false;
-        this.originalOrder = [];
-        
-        console.log(`[QUEUE-MANAGER] Queue initialized for guild: ${guildId}`);
+        console.log('[QUEUE-MANAGER] Queue manager başlatıldı');
     }
 
-    // ==========================================
-    // Track Management
-    // ==========================================
+    /**
+     * Guild için kuyruk oluştur
+     */
+    createQueue(guildId) {
+        if (this.queues.has(guildId)) {
+            return this.queues.get(guildId);
+        }
 
-    addTrack(track) {
+        const queue = {
+            guildId,
+            tracks: [],
+            currentTrack: null,
+            currentIndex: -1,
+            history: [],
+            loopMode: 'none', // none, track, queue
+            shuffleMode: false,
+            shuffleSeed: Math.random(),
+            createdAt: new Date(),
+            lastUpdated: new Date()
+        };
+
+        this.queues.set(guildId, queue);
+        console.log(`[QUEUE-MANAGER] Kuyruk oluşturuldu: ${guildId}`);
+        return queue;
+    }
+
+    /**
+     * Guild kuyruğunu al
+     */
+    getQueue(guildId) {
+        return this.queues.get(guildId) || this.createQueue(guildId);
+    }
+
+    /**
+     * Kuyruğa track ekle
+     */
+    addTrack(guildId, track, position = -1) {
         try {
-            console.log(`[QUEUE-MANAGER] Adding track: ${track.title}`);
-
-            // Track doğrulama
-            if (!track || !track.title || !track.url) {
-                throw new Error('Invalid track data');
-            }
-
-            // Track'i kuyruğa ekle
-            this.tracks.push(track);
+            const queue = this.getQueue(guildId);
             
-            // Orijinal sırayı güncelle
-            if (!this.shuffled) {
-                this.originalOrder.push(track);
+            // Kuyruk boyutu kontrolü
+            if (queue.tracks.length >= this.maxQueueSize) {
+                throw new Error(`Kuyruk boyutu limiti aşıldı (${this.maxQueueSize})`);
             }
 
-            console.log(`[QUEUE-MANAGER] ✅ Track added. Queue size: ${this.tracks.length}`);
-            return true;
+            // Track objesini oluştur
+            const queueTrack = {
+                ...track,
+                id: track.id || `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                addedAt: new Date(),
+                addedBy: track.addedBy || 'unknown',
+                position: position === -1 ? queue.tracks.length : position
+            };
+
+            // Pozisyona göre ekle
+            if (position === -1) {
+                queue.tracks.push(queueTrack);
+            } else {
+                queue.tracks.splice(position, 0, queueTrack);
+                // Pozisyonları güncelle
+                queue.tracks.forEach((t, index) => {
+                    t.position = index;
+                });
+            }
+
+            queue.lastUpdated = new Date();
+            console.log(`[QUEUE-MANAGER] Track eklendi: ${guildId} - ${queueTrack.title}`);
+            return queueTrack;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to add track:`, error);
-            return false;
+            console.error(`[QUEUE-MANAGER] Track ekleme hatası:`, error);
+            throw error;
         }
     }
 
-    addTracks(tracks) {
+    /**
+     * Kuyruğa playlist ekle
+     */
+    addPlaylist(guildId, playlist, addedBy = 'unknown') {
         try {
-            console.log(`[QUEUE-MANAGER] Adding ${tracks.length} tracks`);
+            const queue = this.getQueue(guildId);
+            const addedTracks = [];
 
-            let added = 0;
-            for (const track of tracks) {
-                if (this.addTrack(track)) {
-                    added++;
-                }
+            for (const track of playlist.entries) {
+                const queueTrack = this.addTrack(guildId, {
+                    ...track,
+                    addedBy
+                });
+                addedTracks.push(queueTrack);
             }
 
-            console.log(`[QUEUE-MANAGER] ✅ Added ${added}/${tracks.length} tracks`);
-            return added;
+            console.log(`[QUEUE-MANAGER] Playlist eklendi: ${guildId} - ${addedTracks.length} track`);
+            return addedTracks;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to add tracks:`, error);
-            return 0;
+            console.error(`[QUEUE-MANAGER] Playlist ekleme hatası:`, error);
+            throw error;
         }
     }
 
-    removeTrack(index) {
+    /**
+     * Kuyruktan track kaldır
+     */
+    removeTrack(guildId, position) {
         try {
-            console.log(`[QUEUE-MANAGER] Removing track at index: ${index}`);
-
-            if (index < 0 || index >= this.tracks.length) {
-                throw new Error('Invalid track index');
-            }
-
-            const removedTrack = this.tracks.splice(index, 1)[0];
+            const queue = this.getQueue(guildId);
             
-            // Orijinal sırayı güncelle
-            if (!this.shuffled) {
-                const originalIndex = this.originalOrder.findIndex(t => t.url === removedTrack.url);
-                if (originalIndex !== -1) {
-                    this.originalOrder.splice(originalIndex, 1);
-                }
+            if (position < 0 || position >= queue.tracks.length) {
+                throw new Error('Geçersiz pozisyon');
             }
 
-            // Current index'i güncelle
-            if (index <= this.currentIndex) {
-                this.currentIndex--;
-            }
+            const removedTrack = queue.tracks.splice(position, 1)[0];
+            
+            // Pozisyonları güncelle
+            queue.tracks.forEach((track, index) => {
+                track.position = index;
+            });
 
-            console.log(`[QUEUE-MANAGER] ✅ Track removed: ${removedTrack.title}`);
+            queue.lastUpdated = new Date();
+            console.log(`[QUEUE-MANAGER] Track kaldırıldı: ${guildId} - ${removedTrack.title}`);
             return removedTrack;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to remove track:`, error);
-            return null;
+            console.error(`[QUEUE-MANAGER] Track kaldırma hatası:`, error);
+            throw error;
         }
     }
 
-    getNextTrack() {
+    /**
+     * Kuyruğu temizle
+     */
+    clearQueue(guildId) {
         try {
-            console.log(`[QUEUE-MANAGER] Getting next track`);
-
-            // Loop modu kontrolü
-            if (this.loopMode === 'track' && this.currentTrack) {
-                console.log(`[QUEUE-MANAGER] Looping current track: ${this.currentTrack.title}`);
-                return this.currentTrack;
-            }
-
-            // Sıradaki track'i al
-            this.currentIndex++;
+            const queue = this.getQueue(guildId);
+            const clearedCount = queue.tracks.length;
             
-            if (this.currentIndex >= this.tracks.length) {
-                if (this.loopMode === 'queue' && this.tracks.length > 0) {
-                    console.log(`[QUEUE-MANAGER] Looping queue from beginning`);
-                    this.currentIndex = 0;
-                } else {
-                    console.log(`[QUEUE-MANAGER] No more tracks in queue`);
-                    return null;
-                }
+            queue.tracks = [];
+            queue.currentTrack = null;
+            queue.currentIndex = -1;
+            queue.lastUpdated = new Date();
+
+            console.log(`[QUEUE-MANAGER] Kuyruk temizlendi: ${guildId} - ${clearedCount} track`);
+            return clearedCount;
+
+        } catch (error) {
+            console.error(`[QUEUE-MANAGER] Kuyruk temizleme hatası:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Sonraki track'i al
+     */
+    getNextTrack(guildId) {
+        try {
+            const queue = this.getQueue(guildId);
+            
+            if (queue.tracks.length === 0) {
+                return null;
             }
 
-            const nextTrack = this.tracks[this.currentIndex];
-            console.log(`[QUEUE-MANAGER] Next track: ${nextTrack.title}`);
+            let nextIndex;
+            
+            if (queue.loopMode === 'track' && queue.currentTrack) {
+                // Aynı track'i tekrar çal
+                nextIndex = queue.currentIndex;
+            } else if (queue.loopMode === 'queue' && queue.currentIndex >= queue.tracks.length - 1) {
+                // Kuyruk sonuna gelindi, başa dön
+                nextIndex = 0;
+            } else {
+                // Normal sırada sonraki track
+                nextIndex = queue.currentIndex + 1;
+            }
+
+            if (nextIndex >= queue.tracks.length) {
+                return null;
+            }
+
+            const nextTrack = queue.tracks[nextIndex];
+            queue.currentIndex = nextIndex;
+            queue.currentTrack = nextTrack;
+            queue.lastUpdated = new Date();
+
+            console.log(`[QUEUE-MANAGER] Sonraki track: ${guildId} - ${nextTrack.title}`);
             return nextTrack;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to get next track:`, error);
+            console.error(`[QUEUE-MANAGER] Sonraki track alma hatası:`, error);
             return null;
         }
     }
 
-    skipTrack() {
+    /**
+     * Önceki track'i al
+     */
+    getPreviousTrack(guildId) {
         try {
-            console.log(`[QUEUE-MANAGER] Skipping current track`);
-
-            if (this.currentTrack) {
-                console.log(`[QUEUE-MANAGER] Skipped: ${this.currentTrack.title}`);
+            const queue = this.getQueue(guildId);
+            
+            if (queue.tracks.length === 0 || queue.currentIndex <= 0) {
+                return null;
             }
 
-            // Current track'i temizle
-            this.currentTrack = null;
-            this.isPlaying = false;
-            this.isPaused = false;
+            const prevIndex = queue.currentIndex - 1;
+            const prevTrack = queue.tracks[prevIndex];
+            
+            queue.currentIndex = prevIndex;
+            queue.currentTrack = prevTrack;
+            queue.lastUpdated = new Date();
 
-            return true;
+            console.log(`[QUEUE-MANAGER] Önceki track: ${guildId} - ${prevTrack.title}`);
+            return prevTrack;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to skip track:`, error);
-            return false;
+            console.error(`[QUEUE-MANAGER] Önceki track alma hatası:`, error);
+            return null;
         }
     }
 
-    // ==========================================
-    // Queue Controls
-    // ==========================================
-
-    clear() {
+    /**
+     * Track'i atla
+     */
+    skipTrack(guildId, count = 1) {
         try {
-            console.log(`[QUEUE-MANAGER] Clearing queue`);
+            const queue = this.getQueue(guildId);
+            
+            if (queue.tracks.length === 0) {
+                return null;
+            }
 
-            this.tracks = [];
-            this.originalOrder = [];
-            this.currentTrack = null;
-            this.currentIndex = -1;
-            this.isPlaying = false;
-            this.isPaused = false;
+            // Mevcut track'i history'ye ekle
+            if (queue.currentTrack) {
+                queue.history.unshift(queue.currentTrack);
+                
+                // History boyutu kontrolü
+                if (queue.history.length > this.maxHistorySize) {
+                    queue.history.pop();
+                }
+            }
 
-            console.log(`[QUEUE-MANAGER] ✅ Queue cleared`);
-            return true;
+            // İleri git
+            const newIndex = Math.min(queue.currentIndex + count, queue.tracks.length - 1);
+            queue.currentIndex = newIndex;
+            queue.currentTrack = queue.tracks[newIndex];
+            queue.lastUpdated = new Date();
+
+            console.log(`[QUEUE-MANAGER] Track atlandı: ${guildId} - ${count} adet`);
+            return queue.currentTrack;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to clear queue:`, error);
-            return false;
+            console.error(`[QUEUE-MANAGER] Track atlama hatası:`, error);
+            return null;
         }
     }
 
-    shuffle() {
+    /**
+     * Kuyruğu karıştır
+     */
+    shuffleQueue(guildId) {
         try {
-            console.log(`[QUEUE-MANAGER] Shuffling queue`);
-
-            if (this.tracks.length <= 1) {
-                console.log(`[QUEUE-MANAGER] Not enough tracks to shuffle`);
+            const queue = this.getQueue(guildId);
+            
+            if (queue.tracks.length <= 1) {
                 return false;
             }
 
             // Fisher-Yates shuffle algoritması
-            for (let i = this.tracks.length - 1; i > 0; i--) {
+            for (let i = queue.tracks.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [this.tracks[i], this.tracks[j]] = [this.tracks[j], this.tracks[i]];
+                [queue.tracks[i], queue.tracks[j]] = [queue.tracks[j], queue.tracks[i]];
             }
 
-            this.shuffled = true;
-            console.log(`[QUEUE-MANAGER] ✅ Queue shuffled`);
+            // Pozisyonları güncelle
+            queue.tracks.forEach((track, index) => {
+                track.position = index;
+            });
+
+            queue.shuffleMode = true;
+            queue.shuffleSeed = Math.random();
+            queue.lastUpdated = new Date();
+
+            console.log(`[QUEUE-MANAGER] Kuyruk karıştırıldı: ${guildId}`);
             return true;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to shuffle queue:`, error);
+            console.error(`[QUEUE-MANAGER] Kuyruk karıştırma hatası:`, error);
             return false;
         }
     }
 
-    unshuffle() {
+    /**
+     * Loop modunu ayarla
+     */
+    setLoopMode(guildId, mode) {
         try {
-            console.log(`[QUEUE-MANAGER] Unshuffling queue`);
-
-            if (!this.shuffled) {
-                console.log(`[QUEUE-MANAGER] Queue is not shuffled`);
-                return false;
-            }
-
-            // Orijinal sırayı geri yükle
-            this.tracks = [...this.originalOrder];
-            this.shuffled = false;
-
-            console.log(`[QUEUE-MANAGER] ✅ Queue unshuffled`);
-            return true;
-
-        } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to unshuffle queue:`, error);
-            return false;
-        }
-    }
-
-    // ==========================================
-    // Loop Controls
-    // ==========================================
-
-    setLoopMode(mode) {
-        try {
-            console.log(`[QUEUE-MANAGER] Setting loop mode: ${mode}`);
-
-            const validModes = ['none', 'track', 'queue'];
-            if (!validModes.includes(mode)) {
-                throw new Error('Invalid loop mode');
-            }
-
-            this.loopMode = mode;
-            this.isLooping = mode !== 'none';
-
-            console.log(`[QUEUE-MANAGER] ✅ Loop mode set to: ${mode}`);
-            return true;
-
-        } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to set loop mode:`, error);
-            return false;
-        }
-    }
-
-    toggleLoop() {
-        try {
-            console.log(`[QUEUE-MANAGER] Toggling loop mode`);
-
-            const modes = ['none', 'track', 'queue'];
-            const currentIndex = modes.indexOf(this.loopMode);
-            const nextIndex = (currentIndex + 1) % modes.length;
+            const queue = this.getQueue(guildId);
             
-            return this.setLoopMode(modes[nextIndex]);
-
-        } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to toggle loop:`, error);
-            return false;
-        }
-    }
-
-    // ==========================================
-    // Volume Control
-    // ==========================================
-
-    setVolume(volume) {
-        try {
-            console.log(`[QUEUE-MANAGER] Setting volume: ${volume}%`);
-
-            if (volume < 0 || volume > 100) {
-                throw new Error('Volume must be between 0 and 100');
+            if (!['none', 'track', 'queue'].includes(mode)) {
+                throw new Error('Geçersiz loop modu');
             }
 
-            this.volume = volume;
-            console.log(`[QUEUE-MANAGER] ✅ Volume set to: ${volume}%`);
+            queue.loopMode = mode;
+            queue.lastUpdated = new Date();
+
+            console.log(`[QUEUE-MANAGER] Loop modu ayarlandı: ${guildId} - ${mode}`);
             return true;
 
         } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to set volume:`, error);
+            console.error(`[QUEUE-MANAGER] Loop modu ayarlama hatası:`, error);
             return false;
         }
     }
 
-    // ==========================================
-    // Status Management
-    // ==========================================
-
-    setCurrentTrack(track) {
-        this.currentTrack = track;
-        this.isPlaying = true;
-        this.isPaused = false;
-    }
-
-    setPlaying(playing) {
-        this.isPlaying = playing;
-        if (playing) {
-            this.isPaused = false;
-        }
-    }
-
-    setPaused(paused) {
-        this.isPaused = paused;
-        if (paused) {
-            this.isPlaying = false;
-        }
-    }
-
-    // ==========================================
-    // Information Getters
-    // ==========================================
-
-    getSize() {
-        return this.tracks.length;
-    }
-
-    getCurrentTrack() {
-        return this.currentTrack;
-    }
-
-    getTracks() {
-        return [...this.tracks];
-    }
-
-    getTrack(index) {
-        if (index >= 0 && index < this.tracks.length) {
-            return this.tracks[index];
-        }
-        return null;
-    }
-
-    getUpcomingTracks(limit = 10) {
-        const startIndex = this.currentIndex + 1;
-        const endIndex = Math.min(startIndex + limit, this.tracks.length);
-        return this.tracks.slice(startIndex, endIndex);
-    }
-
-    getPreviousTracks(limit = 5) {
-        const startIndex = Math.max(0, this.currentIndex - limit);
-        const endIndex = this.currentIndex;
-        return this.tracks.slice(startIndex, endIndex);
-    }
-
-    // ==========================================
-    // Queue Information
-    // ==========================================
-
-    getQueueInfo() {
+    /**
+     * Kuyruk bilgilerini al
+     */
+    getQueueInfo(guildId) {
+        const queue = this.getQueue(guildId);
+        
         return {
-            size: this.getSize(),
-            currentTrack: this.currentTrack,
-            currentIndex: this.currentIndex,
-            isPlaying: this.isPlaying,
-            isPaused: this.isPaused,
-            isLooping: this.isLooping,
-            loopMode: this.loopMode,
-            volume: this.volume,
-            shuffled: this.shuffled
+            guildId: queue.guildId,
+            totalTracks: queue.tracks.length,
+            currentTrack: queue.currentTrack,
+            currentIndex: queue.currentIndex,
+            loopMode: queue.loopMode,
+            shuffleMode: queue.shuffleMode,
+            historySize: queue.history.length,
+            createdAt: queue.createdAt,
+            lastUpdated: queue.lastUpdated
         };
     }
 
-    getQueueEmbed(page = 1, tracksPerPage = 10) {
-        try {
-            const totalPages = Math.ceil(this.tracks.length / tracksPerPage);
-            const startIndex = (page - 1) * tracksPerPage;
-            const endIndex = Math.min(startIndex + tracksPerPage, this.tracks.length);
-            const pageTracks = this.tracks.slice(startIndex, endIndex);
-
-            const embed = new EmbedBuilder()
-                .setColor('#1db954')
-                .setTitle('🎵 Müzik Kuyruğu')
-                .setDescription(`**${this.tracks.length}** şarkı kuyrukta`)
-                .setFooter({ text: `Sayfa ${page}/${totalPages} • ${this.isPlaying ? 'Çalıyor' : 'Duraklatıldı'}` })
-                .setTimestamp();
-
-            if (this.currentTrack) {
-                embed.addFields({
-                    name: '🎶 Şu Anda Çalan',
-                    value: `**${this.currentTrack.title}**\n👤 ${this.currentTrack.author}\n⏱️ ${this.currentTrack.duration}`,
-                    inline: false
-                });
-            }
-
-            if (pageTracks.length > 0) {
-                const trackList = pageTracks.map((track, index) => {
-                    const position = startIndex + index + 1;
-                    const emoji = position === this.currentIndex + 1 ? '▶️' : '🎵';
-                    return `${emoji} **${position}.** ${track.title} - ${track.author}`;
-                }).join('\n');
-
-                embed.addFields({
-                    name: '📋 Kuyruk',
-                    value: trackList || 'Kuyruk boş',
-                    inline: false
-                });
-            }
-
-            return embed;
-
-        } catch (error) {
-            console.error(`[QUEUE-MANAGER] Failed to create queue embed:`, error);
-            return null;
-        }
+    /**
+     * Kuyruk listesini al
+     */
+    getQueueList(guildId, limit = 10) {
+        const queue = this.getQueue(guildId);
+        
+        return {
+            tracks: queue.tracks.slice(0, limit),
+            totalTracks: queue.tracks.length,
+            currentIndex: queue.currentIndex,
+            hasMore: queue.tracks.length > limit
+        };
     }
 
-    // ==========================================
-    // Statistics
-    // ==========================================
-
-    getStatistics() {
+    /**
+     * Sistem durumu
+     */
+    getStatus() {
         return {
-            totalTracks: this.tracks.length,
-            currentIndex: this.currentIndex,
-            isPlaying: this.isPlaying,
-            isPaused: this.isPaused,
-            loopMode: this.loopMode,
-            volume: this.volume,
-            shuffled: this.shuffled,
-            uptime: process.uptime()
+            totalQueues: this.queues.size,
+            maxQueueSize: this.maxQueueSize,
+            maxHistorySize: this.maxHistorySize,
+            queues: Array.from(this.queues.keys())
         };
+    }
+
+    /**
+     * Guild kuyruğunu sil
+     */
+    deleteQueue(guildId) {
+        if (this.queues.has(guildId)) {
+            this.queues.delete(guildId);
+            console.log(`[QUEUE-MANAGER] Kuyruk silindi: ${guildId}`);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Tüm kuyrukları temizle
+     */
+    cleanup() {
+        this.queues.clear();
+        console.log('[QUEUE-MANAGER] Tüm kuyruklar temizlendi');
     }
 }
 
