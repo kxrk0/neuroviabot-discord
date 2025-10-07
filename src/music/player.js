@@ -24,7 +24,13 @@ class MusicPlayer {
                     highWaterMark: 1 << 25,
                     filter: 'audioonly',
                     opusEncoded: false,
-                    encoderArgs: ['-af', 'bass=g=10,dynaudnorm=f=200']
+                    encoderArgs: ['-af', 'bass=g=10,dynaudnorm=f=200'],
+                    // YouTube signature extraction için ek ayarlar
+                    requestOptions: {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        }
+                    }
                 },
                 skipFFmpeg: false,
                 leaveOnEmpty: true,
@@ -61,6 +67,14 @@ class MusicPlayer {
 
     async loadExtractors() {
         try {
+            // Discord Player v6'da default extractor'ları yükle
+            try {
+                await this.player.extractors.loadDefault();
+                logger.success('Default extractors yüklendi');
+            } catch (err) {
+                logger.warn(`Default extractors yüklenemedi: ${err.message}`);
+            }
+
             // Multiple extractor attempts
             const extractorConfigs = [
                 { extractor: YouTubeExtractor, name: 'YouTubeExtractor', options: {} },
