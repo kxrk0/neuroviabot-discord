@@ -5,61 +5,18 @@ const {
     createAudioResource, 
     AudioPlayerStatus,
     VoiceConnectionStatus,
-    entersState
+    entersState,
+    StreamType
 } = require('@discordjs/voice');
-const play = require('play-dl');
+const ytdl = require('ytdl-core');
+const ytsr = require('youtube-sr').default;
 
 class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
         this.queues = new Map(); // guildId -> { connection, player, songs: [], textChannel }
-        this.initialized = false;
         
-        // Initialize play-dl with YouTube cookies if available
-        this.initializePlayDl();
-        
-        console.log('[CUSTOM-PLAYER] Pure @discordjs/voice player initialized');
-    }
-    
-    async initializePlayDl() {
-        try {
-            // Check if YouTube cookies are set via environment variable
-            if (process.env.YOUTUBE_COOKIE) {
-                console.log('[CUSTOM-PLAYER] Attempting to authenticate with YouTube cookies...');
-                
-                // Parse cookie string into object format that play-dl expects
-                const cookieObj = {};
-                const cookies = process.env.YOUTUBE_COOKIE.split('; ');
-                cookies.forEach(cookie => {
-                    const [key, ...valueParts] = cookie.split('=');
-                    if (key && valueParts.length > 0) {
-                        cookieObj[key.trim()] = valueParts.join('=').trim();
-                    }
-                });
-                
-                // Set cookies for YouTube
-                const yt_cookie = [
-                    cookieObj['SID'] ? `SID=${cookieObj['SID']}` : '',
-                    cookieObj['__Secure-1PSID'] ? `__Secure-1PSID=${cookieObj['__Secure-1PSID']}` : '',
-                    cookieObj['__Secure-3PSID'] ? `__Secure-3PSID=${cookieObj['__Secure-3PSID']}` : ''
-                ].filter(c => c).join('; ');
-                
-                if (yt_cookie) {
-                    await play.setToken({
-                        youtube: { cookie: yt_cookie }
-                    });
-                    console.log('[CUSTOM-PLAYER] YouTube cookies authenticated successfully!');
-                } else {
-                    console.warn('[CUSTOM-PLAYER] Could not parse YouTube cookies');
-                }
-            } else {
-                console.warn('[CUSTOM-PLAYER] No YOUTUBE_COOKIE environment variable found');
-            }
-            this.initialized = true;
-        } catch (error) {
-            console.error('[CUSTOM-PLAYER] Failed to initialize play-dl:', error);
-            this.initialized = true; // Continue anyway
-        }
+        console.log('[CUSTOM-PLAYER] ytdl-core player initialized');
     }
     
     async addTrack(guildId, query, textChannel, user) {
@@ -74,18 +31,35 @@ class CustomMusicPlayer {
                 throw new Error('You must be in a voice channel!');
             }
             
-            // Search YouTube
-            const searched = await play.search(query, { limit: 1 });
-            if (!searched || searched.length === 0) {
-                throw new Error('No results found!');
+            // Check if it's a URL or search query
+            let videoUrl = query;
+            let videoInfo;
+            
+            if (!ytdl.validateURL(query)) {
+                // Search YouTube
+                console.log(`[CUSTOM-PLAYER] Searching YouTube for: ${query}`);
+                const searchResult = await ytsr.searchOne(query, 'video');
+                if (!searchResult) {
+                    throw new Error('No results found!');
+                }
+                videoUrl = searchResult.url;
+                videoInfo = searchResult;
+            } else {
+                // Get video info
+                videoInfo = await ytdl.getBasicInfo(videoUrl);
+                videoInfo = {
+                    title: videoInfo.videoDetails.title,
+                    url: videoInfo.videoDetails.video_url,
+                    durationInSec: parseInt(videoInfo.videoDetails.lengthSeconds),
+                    thumbnail: videoInfo.videoDetails.thumbnails[0]
+                };
             }
             
-            const video = searched[0];
             const song = {
-                title: video.title,
-                url: video.url,
-                duration: video.durationInSec,
-                thumbnail: video.thumbnails[0]?.url,
+                title: videoInfo.title,
+                url: videoUrl,
+                duration: videoInfo.durationInSec || videoInfo.duration,
+                thumbnail: videoInfo.thumbnail?.url || videoInfo.thumbnail,
                 requester: user
             };
             
@@ -195,9 +169,14 @@ class CustomMusicPlayer {
         try {
             console.log(`[CUSTOM-PLAYER] Playing: ${song.title}`);
             
-            const stream = await play.stream(song.url);
-            const resource = createAudioResource(stream.stream, {
-                inputType: stream.type,
+            const stream = ytdl(song.url, {
+                filter: 'audioonly',
+                quality: 'highestaudio',
+                highWaterMark: 1 << 25
+            });
+            
+            const resource = createAudioResource(stream, {
+                inputType: StreamType.Arbitrary,
                 inlineVolume: true
             });
             
