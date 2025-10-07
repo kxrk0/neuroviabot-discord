@@ -109,6 +109,8 @@ class MusicPlayer {
     }
 
     setupEventListeners() {
+        console.log(`[DEBUG-PLAYER] Setting up event listeners...`);
+        
         // Player ready
         this.player.on('playerStart', (queue, track) => {
             console.log(`[DEBUG-PLAYER] Track started: ${track.title} in ${queue.guild.name}`);
@@ -162,8 +164,8 @@ class MusicPlayer {
             });
         });
 
-        // Track error
-        this.player.on('playerError', (queue, error, track) => {
+        // Track error - Discord Player v6'da 'error' event'i kullanılıyor
+        this.player.on('error', (queue, error, track) => {
             console.error(`[DEBUG-PLAYER] Player error in ${queue.guild.name} for track ${track?.title}:`, error);
             console.error(`[DEBUG-PLAYER] Error details:`, {
                 message: error.message,
@@ -172,12 +174,12 @@ class MusicPlayer {
             });
             logger.playerError(error, {
                 guild: queue.guild.name,
-                track: track.title,
+                track: track?.title || 'Unknown',
                 event: 'playerError'
             });
 
             // Hata mesajı gönder
-            if (queue.metadata) {
+            if (queue.metadata && track) {
                 queue.metadata.send(`❌ **Şarkı çalınamadı:** ${track.title}\n\`\`\`${error.message}\`\`\``);
             }
         });
@@ -201,11 +203,10 @@ class MusicPlayer {
             });
         });
 
-        // Error event listener (genel hatalar için)
-        this.player.on('error', (error) => {
-            console.error(`[DEBUG-PLAYER] General player error:`, error);
-            logger.error('Player error', error);
-        });
+        // General error event listener (Discord Player v6'da bu event yok, sadece yukarıdaki error event'i var)
+        // Bu yüzden bu listener'ı kaldırıyoruz
+
+        console.log(`[DEBUG-PLAYER] Event listeners setup completed`);
 
         // Debug events (sadece development'ta)
         if (process.env.NODE_ENV === 'development') {
