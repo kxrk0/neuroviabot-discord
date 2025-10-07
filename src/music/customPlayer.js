@@ -42,23 +42,23 @@ class CustomMusicPlayer {
             await this.player.extractors.loadDefault();
             console.log('[CUSTOM-PLAYER] Default extractors loaded successfully');
             
-            // Manuel YouTube extractor kaydı
-            try {
-                const { YouTubeExtractor } = require('@discord-player/extractor');
-                this.player.extractors.register(YouTubeExtractor, {
-                    bridgeProvider: 'ffmpeg',
-                    bridgeProviderOptions: {
-                        ffmpeg: 'ffmpeg-static'
-                    }
-                });
-                console.log('[CUSTOM-PLAYER] YouTube extractor registered manually');
-            } catch (manualError) {
-                console.error('[CUSTOM-PLAYER] Manual extractor registration failed:', manualError);
-            }
-            
             // Extractors listesini kontrol et
             const extractors = this.player.extractors.store;
             console.log('[CUSTOM-PLAYER] Available extractors:', Object.keys(extractors));
+            
+            // YouTube extractor'ın yüklü olduğunu kontrol et
+            if (extractors.YouTubeExtractor) {
+                console.log('[CUSTOM-PLAYER] YouTube extractor is available');
+            } else {
+                console.warn('[CUSTOM-PLAYER] YouTube extractor not found, attempting manual registration');
+                try {
+                    const { YouTubeExtractor } = require('@discord-player/extractor');
+                    this.player.extractors.register(YouTubeExtractor, {});
+                    console.log('[CUSTOM-PLAYER] YouTube extractor registered manually');
+                } catch (manualError) {
+                    console.error('[CUSTOM-PLAYER] Manual extractor registration failed:', manualError);
+                }
+            }
             
         } catch (error) {
             console.error('[CUSTOM-PLAYER] Failed to load extractors:', error);
