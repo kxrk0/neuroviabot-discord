@@ -89,74 +89,30 @@ class CustomMusicPlayer {
                 return false;
             }
 
-            // play-dl ile stream oluştur
+            // Basit stream oluşturma yaklaşımı
             console.log(`[CUSTOM-PLAYER] Creating stream for URL: ${track.url}`);
             
             let stream;
             try {
-                // Önce video info al
-                const videoInfo = await playdl.video_basic_info(track.url);
-                console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
-                console.log(`[CUSTOM-PLAYER] Video info structure:`, {
-                    hasVideoDetails: !!videoInfo.video_details,
-                    videoDetailsUrl: videoInfo.video_details?.url,
-                    videoDetailsId: videoInfo.video_details?.id,
-                    trackUrl: track.url
-                });
-                
-                // videoInfo.video_details.url'yi kontrol et ve gerekirse düzelt
-                if (!videoInfo.video_details.url) {
-                    console.log(`[CUSTOM-PLAYER] video_details.url is missing, setting to track.url: ${track.url}`);
-                    videoInfo.video_details.url = track.url;
-                }
-                
-                // videoInfo.video_details.id'yi de kontrol et
-                if (!videoInfo.video_details.id && track.url.includes('watch?v=')) {
-                    const videoId = track.url.split('watch?v=')[1].split('&')[0];
-                    console.log(`[CUSTOM-PLAYER] Setting video_details.id to: ${videoId}`);
-                    videoInfo.video_details.id = videoId;
-                }
-                
-                console.log(`[CUSTOM-PLAYER] Attempting stream_from_info with:`, {
-                    url: videoInfo.video_details.url,
-                    id: videoInfo.video_details.id
-                });
-                
-                // Stream'i info'dan oluştur
-                stream = await playdl.stream_from_info(videoInfo);
+                // Direkt stream oluşturma
+                console.log(`[CUSTOM-PLAYER] Attempting direct stream creation...`);
+                stream = await playdl.stream(track.url);
                 console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
             } catch (streamError) {
-                console.error(`[CUSTOM-PLAYER] Failed to create stream from info:`, streamError);
+                console.error(`[CUSTOM-PLAYER] Direct stream failed:`, streamError);
                 
-                // Alternatif yöntem: Direkt stream
+                // Alternatif: Video info ile deneme
                 try {
-                    console.log(`[CUSTOM-PLAYER] Trying direct stream for URL: ${track.url}`);
-                    stream = await playdl.stream(track.url);
-                    console.log(`[CUSTOM-PLAYER] Direct stream created successfully, type: ${stream.type}`);
-                } catch (directError) {
-                    console.error(`[CUSTOM-PLAYER] Direct stream also failed:`, directError);
+                    console.log(`[CUSTOM-PLAYER] Trying video info approach...`);
+                    const videoInfo = await playdl.video_basic_info(track.url);
+                    console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
                     
-                    // Son çare: Video ID ile deneme
-                    try {
-                        const videoId = track.url.split('watch?v=')[1]?.split('&')[0];
-                        if (videoId) {
-                            console.log(`[CUSTOM-PLAYER] Trying with video ID: ${videoId}`);
-                            const directUrl = `https://www.youtube.com/watch?v=${videoId}`;
-                            
-                            // Video info ile deneme
-                            const videoInfo = await playdl.video_basic_info(directUrl);
-                            if (!videoInfo.video_details.url) {
-                                videoInfo.video_details.url = directUrl;
-                            }
-                            stream = await playdl.stream_from_info(videoInfo);
-                            console.log(`[CUSTOM-PLAYER] Video ID stream created successfully`);
-                        } else {
-                            throw new Error('No video ID found');
-                        }
-                    } catch (idError) {
-                        console.error(`[CUSTOM-PLAYER] Video ID approach also failed:`, idError);
-                        throw new Error('Failed to create stream with all methods');
-                    }
+                    // Stream'i info'dan oluştur
+                    stream = await playdl.stream_from_info(videoInfo);
+                    console.log(`[CUSTOM-PLAYER] Stream from info created successfully, type: ${stream.type}`);
+                } catch (infoError) {
+                    console.error(`[CUSTOM-PLAYER] Video info approach also failed:`, infoError);
+                    throw new Error(`Failed to create stream: ${infoError.message}`);
                 }
             }
 
@@ -164,14 +120,20 @@ class CustomMusicPlayer {
                 inputType: stream.type
             });
 
+            console.log(`[CUSTOM-PLAYER] Audio resource created successfully`);
+
             // Audio player oluştur
             const player = createAudioPlayer();
             this.players.set(guildId, player);
+            console.log(`[CUSTOM-PLAYER] Audio player created and stored for guild: ${guildId}`);
 
             // Connection'a player'ı bağla
             const connection = this.connections.get(guildId);
             if (connection) {
                 connection.subscribe(player);
+                console.log(`[CUSTOM-PLAYER] Player subscribed to connection for guild: ${guildId}`);
+            } else {
+                console.error(`[CUSTOM-PLAYER] No connection found for guild: ${guildId}`);
             }
 
             // Player event listeners

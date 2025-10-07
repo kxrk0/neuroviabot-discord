@@ -28,7 +28,8 @@ module.exports = {
 
             console.log(`[CUSTOM-STOP] Guild: ${interaction.guild.id}, Playing: ${isPlaying}, Paused: ${isPaused}, Queue: ${queue.length}`);
 
-            if (!isPlaying && !isPaused && queue.length === 0) {
+            // Eğer hiçbir şey çalmıyorsa ve kuyruk boşsa
+            if (!isPlaying && queue.length === 0) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor('#ff0000')
                     .setTitle('❌ Hata')
