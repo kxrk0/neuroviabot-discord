@@ -160,8 +160,23 @@ class CustomMusicPlayer {
                 }
             }
 
+            // Stream tipini kontrol et ve düzelt
+            let inputType = stream.type;
+            if (!inputType || inputType === 'unknown') {
+                inputType = 'arbitrary'; // Varsayılan tip
+                console.log(`[CUSTOM-PLAYER] Stream type unknown, using 'arbitrary'`);
+            }
+            
+            console.log(`[CUSTOM-PLAYER] Creating audio resource with type: ${inputType}`);
+            console.log(`[CUSTOM-PLAYER] Stream info:`, {
+                hasStream: !!stream.stream,
+                streamType: stream.type,
+                inputType: inputType
+            });
+
             const resource = createAudioResource(stream.stream, {
-                inputType: stream.type
+                inputType: inputType,
+                inlineVolume: true
             });
 
             // Audio player oluştur
@@ -171,12 +186,25 @@ class CustomMusicPlayer {
             // Connection'a player'ı bağla
             const connection = this.connections.get(guildId);
             if (connection) {
+                console.log(`[CUSTOM-PLAYER] Connection state:`, {
+                    status: connection.state.status,
+                    joinConfig: connection.joinConfig
+                });
+                
                 connection.subscribe(player);
+                console.log(`[CUSTOM-PLAYER] Player subscribed to connection`);
+            } else {
+                console.error(`[CUSTOM-PLAYER] No connection found for guild: ${guildId}`);
             }
 
             // Player event listeners
             player.on(AudioPlayerStatus.Playing, () => {
-                console.log(`[CUSTOM-PLAYER] Started playing: ${track.title}`);
+                console.log(`[CUSTOM-PLAYER] ✅ Started playing: ${track.title}`);
+                console.log(`[CUSTOM-PLAYER] Player state:`, {
+                    status: player.state.status,
+                    resource: !!player.state.resource,
+                    playbackDuration: player.state.resource?.playbackDuration || 0
+                });
                 
                 const nowPlayingEmbed = new EmbedBuilder()
                     .setColor('#00ff00')
@@ -191,6 +219,18 @@ class CustomMusicPlayer {
                     .setTimestamp();
 
                 track.metadata.send({ embeds: [nowPlayingEmbed] }).catch(console.error);
+            });
+
+            player.on(AudioPlayerStatus.Buffering, () => {
+                console.log(`[CUSTOM-PLAYER] 🔄 Buffering: ${track.title}`);
+            });
+
+            player.on(AudioPlayerStatus.Paused, () => {
+                console.log(`[CUSTOM-PLAYER] ⏸️ Paused: ${track.title}`);
+            });
+
+            player.on(AudioPlayerStatus.AutoPaused, () => {
+                console.log(`[CUSTOM-PLAYER] ⏸️ Auto-paused: ${track.title}`);
             });
 
             player.on(AudioPlayerStatus.Idle, () => {
