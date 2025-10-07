@@ -253,9 +253,9 @@ async function handleSetup(interaction) {
 
             await interaction.editReply({ embeds: [errorEmbed] });
         }
-    },
+    }
 
-    async handleClose(interaction) {
+async function handleClose(interaction) {
         const reason = interaction.options.getString('sebep') || 'Sebep belirtilmedi';
 
         // Ticket kanalında mı kontrol et
@@ -328,9 +328,9 @@ async function handleSetup(interaction) {
         } catch (error) {
             logger.error('Ticket close hatası', error);
         }
-    },
+    }
 
-    async handleAdd(interaction) {
+async function handleAdd(interaction) {
         const user = interaction.options.getUser('kullanıcı');
 
         // Ticket kanalında mı kontrol et
@@ -388,11 +388,11 @@ async function handleSetup(interaction) {
                 .setDescription('Kullanıcı eklenirken bir hata oluştu!')
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            await interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
-    },
+    }
 
-    async handleRemove(interaction) {
+async function handleRemove(interaction) {
         const user = interaction.options.getUser('kullanıcı');
 
         const ticket = await Ticket.findOne({
@@ -440,9 +440,9 @@ async function handleSetup(interaction) {
         } catch (error) {
             logger.error('Ticket remove hatası', error);
         }
-    },
+    }
 
-    async handleClaim(interaction) {
+async function handleClaim(interaction) {
         const ticket = await Ticket.findOne({
             where: {
                 channelId: interaction.channel.id,
@@ -492,9 +492,9 @@ async function handleSetup(interaction) {
         } catch (error) {
             logger.error('Ticket claim hatası', error);
         }
-    },
+    }
 
-    async handleUnclaim(interaction) {
+async function handleUnclaim(interaction) {
         const ticket = await Ticket.findOne({
             where: {
                 channelId: interaction.channel.id,
@@ -543,9 +543,9 @@ async function handleSetup(interaction) {
         } catch (error) {
             logger.error('Ticket unclaim hatası', error);
         }
-    },
+    }
 
-    async handleTranscript(interaction) {
+async function handleTranscript(interaction) {
         const ticket = await Ticket.findOne({
             where: { channelId: interaction.channel.id }
         });
@@ -594,9 +594,9 @@ async function handleSetup(interaction) {
         } catch (error) {
             logger.error('Ticket transcript hatası', error);
         }
-    },
+    }
 
-    async handleStats(interaction) {
+async function handleStats(interaction) {
         const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
 
         try {
