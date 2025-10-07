@@ -382,9 +382,9 @@ async function startBot() {
         await initializeModels();
         
         // Music Player'ı başlat
-        const MusicPlayer = require('./src/music/player');
-        client.musicPlayer = new MusicPlayer(client);
-        await client.musicPlayer.initialize();
+        const CustomMusicPlayer = require('./src/music/customPlayer');
+        client.customPlayer = new CustomMusicPlayer(client);
+        log('Custom Music Player başlatıldı!', 'SUCCESS');
         
         // Security ve Analytics sistemlerini başlat
         const { security } = require('./src/utils/security');

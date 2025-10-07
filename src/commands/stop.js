@@ -1,89 +1,74 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { useMainPlayer } = require('discord-player');
-const config = require('../config.js');
+const { logger } = require('../utils/logger');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('stop')
-        .setDescription('⏹️ Müziği durdur ve kuyruğu temizle'),
+        .setDescription('Müziği durdur ve kuyruğu temizle'),
 
     async execute(interaction) {
-        const player = useMainPlayer();
-        const queue = player.nodes.get(interaction.guild);
-
-        // Kullanıcının sesli kanalda olup olmadığını kontrol et
-        const voiceChannel = interaction.member?.voice?.channel;
-        if (!voiceChannel) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Bu komutu kullanabilmek için bir sesli kanalda olmanız gerekiyor!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Queue var mı kontrol et
-        console.log(`[DEBUG-STOP] Queue exists: ${!!queue}`);
-        console.log(`[DEBUG-STOP] Queue isPlaying: ${queue?.isPlaying()}`);
-        console.log(`[DEBUG-STOP] Queue isPaused: ${queue?.node?.isPaused()}`);
-        console.log(`[DEBUG-STOP] Queue currentTrack: ${queue?.currentTrack?.title || 'None'}`);
-        console.log(`[DEBUG-STOP] Queue tracks size: ${queue?.tracks?.size || 0}`);
-        
-        if (!queue || (!queue.isPlaying() && !queue.node.isPaused() && !queue.currentTrack)) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Şu anda çalan veya duraklatılmış bir şarkı yok!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
-        // Bot ve kullanıcı aynı kanalda mı
-        const botChannel = interaction.guild.members.me?.voice?.channel;
-        if (botChannel && voiceChannel.id !== botChannel.id) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Hata')
-                .setDescription('Benimle aynı sesli kanalda olmanız gerekiyor!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
-
         try {
-            const currentTrack = queue.currentTrack;
-            const queueSize = queue.tracks.size;
+            await interaction.deferReply();
+
+            const customPlayer = interaction.client.customPlayer;
+            if (!customPlayer) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Sistem Hatası')
+                    .setDescription('Müzik sistemi başlatılamadı!')
+                    .setTimestamp();
+
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            // Çalan şarkı var mı kontrol et
+            const isPlaying = customPlayer.isPlaying(interaction.guild.id);
+            const isPaused = customPlayer.isPaused(interaction.guild.id);
+            const queue = customPlayer.getQueue(interaction.guild.id);
+
+            console.log(`[CUSTOM-STOP] Guild: ${interaction.guild.id}, Playing: ${isPlaying}, Paused: ${isPaused}, Queue: ${queue.length}`);
+
+            if (!isPlaying && !isPaused && queue.length === 0) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Hata')
+                    .setDescription('Şu anda çalan veya duraklatılmış bir şarkı yok!')
+                    .setTimestamp();
+
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
 
             // Müziği durdur ve kuyruğu temizle
-            queue.delete();
+            await customPlayer.stop(interaction.guild.id);
 
-            const stoppedEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
+            const successEmbed = new EmbedBuilder()
+                .setColor('#ffa500')
                 .setTitle('⏹️ Müzik Durduruldu')
                 .setDescription('Müzik durduruldu ve kuyruk temizlendi!')
-                .addFields(
-                    { name: '🎵 Son Çalan', value: currentTrack ? `**${currentTrack.title}** - ${currentTrack.author}` : 'Bilinmiyor', inline: false },
-                    { name: '🗑️ Temizlenen Şarkı', value: queueSize.toString(), inline: true },
-                    { name: '👤 Durduran', value: interaction.user.username, inline: true },
-                    { name: '💡 İpucu', value: 'Yeni şarkı çalmak için `/play` komutunu kullanın', inline: false }
-                )
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [stoppedEmbed] });
-            
+            await interaction.editReply({ embeds: [successEmbed] });
+
         } catch (error) {
-            console.error('Stop komutunda hata:', error);
-            
+            console.error(`[CUSTOM-STOP] Command error:`, error);
+            logger.error('Stop komutu hatası', error);
+
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('❌ Durdurma Hatası')
-                .setDescription('Müziği durdururken bir hata oluştu!')
+                .setTitle('❌ Komut Hatası')
+                .setDescription('Komut çalıştırılırken bir hata oluştu!')
+                .addFields({
+                    name: '🔧 Hata Detayı',
+                    value: `\`\`\`${error.message}\`\`\``,
+                    inline: false
+                })
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            } else {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            }
         }
-    },
+    }
 };
-
