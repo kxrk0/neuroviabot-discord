@@ -99,12 +99,23 @@ module.exports = {
             // Track bilgilerini hazırla
             console.log(`[CUSTOM-PLAY] Search result keys:`, Object.keys(searchResult));
             console.log(`[CUSTOM-PLAY] Search result URL:`, searchResult.url);
+            console.log(`[CUSTOM-PLAY] Search result ID:`, searchResult.id);
+            
+            // URL'yi doğru formatta oluştur
+            let trackUrl;
+            if (searchResult.url) {
+                trackUrl = searchResult.url;
+            } else if (searchResult.id) {
+                trackUrl = `https://www.youtube.com/watch?v=${searchResult.id}`;
+            } else {
+                throw new Error('No valid URL or ID found in search result');
+            }
             
             const track = {
                 title: searchResult.title,
                 author: searchResult.channel?.name || 'Bilinmiyor',
                 duration: searchResult.durationFormatted || 'Bilinmiyor',
-                url: searchResult.url || searchResult.link || `https://www.youtube.com/watch?v=${searchResult.id}`,
+                url: trackUrl,
                 thumbnail: searchResult.thumbnails?.[0]?.url || null
             };
             
