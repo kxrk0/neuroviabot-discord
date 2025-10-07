@@ -2,7 +2,6 @@ const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerSta
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
 const playdl = require('play-dl');
-const ytdl = require('ytdl-core');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -152,31 +151,36 @@ class CustomMusicPlayer {
                 } catch (altError) {
                     console.error(`[CUSTOM-PLAYER] Alternative method also failed:`, altError);
                     
-                    // Son çare: ytdl-core ile deneme
+                    // Son çare: Basit URL ile tekrar deneme
                     try {
-                        console.log(`[CUSTOM-PLAYER] Trying ytdl-core as final fallback for URL: ${track.url}`);
+                        console.log(`[CUSTOM-PLAYER] Trying simple URL approach for: ${track.url}`);
                         
-                        const ytdlStream = ytdl(track.url, {
-                            filter: 'audioonly',
-                            quality: 'highestaudio',
-                            highWaterMark: 1 << 25,
-                            requestOptions: {
-                                headers: {
-                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                                }
+                        // URL'yi temizle ve tekrar dene
+                        const cleanUrl = track.url.replace(/&.*$/, ''); // Query parametrelerini temizle
+                        console.log(`[CUSTOM-PLAYER] Clean URL: ${cleanUrl}`);
+                        
+                        // play-dl ile tekrar dene
+                        stream = await playdl.stream(cleanUrl);
+                        console.log(`[CUSTOM-PLAYER] Simple URL stream created successfully`);
+                    } catch (simpleError) {
+                        console.error(`[CUSTOM-PLAYER] Simple URL approach also failed:`, simpleError);
+                        
+                        // Son çare: Video ID ile deneme
+                        try {
+                            const videoId = track.url.split('watch?v=')[1]?.split('&')[0];
+                            if (videoId) {
+                                console.log(`[CUSTOM-PLAYER] Trying with video ID: ${videoId}`);
+                                const directUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                                stream = await playdl.stream(directUrl);
+                                console.log(`[CUSTOM-PLAYER] Video ID stream created successfully`);
+                            } else {
+                                throw new Error('No video ID found');
                             }
-                        });
-                        
-                        stream = {
-                            stream: ytdlStream,
-                            type: 'opus'
-                        };
-                        
-                        console.log(`[CUSTOM-PLAYER] ytdl-core stream created successfully`);
-                    } catch (ytdlError) {
-                        console.error(`[CUSTOM-PLAYER] ytdl-core also failed:`, ytdlError);
-                        await this.playNext(guildId); // Sıradaki şarkıyı çal
-                        return false;
+                        } catch (idError) {
+                            console.error(`[CUSTOM-PLAYER] Video ID approach also failed:`, idError);
+                            await this.playNext(guildId); // Sıradaki şarkıyı çal
+                            return false;
+                        }
                     }
                 }
             }
