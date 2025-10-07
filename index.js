@@ -340,7 +340,7 @@ async function setupSocketIO(client) {
         socket.on('connect', () => {
             log(`✅ Backend'e bağlanıldı: ${BACKEND_URL}`, 'SUCCESS');
             console.log(`[DEBUG-SOCKET] Socket connected with ID: ${socket.id}`);
-            
+             
             // Tüm guild'lere subscribe ol
             client.guilds.cache.forEach(guild => {
                 socket.emit('join_guild', guild.id);
