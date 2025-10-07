@@ -8,9 +8,11 @@ const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
 interface UseSocketOptions {
   guildId?: string;
   onSettingsChanged?: (data: any) => void;
+  onLevelUpdate?: (data: any) => void;
+  onMilestoneLevelUp?: (data: any) => void;
 }
 
-export function useSocket({ guildId, onSettingsChanged }: UseSocketOptions = {}) {
+export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilestoneLevelUp }: UseSocketOptions = {}) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
@@ -68,6 +70,28 @@ export function useSocket({ guildId, onSettingsChanged }: UseSocketOptions = {})
       };
     }
   }, [socket, onSettingsChanged]);
+
+  // Listen for level updates
+  useEffect(() => {
+    if (socket && onLevelUpdate) {
+      socket.on('level_update', onLevelUpdate);
+
+      return () => {
+        socket.off('level_update', onLevelUpdate);
+      };
+    }
+  }, [socket, onLevelUpdate]);
+
+  // Listen for milestone level ups
+  useEffect(() => {
+    if (socket && onMilestoneLevelUp) {
+      socket.on('milestone_level_up', onMilestoneLevelUp);
+
+      return () => {
+        socket.off('milestone_level_up', onMilestoneLevelUp);
+      };
+    }
+  }, [socket, onMilestoneLevelUp]);
 
   // Emit settings update
   const emitSettingsUpdate = useCallback((guildId: string, settings: any) => {

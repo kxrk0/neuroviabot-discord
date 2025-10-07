@@ -397,6 +397,24 @@ async function startBot() {
         // Socket.IO bağlantısı (Backend ile real-time senkronizasyon)
         await setupSocketIO(client);
         
+        // Real-time updates sistemini başlat
+        const { realtimeUpdates } = require('./src/utils/realtime');
+        global.realtimeUpdates = realtimeUpdates;
+        
+        // Broadcast fonksiyonlarını set et
+        realtimeUpdates.setBroadcastFunctions(
+            (guildId, event, data) => {
+                if (client.socket) {
+                    client.socket.emit('broadcast_to_guild', { guildId, event, data });
+                }
+            },
+            (event, data) => {
+                if (client.socket) {
+                    client.socket.emit('broadcast_global', { event, data });
+                }
+            }
+        );
+        
         // Komutları ve event'leri yükle
         await loadCommands();
         await loadEvents();
