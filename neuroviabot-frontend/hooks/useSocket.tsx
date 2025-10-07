@@ -27,6 +27,7 @@ export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilesto
 
     newSocket.on('connect', () => {
       console.log('[Socket.IO] Connected:', newSocket.id);
+      console.log('[Socket.IO] Frontend connected to backend');
       setConnected(true);
     });
 
@@ -74,7 +75,10 @@ export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilesto
   // Listen for level updates
   useEffect(() => {
     if (socket && onLevelUpdate) {
-      socket.on('level_update', onLevelUpdate);
+      socket.on('level_update', (data) => {
+        console.log('[Socket.IO] Received level_update event:', data);
+        onLevelUpdate(data);
+      });
 
       return () => {
         socket.off('level_update', onLevelUpdate);

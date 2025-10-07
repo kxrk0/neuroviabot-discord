@@ -107,6 +107,7 @@ app.get('/api/health', (req, res) => {
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`[Socket.IO] Client connected: ${socket.id}`);
+  console.log(`[Socket.IO] Total connected clients: ${io.engine.clientsCount}`);
 
   // Join guild room
   socket.on('join_guild', (guildId) => {
