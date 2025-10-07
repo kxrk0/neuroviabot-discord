@@ -32,11 +32,34 @@ class CustomMusicPlayer {
 
     async loadExtractors() {
         try {
-            const { ext } = await import('@discord-player/extractor');
-            await ext(this.player);
+            const { 
+                YouTubeExtractor, 
+                SpotifyExtractor, 
+                SoundCloudExtractor,
+                AppleMusicExtractor,
+                VimeoExtractor
+            } = require('@discord-player/extractor');
+            
+            // Register each extractor individually
+            await this.player.extractors.register(YouTubeExtractor, {});
+            console.log('[CUSTOM-PLAYER] ✅ YouTube extractor registered');
+            
+            await this.player.extractors.register(SpotifyExtractor, {});
+            console.log('[CUSTOM-PLAYER] ✅ Spotify extractor registered');
+            
+            await this.player.extractors.register(SoundCloudExtractor, {});
+            console.log('[CUSTOM-PLAYER] ✅ SoundCloud extractor registered');
+            
+            await this.player.extractors.register(AppleMusicExtractor, {});
+            console.log('[CUSTOM-PLAYER] ✅ AppleMusic extractor registered');
+            
+            await this.player.extractors.register(VimeoExtractor, {});
+            console.log('[CUSTOM-PLAYER] ✅ Vimeo extractor registered');
+            
             console.log('[CUSTOM-PLAYER] ✅ All extractors loaded successfully');
         } catch (error) {
             console.error('[CUSTOM-PLAYER] ❌ Failed to load extractors:', error.message);
+            console.error('[CUSTOM-PLAYER] Error details:', error);
         }
     }
     
