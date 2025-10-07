@@ -1,6 +1,6 @@
 const { Player, QueryType } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
-const { DefaultExtractors } = require('@discord-player/extractor');
+const { YouTubeExtractor } = require('discord-player-youtubei');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -15,13 +15,13 @@ class CustomMusicPlayer {
             }
         });
 
-        // Load extractors
-        this.player.extractors.loadDefault();
+        // Register YouTubeI extractor (most stable for YouTube)
+        this.player.extractors.register(YouTubeExtractor, {});
         
         // Setup event listeners
         this.setupEventListeners();
         
-        console.log('[CUSTOM-PLAYER] Discord Player initialized successfully');
+        console.log('[CUSTOM-PLAYER] Discord Player with YouTubeI initialized successfully');
     }
     
     setupEventListeners() {
