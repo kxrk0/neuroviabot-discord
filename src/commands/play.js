@@ -1,6 +1,20 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const playdl = require('play-dl');
+const ytdl = require('ytdl-core');
 const { logger } = require('../utils/logger');
+
+function formatDuration(seconds) {
+    if (!seconds || isNaN(seconds)) return 'Bilinmiyor';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    } else {
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    }
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -47,24 +61,34 @@ module.exports = {
             // Şarkı ara
             let searchResult;
             try {
-                // Önce YouTube'da ara
-                const ytInfo = await playdl.search(query, { limit: 1 });
-                if (ytInfo && ytInfo.length > 0) {
-                    searchResult = ytInfo[0];
+                // Eğer query bir YouTube URL'si ise
+                if (ytdl.validateURL(query)) {
+                    console.log(`[CUSTOM-PLAY] Valid YouTube URL detected: ${query}`);
+                    const videoInfo = await ytdl.getInfo(query);
+                    searchResult = {
+                        title: videoInfo.videoDetails.title,
+                        url: query,
+                        id: videoInfo.videoDetails.videoId,
+                        channel: { name: videoInfo.videoDetails.author.name },
+                        durationFormatted: videoInfo.videoDetails.lengthSeconds ? 
+                            formatDuration(videoInfo.videoDetails.lengthSeconds) : 'Bilinmiyor',
+                        thumbnails: videoInfo.videoDetails.thumbnails
+                    };
                     console.log(`[CUSTOM-PLAY] Found YouTube result: ${searchResult.title}`);
                 } else {
-                    throw new Error('No results found');
+                    // ytdl-core search özelliği yok, bu yüzden kullanıcıdan tam URL isteyelim
+                    throw new Error('Lütfen tam YouTube URL\'si girin');
                 }
             } catch (error) {
                 console.error(`[CUSTOM-PLAY] Search error:`, error);
                 
                 const notFoundEmbed = new EmbedBuilder()
                     .setColor('#ff0000')
-                    .setTitle('❌ Şarkı Bulunamadı')
-                    .setDescription(`**${query}** için sonuç bulunamadı!`)
+                    .setTitle('❌ Geçersiz URL')
+                    .setDescription(`**${query}** geçerli bir YouTube URL'si değil!`)
                     .addFields({
-                        name: '🔍 Arama Önerileri',
-                        value: '• Şarkı adını daha spesifik yaz\n• Sanatçı adını ekle\n• YouTube linkini dene',
+                        name: '🔍 Nasıl Kullanılır',
+                        value: '• Tam YouTube URL\'si girin\n• Örnek: `https://www.youtube.com/watch?v=VIDEO_ID`\n• YouTube\'dan linki kopyalayın',
                         inline: false
                     })
                     .setTimestamp();
