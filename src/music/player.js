@@ -107,6 +107,7 @@ class MusicPlayer {
     setupEventListeners() {
         // Player ready
         this.player.on('playerStart', (queue, track) => {
+            console.log(`[DEBUG-PLAYER] Track started: ${track.title} in ${queue.guild.name}`);
             logger.musicEvent('Track Started', {
                 title: track.title,
                 author: track.author,
@@ -140,6 +141,7 @@ class MusicPlayer {
 
         // Connection error
         this.player.on('connectionError', (queue, error) => {
+            console.error(`[DEBUG-PLAYER] Connection error in ${queue.guild.name}:`, error);
             logger.playerError(error, {
                 guild: queue.guild.name,
                 event: 'connectionError'
@@ -148,6 +150,7 @@ class MusicPlayer {
 
         // Track error
         this.player.on('playerError', (queue, error, track) => {
+            console.error(`[DEBUG-PLAYER] Player error in ${queue.guild.name} for track ${track?.title}:`, error);
             logger.playerError(error, {
                 guild: queue.guild.name,
                 track: track.title,

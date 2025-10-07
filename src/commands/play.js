@@ -233,7 +233,31 @@ module.exports = {
 
             // Eğer şu anda çalmıyorsa çalmaya başla
             if (!queue.isPlaying()) {
-                await queue.node.play();
+                try {
+                    console.log(`[DEBUG-PLAY] Starting playback for track: ${searchResult.tracks[0]?.title}`);
+                    console.log(`[DEBUG-PLAY] Queue connection status: ${queue.connection ? 'Connected' : 'Not connected'}`);
+                    console.log(`[DEBUG-PLAY] Voice channel: ${voiceChannel.name} (${voiceChannel.id})`);
+                    
+                    await queue.node.play();
+                    console.log(`[DEBUG-PLAY] Playback started successfully`);
+                } catch (playError) {
+                    console.error(`[DEBUG-PLAY] Playback error:`, playError);
+                    
+                    const playbackErrorEmbed = new EmbedBuilder()
+                        .setColor('#ff0000')
+                        .setTitle('❌ Çalma Hatası')
+                        .setDescription('Şarkı çalmaya başlanırken bir hata oluştu!')
+                        .addFields({
+                            name: '🔧 Hata Detayı',
+                            value: `\`\`\`${playError.message}\`\`\``,
+                            inline: false
+                        })
+                        .setTimestamp();
+
+                    await interaction.editReply({ embeds: [playbackErrorEmbed] });
+                }
+            } else {
+                console.log(`[DEBUG-PLAY] Already playing, track added to queue`);
             }
 
         } catch (error) {
