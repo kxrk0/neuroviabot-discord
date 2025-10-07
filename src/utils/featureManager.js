@@ -76,16 +76,26 @@ class FeatureManager {
 
     // Manuel olarak feature flag ekle
     addFeatureFlagManually(content, feature, enabled) {
-        const featuresSection = content.match(/features:\s*\{[^}]*\}/s);
+        const lines = content.split('\n');
+        let featuresStartIndex = -1;
+        let featuresEndIndex = -1;
         
-        if (featuresSection) {
-            const newFeatureLine = `        ${feature}: ${enabled},\n`;
-            const updatedFeatures = featuresSection[0].replace(
-                /(\s+)(\w+:\s*(?:true|false),?\s*)(\n\s*})/,
-                `$1$2${newFeatureLine}$3`
-            );
-            
-            return content.replace(featuresSection[0], updatedFeatures);
+        // Features bölümünü bul
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes('features:')) {
+                featuresStartIndex = i;
+            }
+            if (featuresStartIndex !== -1 && lines[i].includes('}') && i > featuresStartIndex) {
+                featuresEndIndex = i;
+                break;
+            }
+        }
+        
+        if (featuresStartIndex !== -1 && featuresEndIndex !== -1) {
+            // Features bölümünün sonuna yeni feature ekle
+            const newFeatureLine = `        ${feature}: ${enabled},`;
+            lines.splice(featuresEndIndex, 0, newFeatureLine);
+            return lines.join('\n');
         }
         
         return content;
