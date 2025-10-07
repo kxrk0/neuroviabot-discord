@@ -18,7 +18,7 @@ class CustomMusicPlayer {
                     }
                 }
             },
-            ffmpegPath: require('ffmpeg-static'),
+            ffmpegPath: require('@ffmpeg-installer/ffmpeg').path,
             ffprobePath: require('ffprobe-static').path
         });
         
