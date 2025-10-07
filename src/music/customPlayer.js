@@ -101,21 +101,9 @@ class CustomMusicPlayer {
             // Play-dl ile stream oluştur
             console.log(`[CUSTOM-PLAYER] Creating stream for: ${track.url}`);
             
-            // Önce video bilgisini al
-            const videoInfo = await playdl.video_basic_info(track.url);
-            console.log(`[CUSTOM-PLAYER] Video info obtained, title: ${videoInfo.video_details.title}`);
-            console.log(`[CUSTOM-PLAYER] Video info keys:`, Object.keys(videoInfo));
-            console.log(`[CUSTOM-PLAYER] Video details keys:`, Object.keys(videoInfo.video_details));
-            console.log(`[CUSTOM-PLAYER] Video details URL:`, videoInfo.video_details.url);
-            
-            // Video info'ya URL ekle (eğer yoksa)
-            if (!videoInfo.video_details.url) {
-                videoInfo.video_details.url = track.url;
-                console.log(`[CUSTOM-PLAYER] Added URL to video details: ${track.url}`);
-            }
-            
-            // Sonra stream oluştur
-            const stream = await playdl.stream_from_info(videoInfo, {
+            // Direkt stream oluştur (video_basic_info bypass)
+            console.log(`[CUSTOM-PLAYER] Creating direct stream for: ${track.url}`);
+            const stream = await playdl.stream(track.url, {
                 discordPlayerCompatibility: true,
                 quality: 2
             });
