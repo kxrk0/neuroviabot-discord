@@ -312,31 +312,6 @@ async function handleViewCurrent(interaction) {
     await interaction.update({ embeds: [currentEmbed], components: [] });
 }
 
-// Sadece müzik kurulumu
-async function handleMusicOnlySetup(interaction) {
-    await interaction.deferUpdate();
-    
-    const settings = {
-        features: { music: true }
-    };
-    
-    await Settings.updateGuildSettings(interaction.guild.id, settings);
-    
-    const musicEmbed = new EmbedBuilder()
-        .setColor('#1db954')
-        .setTitle('🎵 Müzik Sistemi Kuruldu!')
-        .setDescription('**Müzik botunuz hazır!** Artık şu komutları kullanabilirsiniz:')
-        .addFields(
-            {
-                name: '🎶 Temel Komutlar',
-                value: '• `/play <şarkı>` - Müzik çal\n• `/queue` - Çalma listesi\n• `/skip` - Şarkıyı geç\n• `/volume` - Ses seviyesi',
-                inline: false
-            }
-        )
-        .setTimestamp();
-        
-    await interaction.editReply({ embeds: [musicEmbed] });
-}
 
 // Sadece moderasyon kurulumu  
 async function handleModerationOnlySetup(interaction) {

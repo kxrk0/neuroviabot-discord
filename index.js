@@ -43,7 +43,6 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.DirectMessages,
         GatewayIntentBits.GuildPresences
@@ -403,11 +402,7 @@ async function startBot() {
         const { initializeModels } = require('./src/models/index');
         await initializeModels();
         
-        // Music Player'ı başlat
-        const CustomMusicPlayer = require('./src/music/customPlayer');
-        client.customPlayer = new CustomMusicPlayer(client);
-        
-        log('Custom Music Player başlatıldı!', 'SUCCESS');
+        // Music Player kaldırıldı
         
         // Security ve Analytics sistemlerini başlat
         const { security } = require('./src/utils/security');

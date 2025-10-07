@@ -234,14 +234,6 @@ function getCooldownAmount(commandName) {
 function checkFeatureEnabled(command) {
     const commandName = command.data.name;
     
-    // Müzik komutları
-    const musicCommands = ['play', 'skip', 'pause', 'resume', 'stop', 'queue', 'nowplaying', 'loop', 'shuffle', 'volume', 'join', 'leave'];
-    if (musicCommands.includes(commandName) && !config.features.music) {
-        return {
-            enabled: false,
-            message: 'Müzik sistemi şu anda devre dışı!'
-        };
-    }
 
     // Ekonomi komutları
     const economyCommands = ['balance', 'daily', 'work', 'shop', 'buy', 'inventory', 'slots', 'coinflip', 'blackjack'];

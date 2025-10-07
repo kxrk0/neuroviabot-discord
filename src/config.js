@@ -9,16 +9,6 @@ module.exports = {
     // Embed renk ayarları
     embedColor: process.env.EMBED_COLOR || '#7289DA',
     
-    // Müzik yapılandırması
-    defaultVolume: parseInt(process.env.DEFAULT_VOLUME) || 50,
-    maxQueueSize: parseInt(process.env.MAX_QUEUE_SIZE) || 100,
-    
-    // Spotify yapılandırması
-    spotify: {
-        clientId: process.env.SPOTIFY_CLIENT_ID || null,
-        clientSecret: process.env.SPOTIFY_CLIENT_SECRET || null,
-        enabled: process.env.SPOTIFY_CLIENT_ID && process.env.SPOTIFY_CLIENT_SECRET
-    },
     
     // Ekonomi yapılandırması
     economy: {
@@ -61,7 +51,6 @@ module.exports = {
     
     // Feature flags
     features: {
-        music: process.env.FEATURE_MUSIC !== 'false',
         economy: process.env.FEATURE_ECONOMY !== 'false',
         moderation: process.env.FEATURE_MODERATION !== 'false',
         leveling: process.env.FEATURE_LEVELING !== 'false',
@@ -73,11 +62,6 @@ module.exports = {
     messages: {
         noPermission: '❌ Bu komutu kullanmak için yeterli yetkiniz yok!',
         botMissingPermissions: '❌ Bu işlemi yapabilmem için gerekli izinlerim yok!',
-        userNotInVoice: '🔊 Bu komutu kullanabilmek için bir ses kanalında olmalısınız!',
-        botNotInVoice: '❌ Bot şu anda bir ses kanalında değil!',
-        sameVoiceChannel: '❌ Bot ile aynı ses kanalında olmalısınız!',
-        nothingPlaying: '❌ Şu anda herhangi bir şey çalmıyor!',
-        queueEmpty: '❌ Çalma listesi boş!',
         invalidNumber: '❌ Geçerli bir sayı giriniz!',
         commandError: '❌ Komut çalıştırılırken bir hata oluştu!',
         cooldownMessage: '⏰ Bu komutu tekrar kullanabilmek için {time} saniye bekleyin!'
@@ -91,7 +75,6 @@ module.exports = {
         slots: 10,     // 10 seconds
         coinflip: 5,   // 5 seconds
         blackjack: 15, // 15 seconds
-        music: 3,      // 3 seconds
         moderation: 5  // 5 seconds
     }
 };

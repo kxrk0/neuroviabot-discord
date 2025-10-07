@@ -9,7 +9,6 @@ module.exports = {
             option.setName('kategori')
                 .setDescription('Görüntülenecek komut kategorisi')
                 .addChoices(
-                    { name: '🎵 Müzik Sistemi', value: 'music' },
                     { name: '🎫 Ticket Sistemi', value: 'ticket' },
                     { name: '🛡️ Moderasyon', value: 'moderation' },
                     { name: '💰 Ekonomi', value: 'economy' },
@@ -33,11 +32,6 @@ module.exports = {
                 .setThumbnail(interaction.client.user.displayAvatarURL({ size: 256 }))
                 .setImage('https://i.imgur.com/placeholder.png') // Bot banner placeholder
                 .addFields(
-                    {
-                        name: '🎵 Müzik Sistemi',
-                        value: '```fix\n/yardım kategori:Müzik Sistemi\n```\n• 🎧 YouTube & Spotify\n• 📝 Kuyruk yönetimi\n• 🎛️ Gelişmiş kontroller\n• 🔊 Yüksek ses kalitesi',
-                        inline: true
-                    },
                     {
                         name: '🎫 Ticket Sistemi',
                         value: '```fix\n/yardım kategori:Ticket Sistemi\n```\n• 🎟️ Destek talepleri\n• 📂 Kategorize sistem\n• 📄 Otomatik transcript\n• 🔔 Bildirimler',
@@ -67,7 +61,7 @@ module.exports = {
                 .addFields(
                     {
                         name: '╔═══ 🌟 Öne Çıkan Özellikler ═══╗',
-                        value: '```diff\n+ ✨ 7/24 Kesintisiz Hizmet\n+ 🎵 Yüksek Kalite Müzik (320kbps)\n+ 🔒 Gelişmiş Güvenlik & SSL\n+ 💎 Premium Özellikler\n+ 🌐 Gerçek Zamanlı Web Dashboard\n+ 📱 Mobil Uyumlu Arayüz\n+ 🔄 Otomatik Güncellemeler\n+ 🤖 AI Destekli Moderasyon\n+ 📊 Detaylı İstatistikler & Analitik\n+ 🌍 Çoklu Dil Desteği\n```',
+                        value: '```diff\n+ ✨ 7/24 Kesintisiz Hizmet\n+ 🔒 Gelişmiş Güvenlik & SSL\n+ 💎 Premium Özellikler\n+ 🌐 Gerçek Zamanlı Web Dashboard\n+ 📱 Mobil Uyumlu Arayüz\n+ 🔄 Otomatik Güncellemeler\n+ 🤖 AI Destekli Moderasyon\n+ 📊 Detaylı İstatistikler & Analitik\n+ 🌍 Çoklu Dil Desteği\n```',
                         inline: false
                     }
                 )
@@ -101,34 +95,6 @@ module.exports = {
         let helpEmbed;
 
         switch (category) {
-            case 'music':
-                helpEmbed = new EmbedBuilder()
-                    .setColor(config.embedColor)
-                    .setTitle('🎵 Müzik Sistemi Komutları')
-                    .setDescription('**Yüksek kaliteli müzik deneyimi!** YouTube ve Spotify desteği ile sınırsız müzik keyfini yaşa.')
-                    .addFields(
-                        {
-                            name: '🎶 **Temel Müzik Komutları**',
-                            value: '`/play <şarkı>` - Müzik çal/kuyruğa ekle\n`/pause` - Müziği duraklat\n`/resume` - Müziği devam ettir\n`/skip [sayı]` - Şarkı atla\n`/stop` - Müziği durdur',
-                            inline: false
-                        },
-                        {
-                            name: '📋 **Kuyruk Yönetimi**',
-                            value: '`/queue [sayfa]` - Kuyruğu görüntüle\n`/nowplaying` - Şu anki şarkı\n`/clear` - Kuyruğu temizle\n`/remove <pozisyon>` - Şarkı kaldır\n`/shuffle` - Kuyruğu karıştır',
-                            inline: true
-                        },
-                        {
-                            name: '🎛️ **Gelişmiş Kontroller**',
-                            value: '`/volume <1-100>` - Ses seviyesi\n`/seek <zaman>` - Şarkıda atla\n`/loop [mod]` - Döngü modu\n`/join` - Kanala katıl\n`/leave` - Kanaldan ayrıl',
-                            inline: true
-                        },
-                        {
-                            name: '✨ **Özellikler**',
-                            value: '• YouTube & Spotify desteği\n• Playlist import\n• Kaliteli ses kodlama\n• Gelişmiş arama\n• Otomatik öneriler',
-                            inline: false
-                        }
-                    );
-                break;
 
             case 'ticket':
                 helpEmbed = new EmbedBuilder()

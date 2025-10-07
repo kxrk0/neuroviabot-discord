@@ -6,7 +6,7 @@ module.exports = {
     once: true,
     execute(client) {
         console.log(`✅ ${client.user.tag} olarak giriş yapıldı!`);
-        console.log(`🎵 Discord Player hazır!`);
+        console.log(`🎵 Bot hazır!`);
         console.log(`📊 ${client.guilds.cache.size} sunucuda aktif`);
         console.log(`👥 ${client.users.cache.size} kullanıcıya hizmet veriyor`);
         
