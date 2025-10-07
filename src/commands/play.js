@@ -159,7 +159,24 @@ module.exports = {
                 leaveOnEmptyDelay: config.leaveOnEmptyDelay,
                 leaveOnEnd: true,
                 leaveOnEndDelay: config.leaveOnEndDelay,
-                selfDeaf: true
+                selfDeaf: true,
+                // Play-dl stream handler ekle
+                async onBeforeCreateStream(track, source, _queue) {
+                    if (source === 'youtube') {
+                        try {
+                            const playdl = require('play-dl');
+                            console.log(`[DEBUG-PLAY] Using play-dl for YouTube stream: ${track.title}`);
+                            const stream = await playdl.stream(track.url, { 
+                                discordPlayerCompatibility: true 
+                            });
+                            return stream.stream;
+                        } catch (error) {
+                            console.error(`[DEBUG-PLAY] Play-dl stream error:`, error);
+                            // Fallback to default extractor
+                            return null;
+                        }
+                    }
+                }
             });
 
             // Bot zaten bağlı değilse bağlan

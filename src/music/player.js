@@ -53,21 +53,31 @@ class MusicPlayer {
 
             // Play-dl stream handler ekle (eğer mevcutsa)
             if (playdl) {
-                this.player.events.on('beforeCreateStream', async (track, source, _queue) => {
-                    if (source === 'youtube') {
-                        try {
-                            console.log(`[DEBUG-PLAYER] Using play-dl for YouTube stream: ${track.title}`);
-                            const stream = await playdl.stream(track.url, { 
-                                discordPlayerCompatibility: true 
-                            });
-                            return stream.stream;
-                        } catch (error) {
-                            console.error(`[DEBUG-PLAYER] Play-dl stream error:`, error);
-                            // Fallback to default extractor
-                            return null;
-                        }
+                // Discord Player v6'da farklı event adları olabilir
+                const streamEvents = ['beforeCreateStream', 'onBeforeCreateStream', 'createStream'];
+                
+                for (const eventName of streamEvents) {
+                    try {
+                        this.player.events.on(eventName, async (track, source, _queue) => {
+                            if (source === 'youtube') {
+                                try {
+                                    console.log(`[DEBUG-PLAYER] Using play-dl for YouTube stream: ${track.title}`);
+                                    const stream = await playdl.stream(track.url, { 
+                                        discordPlayerCompatibility: true 
+                                    });
+                                    return stream.stream;
+                                } catch (error) {
+                                    console.error(`[DEBUG-PLAYER] Play-dl stream error:`, error);
+                                    // Fallback to default extractor
+                                    return null;
+                                }
+                            }
+                        });
+                        console.log(`[DEBUG-PLAYER] Stream handler registered for event: ${eventName}`);
+                    } catch (err) {
+                        console.log(`[DEBUG-PLAYER] Event ${eventName} not available: ${err.message}`);
                     }
-                });
+                }
             }
 
             // Event listener'ları hemen kur (Player oluşturulur oluşturulmaz)
