@@ -1,4 +1,4 @@
-const ytdlp = require('yt-dlp-wrap');
+const youtubeDl = require('youtube-dl-exec');
 const { createReadStream } = require('fs');
 const { pipeline } = require('stream');
 const { promisify } = require('util');
@@ -10,12 +10,11 @@ const pipelineAsync = promisify(pipeline);
  */
 class StreamManager {
     constructor() {
-        this.ytdlp = new ytdlp();
         this.cache = new Map();
         this.maxCacheSize = 100;
         this.cacheTimeout = 300000; // 5 dakika
         
-        console.log('[STREAM-MANAGER] yt-dlp tabanlı stream manager başlatıldı');
+        console.log('[STREAM-MANAGER] youtube-dl-exec tabanlı stream manager başlatıldı');
     }
 
     /**
@@ -34,7 +33,16 @@ class StreamManager {
 
             console.log(`[STREAM-MANAGER] Track bilgileri alınıyor: ${url}`);
 
-            const info = await this.ytdlp.getVideoInfo(url);
+            const info = await youtubeDl(url, {
+                dumpSingleJson: true,
+                noCheckCertificates: true,
+                noWarnings: true,
+                preferFreeFormats: true,
+                addHeader: [
+                    'referer:youtube.com',
+                    'user-agent:Mozilla/5.0'
+                ]
+            });
             
             const trackInfo = {
                 id: info.id,
@@ -98,13 +106,17 @@ class StreamManager {
                 format: 'bestaudio[ext=m4a]/bestaudio/best',
                 output: '-',
                 noPlaylist: true,
+                noCheckCertificates: true,
+                noWarnings: true,
+                preferFreeFormats: true,
+                addHeader: [
+                    'referer:youtube.com',
+                    'user-agent:Mozilla/5.0'
+                ],
                 ...options
             };
 
-            const stream = await this.ytdlp.execStream([
-                url,
-                ...this.buildArgs(streamOptions)
-            ]);
+            const stream = await youtubeDl.execStream(url, streamOptions);
 
             console.log(`[STREAM-MANAGER] Audio stream oluşturuldu: ${url}`);
             return stream;
@@ -122,7 +134,16 @@ class StreamManager {
         try {
             console.log(`[STREAM-MANAGER] Playlist bilgileri alınıyor: ${url}`);
 
-            const info = await this.ytdlp.getPlaylistInfo(url);
+            const info = await youtubeDl(url, {
+                dumpSingleJson: true,
+                flatPlaylist: true,
+                noCheckCertificates: true,
+                noWarnings: true,
+                addHeader: [
+                    'referer:youtube.com',
+                    'user-agent:Mozilla/5.0'
+                ]
+            });
             
             const playlistInfo = {
                 id: info.id,
@@ -151,14 +172,19 @@ class StreamManager {
         try {
             console.log(`[STREAM-MANAGER] Arama yapılıyor: ${query}`);
 
-            const results = await this.ytdlp.exec([
-                `ytsearch${limit}:${query}`,
-                '--get-title',
-                '--get-url',
-                '--get-duration',
-                '--get-thumbnail',
-                '--get-uploader'
-            ]);
+            const results = await youtubeDl(`ytsearch${limit}:${query}`, {
+                getTitle: true,
+                getUrl: true,
+                getDuration: true,
+                getThumbnail: true,
+                getUploader: true,
+                noCheckCertificates: true,
+                noWarnings: true,
+                addHeader: [
+                    'referer:youtube.com',
+                    'user-agent:Mozilla/5.0'
+                ]
+            });
 
             const tracks = [];
             for (let i = 0; i < results.length; i += 5) {
@@ -183,33 +209,33 @@ class StreamManager {
     }
 
     /**
-     * yt-dlp argümanlarını oluştur
+     * youtube-dl-exec argümanlarını oluştur
      */
     buildArgs(options) {
-        const args = [];
+        const args = {};
         
         if (options.format) {
-            args.push('-f', options.format);
+            args.format = options.format;
         }
         
         if (options.output) {
-            args.push('-o', options.output);
+            args.output = options.output;
         }
         
         if (options.noPlaylist) {
-            args.push('--no-playlist');
+            args.noPlaylist = true;
         }
         
         if (options.audioOnly) {
-            args.push('--extract-audio');
+            args.extractAudio = true;
         }
         
         if (options.audioFormat) {
-            args.push('--audio-format', options.audioFormat);
+            args.audioFormat = options.audioFormat;
         }
         
         if (options.audioQuality) {
-            args.push('--audio-quality', options.audioQuality);
+            args.audioQuality = options.audioQuality;
         }
         
         return args;
@@ -238,7 +264,7 @@ class StreamManager {
             cacheSize: this.cache.size,
             maxCacheSize: this.maxCacheSize,
             cacheTimeout: this.cacheTimeout,
-            ytdlpVersion: this.ytdlp.getVersion ? this.ytdlp.getVersion() : 'unknown'
+            youtubeDlVersion: 'youtube-dl-exec'
         };
     }
 
