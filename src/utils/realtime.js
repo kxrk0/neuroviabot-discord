@@ -32,8 +32,14 @@ class RealtimeUpdates {
      * Seviye güncellemesi gönder
      */
     levelUpdate(guildId, userId, data) {
-        if (!this.broadcastToGuild) return;
+        console.log(`[DEBUG-REALTIME] levelUpdate called: guildId=${guildId}, userId=${userId}, levelUp=${data.levelUp}`);
         
+        if (!this.broadcastToGuild) {
+            console.log(`[DEBUG-REALTIME] broadcastToGuild function not available`);
+            return;
+        }
+        
+        console.log(`[DEBUG-REALTIME] Broadcasting level_update to guild ${guildId}`);
         this.broadcastToGuild(guildId, 'level_update', {
             userId,
             data,
@@ -42,6 +48,7 @@ class RealtimeUpdates {
 
         // Önemli level up'ları global'a da gönder
         if (data.levelUp && data.newLevel % 10 === 0) {
+            console.log(`[DEBUG-REALTIME] Broadcasting milestone_level_up globally for level ${data.newLevel}`);
             this.broadcastGlobally('milestone_level_up', {
                 guildId,
                 userId,

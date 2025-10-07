@@ -86,6 +86,7 @@ class LevelingHandler {
                 
                 // Real-time güncelleme gönder
                 if (global.realtimeUpdates) {
+                    console.log(`[DEBUG-REALTIME] Sending level up event for ${message.author.username} (Level ${currentLevel} -> ${newLevel})`);
                     global.realtimeUpdates.levelUpdate(message.guild.id, message.author.id, {
                         levelUp: true,
                         oldLevel: currentLevel,
@@ -97,6 +98,8 @@ class LevelingHandler {
                             avatar: message.author.displayAvatarURL()
                         }
                     });
+                } else {
+                    console.log(`[DEBUG-REALTIME] global.realtimeUpdates is not available`);
                 }
             } else {
                 // Normal XP kazanımı için real-time güncelleme

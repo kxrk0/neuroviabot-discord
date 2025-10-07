@@ -137,16 +137,20 @@ io.on('connection', (socket) => {
   socket.on('broadcast_to_guild', (data) => {
     const { guildId, event, data: eventData } = data;
     console.log(`[Socket.IO] Broadcasting to guild ${guildId}: ${event}`);
+    console.log(`[Socket.IO] Event data:`, JSON.stringify(eventData, null, 2));
     
     io.to(`guild_${guildId}`).emit(event, eventData);
+    console.log(`[Socket.IO] Event broadcasted to guild room guild_${guildId}`);
   });
 
   // Broadcast globally (from bot)
   socket.on('broadcast_global', (data) => {
     const { event, data: eventData } = data;
     console.log(`[Socket.IO] Broadcasting globally: ${event}`);
+    console.log(`[Socket.IO] Global event data:`, JSON.stringify(eventData, null, 2));
     
     io.emit(event, eventData);
+    console.log(`[Socket.IO] Global event broadcasted to all clients`);
   });
 
   socket.on('disconnect', () => {

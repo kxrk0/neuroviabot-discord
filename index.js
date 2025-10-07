@@ -404,13 +404,21 @@ async function startBot() {
         // Broadcast fonksiyonlarını set et
         realtimeUpdates.setBroadcastFunctions(
             (guildId, event, data) => {
+                console.log(`[DEBUG-SOCKET] Broadcasting to guild ${guildId}: ${event}`);
                 if (client.socket) {
                     client.socket.emit('broadcast_to_guild', { guildId, event, data });
+                    console.log(`[DEBUG-SOCKET] Event sent to backend`);
+                } else {
+                    console.log(`[DEBUG-SOCKET] client.socket is not available`);
                 }
             },
             (event, data) => {
+                console.log(`[DEBUG-SOCKET] Broadcasting globally: ${event}`);
                 if (client.socket) {
                     client.socket.emit('broadcast_global', { event, data });
+                    console.log(`[DEBUG-SOCKET] Global event sent to backend`);
+                } else {
+                    console.log(`[DEBUG-SOCKET] client.socket is not available for global broadcast`);
                 }
             }
         );
