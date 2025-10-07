@@ -185,7 +185,7 @@ module.exports = {
         }
 
         // Kullanıcı verisini al
-        const memberKey = `${targetUser.id}_${interaction.guild.id}`;
+        const memberKey = `${interaction.guild.id}-${targetUser.id}`;
         const guildMember = db.data.members?.get(memberKey);
 
         if (!guildMember) {
