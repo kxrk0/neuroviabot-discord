@@ -157,7 +157,10 @@ module.exports = {
     async handleRank(interaction) {
         const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
 
+        console.log(`[DEBUG-LEVEL] handleRank çağrıldı. Hedef Kullanıcı ID: ${targetUser.id}, Guild ID: ${interaction.guild.id}`);
+
         if (targetUser.bot) {
+            console.log(`[DEBUG-LEVEL] Bot kullanıcısı tespit edildi: ${targetUser.username}`);
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Bot Kullanıcısı')
@@ -174,7 +177,11 @@ module.exports = {
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
         
+        console.log(`[DEBUG-LEVEL] Guild ayarları alındı:`, settings);
+        console.log(`[DEBUG-LEVEL] Leveling enabled:`, settings.leveling?.enabled);
+        
         if (!settings.leveling?.enabled) {
+            console.log(`[DEBUG-LEVEL] Leveling sistemi kapalı veya ayarlar bulunamadı.`);
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Seviye Sistemi Kapalı')
@@ -186,9 +193,18 @@ module.exports = {
 
         // Kullanıcı verisini al
         const memberKey = `${interaction.guild.id}-${targetUser.id}`;
+        console.log(`[DEBUG-LEVEL] Oluşturulan memberKey: ${memberKey}`);
+        
+        console.log(`[DEBUG-LEVEL] Database members map:`, db.data.members);
+        console.log(`[DEBUG-LEVEL] Database members size:`, db.data.members?.size);
+        
         const guildMember = db.data.members?.get(memberKey);
+        console.log(`[DEBUG-LEVEL] Bulunan guildMember:`, guildMember);
 
         if (!guildMember) {
+            console.error(`[DEBUG-LEVEL] HATA: Üye verisi bulunamadı! memberKey: ${memberKey}`);
+            console.log(`[DEBUG-LEVEL] Mevcut tüm member key'leri:`, Array.from(db.data.members?.keys() || []));
+            
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Kullanıcı Bulunamadı')
