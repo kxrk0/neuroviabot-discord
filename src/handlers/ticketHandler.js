@@ -33,7 +33,7 @@ class TicketHandler {
 
     async handleTicketCreate(interaction) {
         try {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: 64 });
 
             // Guild ayarlarını al
             const guild = await Guild.findOne({ where: { id: interaction.guild.id } });
@@ -216,7 +216,7 @@ class TicketHandler {
             if (interaction.replied || interaction.deferred) {
                 await interaction.editReply({ embeds: [errorEmbed] });
             } else {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
     }
@@ -233,7 +233,7 @@ class TicketHandler {
                     .setDescription('Bu ticket bulunamadı!')
                     .setTimestamp();
                 
-                return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                return interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
 
             await interaction.deferUpdate();
@@ -324,7 +324,7 @@ class TicketHandler {
                     await interaction.reply({
                         embeds: [confirmEmbed],
                         components: [confirmButtons],
-                        ephemeral: true
+                        flags: 64
                     });
                     break;
 
@@ -340,7 +340,7 @@ class TicketHandler {
                             .setDescription(`Bu ticket zaten <@${ticket.assignedTo}> tarafından sahiplenilmiş!`)
                             .setTimestamp();
                         
-                        return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                        return interaction.reply({ embeds: [errorEmbed], flags: 64 });
                     }
 
                     await ticket.update({
@@ -359,7 +359,7 @@ class TicketHandler {
 
                 case 'transcript':
                     // Transcript oluştur
-                    await interaction.deferReply({ ephemeral: true });
+                    await interaction.deferReply({ flags: 64 });
 
                     const messages = await interaction.channel.messages.fetch({ limit: 100 });
                     const transcript = messages.reverse().map(msg => 
