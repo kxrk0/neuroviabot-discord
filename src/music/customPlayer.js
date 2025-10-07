@@ -1,7 +1,7 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
-const playdl = require('play-dl');
+const ytdl = require('ytdl-core');
 
 class CustomMusicPlayer {
     constructor(client) {
@@ -11,6 +11,20 @@ class CustomMusicPlayer {
         this.queues = new Map();
         
         console.log('[CUSTOM-PLAYER] Custom Music Player initialized with @discordjs/voice');
+    }
+    
+    formatDuration(seconds) {
+        if (!seconds || isNaN(seconds)) return 'Bilinmiyor';
+        
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
     }
     
     async joinChannel(guildId, voiceChannel) {
@@ -89,35 +103,72 @@ class CustomMusicPlayer {
                 return false;
             }
 
-            // Basit stream oluşturma yaklaşımı
+            // ytdl-core ile stream oluşturma
             console.log(`[CUSTOM-PLAYER] Creating stream for URL: ${track.url}`);
             
+            // URL doğrulama
+            if (!ytdl.validateURL(track.url)) {
+                throw new Error(`Invalid YouTube URL: ${track.url}`);
+            }
+            
+            // Video bilgilerini al
+            let videoInfo;
+            try {
+                videoInfo = await ytdl.getInfo(track.url);
+                console.log(`[CUSTOM-PLAYER] Video info retrieved successfully:`, {
+                    title: videoInfo.videoDetails.title,
+                    duration: videoInfo.videoDetails.lengthSeconds,
+                    url: videoInfo.videoDetails.video_url
+                });
+                
+                // Track bilgilerini güncelle
+                track.title = videoInfo.videoDetails.title || track.title;
+                track.duration = videoInfo.videoDetails.lengthSeconds ? this.formatDuration(videoInfo.videoDetails.lengthSeconds) : 'Bilinmiyor';
+                track.thumbnail = videoInfo.videoDetails.thumbnails?.[0]?.url || null;
+                track.author = videoInfo.videoDetails.author?.name || 'Bilinmiyor';
+                
+                console.log(`[CUSTOM-PLAYER] Track updated with video info:`, {
+                    title: track.title,
+                    duration: track.duration,
+                    author: track.author
+                });
+                
+            } catch (infoError) {
+                console.error(`[CUSTOM-PLAYER] Failed to get video info:`, infoError);
+                // Video info alınamazsa varsayılan değerler kullan
+                track.duration = 'Bilinmiyor';
+                track.author = 'Bilinmiyor';
+            }
+            
+            // Stream oluştur
             let stream;
             try {
-                // Direkt stream oluşturma
-                console.log(`[CUSTOM-PLAYER] Attempting direct stream creation...`);
-                stream = await playdl.stream(track.url);
-                console.log(`[CUSTOM-PLAYER] Stream created successfully, type: ${stream.type}`);
-            } catch (streamError) {
-                console.error(`[CUSTOM-PLAYER] Direct stream failed:`, streamError);
+                stream = ytdl(track.url, {
+                    filter: 'audioonly',
+                    quality: 'highestaudio',
+                    highWaterMark: 1 << 25,
+                    requestOptions: {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        }
+                    }
+                });
                 
-                // Alternatif: Video info ile deneme
-                try {
-                    console.log(`[CUSTOM-PLAYER] Trying video info approach...`);
-                    const videoInfo = await playdl.video_basic_info(track.url);
-                    console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
-                    
-                    // Stream'i info'dan oluştur
-                    stream = await playdl.stream_from_info(videoInfo);
-                    console.log(`[CUSTOM-PLAYER] Stream from info created successfully, type: ${stream.type}`);
-                } catch (infoError) {
-                    console.error(`[CUSTOM-PLAYER] Video info approach also failed:`, infoError);
-                    throw new Error(`Failed to create stream: ${infoError.message}`);
-                }
+                console.log(`[CUSTOM-PLAYER] Stream created successfully`);
+                
+                // Stream hata yakalama
+                stream.on('error', (error) => {
+                    console.error(`[CUSTOM-PLAYER] Stream error:`, error);
+                    player.stop();
+                });
+                
+            } catch (streamError) {
+                console.error(`[CUSTOM-PLAYER] Failed to create stream:`, streamError);
+                throw new Error(`Failed to create stream: ${streamError.message}`);
             }
 
-            const resource = createAudioResource(stream.stream, {
-                inputType: stream.type
+            const resource = createAudioResource(stream, {
+                inputType: 'arbitrary'
             });
 
             console.log(`[CUSTOM-PLAYER] Audio resource created successfully`);
