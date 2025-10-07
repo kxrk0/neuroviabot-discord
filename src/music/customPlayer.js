@@ -18,6 +18,7 @@ class CustomMusicPlayer {
         });
         
         this.setupEventListeners();
+        this.initializeExtractors();
         console.log('[CUSTOM-PLAYER] Custom Music Player initialized with discord-player');
     }
     
@@ -68,6 +69,24 @@ class CustomMusicPlayer {
         this.player.events.on('connectionError', (queue, error) => {
             console.error(`[CUSTOM-PLAYER] Connection error:`, error);
         });
+    }
+    
+    async initializeExtractors() {
+        try {
+            console.log('[CUSTOM-PLAYER] Loading extractors...');
+            
+            // Default extractorları yükle
+            await this.player.extractors.loadDefault();
+            console.log('[CUSTOM-PLAYER] Default extractors loaded successfully');
+            
+            // Manuel extractor yükleme
+            const { YoutubeExtractor } = require('@discord-player/extractor');
+            this.player.extractors.register(YoutubeExtractor, {});
+            console.log('[CUSTOM-PLAYER] YouTube extractor registered successfully');
+            
+        } catch (error) {
+            console.error('[CUSTOM-PLAYER] Failed to load extractors:', error);
+        }
     }
     
     formatDuration(seconds) {
