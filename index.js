@@ -96,8 +96,10 @@ async function loadCommands() {
                 client.commands.set(command.data.name, command);
                 commandCount++;
                 log(`Loaded command: ${command.data.name}`, 'DEBUG');
+                console.log(`[LOAD-COMMANDS] Loaded: ${command.data.name} from ${file}`);
             } else {
                 log(`Command ${file} is missing required properties (data & execute)`, 'WARNING');
+                console.log(`[LOAD-COMMANDS] Failed to load ${file}: missing data or execute`);
             }
         } catch (error) {
             log(`Error loading command ${file}: ${error.message}`, 'ERROR');

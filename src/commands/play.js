@@ -11,8 +11,15 @@ module.exports = {
 
     async execute(interaction) {
         try {
+            console.log(`[PLAY] Command executed by ${interaction.user.tag} in ${interaction.guild.name}`);
+            console.log(`[PLAY] Interaction ID: ${interaction.id}`);
+            console.log(`[PLAY] Command name: ${interaction.commandName}`);
+            
             const query = interaction.options.getString('query');
             const voiceChannel = interaction.member?.voice?.channel;
+            
+            console.log(`[PLAY] Query: ${query}`);
+            console.log(`[PLAY] Voice channel: ${voiceChannel?.name || 'None'}`);
 
             // Kullanıcının sesli kanalda olup olmadığını kontrol et
             if (!voiceChannel) {
@@ -62,7 +69,9 @@ module.exports = {
                 .setTimestamp()
                 .setFooter({ text: 'NeuroVia Music System' });
 
+            console.log(`[PLAY] Sending success reply`);
             await interaction.reply({ embeds: [embed] });
+            console.log(`[PLAY] Success reply sent successfully`);
 
         } catch (error) {
             console.error('Play komutu hatası:', error);

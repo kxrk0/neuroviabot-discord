@@ -21,10 +21,17 @@ module.exports = {
         // Sadece slash komutları için
         if (!interaction.isChatInputCommand()) return;
 
+        console.log(`[INTERACTION] Received command: ${interaction.commandName}`);
+        console.log(`[INTERACTION] User: ${interaction.user.tag} (${interaction.user.id})`);
+        console.log(`[INTERACTION] Guild: ${interaction.guild?.name || 'DM'} (${interaction.guild?.id || 'DM'})`);
+        console.log(`[INTERACTION] Available commands: ${Array.from(client.commands.keys()).join(', ')}`);
+
         const command = client.commands.get(interaction.commandName);
+        console.log(`[INTERACTION] Command found: ${!!command}`);
 
         // Komut bulunamadıysa
         if (!command) {
+            console.error(`[INTERACTION] Command not found: ${interaction.commandName}`);
             logger.error(`Komut bulunamadı: ${interaction.commandName}`);
             if (!interaction.replied && !interaction.deferred) {
                 return await interaction.reply({
