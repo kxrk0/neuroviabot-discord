@@ -35,6 +35,7 @@ class CustomMusicPlayer {
     setupEventListeners() {
         this.player.events.on('playerStart', (queue, track) => {
             console.log(`[CUSTOM-PLAYER] Started playing: ${track.title}`);
+            console.log(`[CUSTOM-PLAYER] PlayerStart event triggered for guild: ${queue.guild.id}`);
             
             const nowPlayingEmbed = new EmbedBuilder()
                 .setColor('#00ff00')
@@ -138,8 +139,15 @@ class CustomMusicPlayer {
             console.log(`[CUSTOM-PLAYER] Added track to queue: ${foundTrack.title} (URL: ${foundTrack.url})`);
 
             // Eğer şu anda çalan şarkı yoksa, çalmaya başla
+            console.log(`[CUSTOM-PLAYER] Queue isPlaying status: ${queue.isPlaying()}`);
+            console.log(`[CUSTOM-PLAYER] Queue tracks count: ${queue.tracks.size}`);
+            
             if (!queue.isPlaying()) {
+                console.log(`[CUSTOM-PLAYER] Starting playback...`);
                 await queue.node.play();
+                console.log(`[CUSTOM-PLAYER] Playback started successfully`);
+            } else {
+                console.log(`[CUSTOM-PLAYER] Already playing, track added to queue`);
             }
 
             return true;
