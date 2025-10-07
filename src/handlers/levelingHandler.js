@@ -39,7 +39,7 @@ class LevelingHandler {
 
             // Guild member verilerini al/oluştur (simple-db kullanarak)
             const memberKey = `${guildId}-${userId}`;
-            let memberData = db.data.members?.get(memberKey) || {
+            let memberData = db.data.guildMembers?.get(memberKey) || {
                 userId,
                 guildId,
                 xp: 0,
@@ -76,8 +76,8 @@ class LevelingHandler {
             memberData.lastXpGain = new Date().toISOString();
 
             // Database'e kaydet
-            if (!db.data.members) db.data.members = new Map();
-            db.data.members.set(memberKey, memberData);
+            if (!db.data.guildMembers) db.data.guildMembers = new Map();
+            db.data.guildMembers.set(memberKey, memberData);
             db.saveData();
 
             // Level up kontrolü

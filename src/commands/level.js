@@ -195,15 +195,15 @@ module.exports = {
         const memberKey = `${interaction.guild.id}-${targetUser.id}`;
         console.log(`[DEBUG-LEVEL] Oluşturulan memberKey: ${memberKey}`);
         
-        console.log(`[DEBUG-LEVEL] Database members map:`, db.data.members);
-        console.log(`[DEBUG-LEVEL] Database members size:`, db.data.members?.size);
+        console.log(`[DEBUG-LEVEL] Database guildMembers map:`, db.data.guildMembers);
+        console.log(`[DEBUG-LEVEL] Database guildMembers size:`, db.data.guildMembers?.size);
         
-        const guildMember = db.data.members?.get(memberKey);
+        const guildMember = db.data.guildMembers?.get(memberKey);
         console.log(`[DEBUG-LEVEL] Bulunan guildMember:`, guildMember);
 
         if (!guildMember) {
             console.error(`[DEBUG-LEVEL] HATA: Üye verisi bulunamadı! memberKey: ${memberKey}`);
-            console.log(`[DEBUG-LEVEL] Mevcut tüm member key'leri:`, Array.from(db.data.members?.keys() || []));
+            console.log(`[DEBUG-LEVEL] Mevcut tüm member key'leri:`, Array.from(db.data.guildMembers?.keys() || []));
             
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
@@ -223,7 +223,7 @@ module.exports = {
         const progressPercent = Math.floor((progressXp / neededXp) * 100);
 
         // Sıralamayı hesapla (simple-db'den)
-        const allMembers = Array.from(db.data.members?.values() || [])
+        const allMembers = Array.from(db.data.guildMembers?.values() || [])
             .filter(m => m.guildId === interaction.guild.id && m.xp > 0)
             .sort((a, b) => b.xp - a.xp);
         
@@ -274,7 +274,7 @@ module.exports = {
         }
 
         // Tüm üyeleri getir ve sırala
-        const allMembers = Array.from(db.data.members?.values() || [])
+        const allMembers = Array.from(db.data.guildMembers?.values() || [])
             .filter(m => m.guildId === interaction.guild.id && m.xp > 0)
             .sort((a, b) => b.xp - a.xp);
 
