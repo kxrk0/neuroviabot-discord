@@ -14,7 +14,7 @@ class CustomMusicPlayer {
             }
         });
 
-        // Load YouTubeI extractor
+        // Load YoutubeiExtractor (note the lowercase 'i')
         try {
             const { YoutubeiExtractor } = require('discord-player-youtubei');
             console.log('[CUSTOM-PLAYER] YoutubeiExtractor loaded:', typeof YoutubeiExtractor);
