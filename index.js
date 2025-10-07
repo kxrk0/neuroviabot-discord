@@ -202,13 +202,32 @@ async function registerSlashCommands() {
     try {
         log(`Registering ${commands.length} slash commands...`, 'INFO');
         
-        // Önce tüm komutları temizle
-        await rest.put(
-            Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
-            { body: [] }
-        );
+        // Önce tüm komutları temizle (hem global hem guild)
+        try {
+            await rest.put(
+                Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+                { body: [] }
+            );
+            log('Cleared global commands', 'INFO');
+        } catch (error) {
+            log(`Error clearing global commands: ${error.message}`, 'WARNING');
+        }
         
-        log('Cleared existing commands', 'INFO');
+        // Guild komutlarını da temizle
+        for (const guild of client.guilds.cache.values()) {
+            try {
+                await rest.put(
+                    Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, guild.id),
+                    { body: [] }
+                );
+                log(`Cleared commands for guild: ${guild.name}`, 'DEBUG');
+            } catch (error) {
+                log(`Error clearing guild commands for ${guild.name}: ${error.message}`, 'WARNING');
+            }
+        }
+        
+        // 2 saniye bekle
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Sonra yeni komutları kaydet
         const data = await rest.put(
