@@ -14,23 +14,15 @@ class CustomMusicPlayer {
             }
         });
 
-        // Load YouTubeI extractor with detailed logging
+        // Load YouTubeI extractor
         try {
-            const youtubeModule = require('discord-player-youtubei');
-            console.log('[CUSTOM-PLAYER] youtube module keys:', Object.keys(youtubeModule));
+            const { YoutubeiExtractor } = require('discord-player-youtubei');
+            console.log('[CUSTOM-PLAYER] YoutubeiExtractor loaded:', typeof YoutubeiExtractor);
             
-            const YouTubeExtractor = youtubeModule.YouTubeExtractor || youtubeModule.default || youtubeModule;
-            console.log('[CUSTOM-PLAYER] YouTubeExtractor type:', typeof YouTubeExtractor);
-            console.log('[CUSTOM-PLAYER] YouTubeExtractor:', YouTubeExtractor);
-            
-            if (YouTubeExtractor) {
-                this.player.extractors.register(YouTubeExtractor, {});
-                console.log('[CUSTOM-PLAYER] YouTubeExtractor registered successfully');
-            } else {
-                console.error('[CUSTOM-PLAYER] YouTubeExtractor is undefined!');
-            }
+            this.player.extractors.register(YoutubeiExtractor, {});
+            console.log('[CUSTOM-PLAYER] YoutubeiExtractor registered successfully');
         } catch (error) {
-            console.error('[CUSTOM-PLAYER] Failed to load YouTubeExtractor:', error.message);
+            console.error('[CUSTOM-PLAYER] Failed to load YoutubeiExtractor:', error.message);
         }
         
         // Setup event listeners
