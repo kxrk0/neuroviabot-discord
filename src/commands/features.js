@@ -173,10 +173,11 @@ async function handleEnable(interaction) {
         giveaways: '🎉 Çekiliş Sistemi'
     };
 
+    const featureName = featureNames[feature] || feature;
     const successEmbed = new EmbedBuilder()
         .setColor('#00ff00')
         .setTitle('✅ Özellik Aktifleştirildi')
-        .setDescription(`${featureNames[feature]} başarıyla aktifleştirildi!`)
+        .setDescription(`${featureName} başarıyla aktifleştirildi!`)
         .addFields(
             {
                 name: '📝 Not',
@@ -218,10 +219,11 @@ async function handleDisable(interaction) {
         giveaways: '🎉 Çekiliş Sistemi'
     };
 
+    const featureName = featureNames[feature] || feature;
     const successEmbed = new EmbedBuilder()
         .setColor('#ff6b6b')
         .setTitle('❌ Özellik Devre Dışı')
-        .setDescription(`${featureNames[feature]} devre dışı bırakıldı!`)
+        .setDescription(`${featureName} devre dışı bırakıldı!`)
         .addFields(
             {
                 name: '📝 Not',
@@ -306,7 +308,6 @@ async function toggleFeature(feature, enabled) {
         const success = await featureManager.toggleFeature(feature, enabled);
         
         if (success) {
-            logger.info(`Özellik ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}: ${feature}`);
             return true;
         } else {
             logger.error(`Özellik toggle başarısız: ${feature}`);
