@@ -22,130 +22,129 @@ module.exports = {
         .setDescription('Şarkı çal veya kuyruğa ekle')
         .addStringOption(option =>
             option.setName('query')
-                .setDescription('Şarkı adı, sanatçı veya YouTube linki')
+                .setDescription('YouTube linki')
                 .setRequired(true)),
 
     async execute(interaction) {
         try {
+            // Hemen yanıt ver
             await interaction.deferReply();
 
             const query = interaction.options.getString('query');
             const member = interaction.member;
-            const voiceChannel = member.voice.channel;
+            const voiceChannel = member?.voice?.channel;
 
             // Kullanıcı sesli kanalda mı kontrol et
             if (!voiceChannel) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Hata')
-                    .setDescription('Önce bir sesli kanala katılman gerekiyor!')
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [errorEmbed] });
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Hata')
+                            .setDescription('Önce bir sesli kanala katılman gerekiyor!')
+                            .setTimestamp()
+                    ]
+                });
             }
 
             // Bot'un yetkisi var mı kontrol et
             const permissions = voiceChannel.permissionsFor(interaction.guild.members.me);
-            if (!permissions.has(['Connect', 'Speak'])) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Yetki Hatası')
-                    .setDescription('Sesli kanala bağlanma veya konuşma yetkim yok!')
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [errorEmbed] });
+            if (!permissions || !permissions.has(['Connect', 'Speak'])) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Yetki Hatası')
+                            .setDescription('Sesli kanala bağlanma veya konuşma yetkim yok!')
+                            .setTimestamp()
+                    ]
+                });
             }
 
-            console.log(`[CUSTOM-PLAY] Searching for: ${query}`);
+            console.log(`[PLAY] Query: ${query}`);
 
-            // Şarkı ara
-            let searchResult;
+            // YouTube URL doğrulama
+            if (!ytdl.validateURL(query)) {
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Geçersiz URL')
+                            .setDescription('Lütfen geçerli bir YouTube URL\'si girin!')
+                            .addFields({
+                                name: '🔍 Örnek',
+                                value: '`https://www.youtube.com/watch?v=VIDEO_ID`'
+                            })
+                            .setTimestamp()
+                    ]
+                });
+            }
+
+            console.log(`[PLAY] Valid YouTube URL: ${query}`);
+
+            // Video bilgilerini al
+            let videoInfo;
             try {
-                // Eğer query bir YouTube URL'si ise
-                if (ytdl.validateURL(query)) {
-                    console.log(`[CUSTOM-PLAY] Valid YouTube URL detected: ${query}`);
-                    const videoInfo = await ytdl.getInfo(query);
-                    searchResult = {
-                        title: videoInfo.videoDetails.title,
-                        url: query,
-                        id: videoInfo.videoDetails.videoId,
-                        channel: { name: videoInfo.videoDetails.author.name },
-                        durationFormatted: videoInfo.videoDetails.lengthSeconds ? 
-                            formatDuration(videoInfo.videoDetails.lengthSeconds) : 'Bilinmiyor',
-                        thumbnails: videoInfo.videoDetails.thumbnails
-                    };
-                    console.log(`[CUSTOM-PLAY] Found YouTube result: ${searchResult.title}`);
-                } else {
-                    // ytdl-core search özelliği yok, bu yüzden kullanıcıdan tam URL isteyelim
-                    throw new Error('Lütfen tam YouTube URL\'si girin');
-                }
-            } catch (error) {
-                console.error(`[CUSTOM-PLAY] Search error:`, error);
-                
-                const notFoundEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Geçersiz URL')
-                    .setDescription(`**${query}** geçerli bir YouTube URL'si değil!`)
-                    .addFields({
-                        name: '🔍 Nasıl Kullanılır',
-                        value: '• Tam YouTube URL\'si girin\n• Örnek: `https://www.youtube.com/watch?v=VIDEO_ID`\n• YouTube\'dan linki kopyalayın',
-                        inline: false
-                    })
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [notFoundEmbed] });
+                videoInfo = await ytdl.getInfo(query);
+                console.log(`[PLAY] Video info retrieved: ${videoInfo.videoDetails.title}`);
+            } catch (infoError) {
+                console.error(`[PLAY] Failed to get video info:`, infoError);
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Video Bilgisi Alınamadı')
+                            .setDescription('YouTube videosu bulunamadı veya erişilemiyor!')
+                            .setTimestamp()
+                    ]
+                });
             }
 
-            // Custom player'ı al veya oluştur
+            // Track oluştur
+            const track = {
+                title: videoInfo.videoDetails.title,
+                author: videoInfo.videoDetails.author?.name || 'Bilinmiyor',
+                duration: videoInfo.videoDetails.lengthSeconds ? 
+                    formatDuration(videoInfo.videoDetails.lengthSeconds) : 'Bilinmiyor',
+                url: query,
+                thumbnail: videoInfo.videoDetails.thumbnails?.[0]?.url || null
+            };
+
+            console.log(`[PLAY] Track created:`, track);
+
+            // Custom player'ı kontrol et
             const customPlayer = interaction.client.customPlayer;
             if (!customPlayer) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Sistem Hatası')
-                    .setDescription('Müzik sistemi başlatılamadı!')
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [errorEmbed] });
+                console.error(`[PLAY] Custom player not found`);
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Sistem Hatası')
+                            .setDescription('Müzik sistemi başlatılamadı!')
+                            .setTimestamp()
+                    ]
+                });
             }
 
             // Sesli kanala bağlan
+            console.log(`[PLAY] Joining voice channel: ${voiceChannel.name}`);
             const connected = await customPlayer.joinChannel(interaction.guild.id, voiceChannel);
             if (!connected) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('❌ Bağlantı Hatası')
-                    .setDescription('Sesli kanala bağlanılamadı!')
-                    .setTimestamp();
-
-                return interaction.editReply({ embeds: [errorEmbed] });
+                console.error(`[PLAY] Failed to connect to voice channel`);
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor('#ff0000')
+                            .setTitle('❌ Bağlantı Hatası')
+                            .setDescription('Sesli kanala bağlanılamadı!')
+                            .setTimestamp()
+                    ]
+                });
             }
-
-            // Track bilgilerini hazırla
-            console.log(`[CUSTOM-PLAY] Search result keys:`, Object.keys(searchResult));
-            console.log(`[CUSTOM-PLAY] Search result URL:`, searchResult.url);
-            console.log(`[CUSTOM-PLAY] Search result ID:`, searchResult.id);
-            
-            // URL'yi doğru formatta oluştur
-            let trackUrl;
-            if (searchResult.url) {
-                trackUrl = searchResult.url;
-            } else if (searchResult.id) {
-                trackUrl = `https://www.youtube.com/watch?v=${searchResult.id}`;
-            } else {
-                throw new Error('No valid URL or ID found in search result');
-            }
-            
-            const track = {
-                title: searchResult.title,
-                author: searchResult.channel?.name || 'Bilinmiyor',
-                duration: searchResult.durationFormatted || 'Bilinmiyor',
-                url: trackUrl,
-                thumbnail: searchResult.thumbnails?.[0]?.url || null
-            };
-            
-            console.log(`[CUSTOM-PLAY] Track URL:`, track.url);
 
             // Kuyruğa ekle
+            console.log(`[PLAY] Adding track to queue`);
             await customPlayer.addTrack(interaction.guild.id, track, interaction.channel);
 
             // Başarı mesajı
@@ -158,33 +157,44 @@ module.exports = {
                     { name: '⏱️ Süre', value: track.duration, inline: true },
                     { name: '🔗 Kaynak', value: 'YouTube', inline: true }
                 )
-                .setThumbnail(track.thumbnail)
-                .setFooter({ text: `İsteyen: ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
                 .setTimestamp();
 
-            console.log(`[CUSTOM-PLAY] Sending success reply for: ${track.title}`);
+            if (track.thumbnail) {
+                successEmbed.setThumbnail(track.thumbnail);
+            }
+
+            successEmbed.setFooter({ 
+                text: `İsteyen: ${interaction.user.username}`, 
+                iconURL: interaction.user.displayAvatarURL() 
+            });
+
+            console.log(`[PLAY] Sending success reply`);
             await interaction.editReply({ embeds: [successEmbed] });
-            console.log(`[CUSTOM-PLAY] Success reply sent successfully`);
+            console.log(`[PLAY] Command completed successfully`);
 
         } catch (error) {
-            console.error(`[CUSTOM-PLAY] Command error:`, error);
-            logger.error('Play komutu hatası', error);
+            console.error(`[PLAY] Command error:`, error);
+            logger.error('Play command error', error);
 
+            // Hata mesajı gönder
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('❌ Komut Hatası')
-                .setDescription('Komut çalıştırılırken bir hata oluştu!')
+                .setTitle('❌ Hata')
+                .setDescription('Bir hata oluştu!')
                 .addFields({
-                    name: '🔧 Hata Detayı',
-                    value: `\`\`\`${error.message}\`\`\``,
-                    inline: false
+                    name: '🔧 Detay',
+                    value: `\`\`\`${error.message || 'Bilinmeyen hata'}\`\`\``
                 })
                 .setTimestamp();
 
-            if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-            } else {
-                await interaction.editReply({ embeds: [errorEmbed] });
+            try {
+                if (interaction.deferred || interaction.replied) {
+                    await interaction.editReply({ embeds: [errorEmbed] });
+                } else {
+                    await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                }
+            } catch (replyError) {
+                console.error(`[PLAY] Failed to send error message:`, replyError);
             }
         }
     }
