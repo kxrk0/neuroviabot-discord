@@ -107,6 +107,7 @@ async function loadCommands() {
     }
     
     log(`Loaded ${commandCount} commands successfully`, 'SUCCESS');
+    console.log(`[LOAD-COMMANDS] Final command list: ${Array.from(client.commands.keys()).join(', ')}`);
 }
 
 // Event'leri yükleme fonksiyonu
@@ -238,9 +239,15 @@ async function registerSlashCommands() {
         log(`Successfully registered ${data.length} slash commands`, 'SUCCESS');
         
         // Kaydedilen komutları logla
+        console.log(`[REGISTER-COMMANDS] Successfully registered ${data.length} commands:`);
         for (const cmd of data) {
+            console.log(`[REGISTER-COMMANDS] - ${cmd.name}: ${cmd.description}`);
             log(`Registered: ${cmd.name}`, 'DEBUG');
         }
+        
+        // Komut listesini karşılaştır
+        console.log(`[REGISTER-COMMANDS] Expected commands: ${commands.length}`);
+        console.log(`[REGISTER-COMMANDS] Expected command names: ${commands.map(cmd => cmd.name).join(', ')}`);
         
     } catch (error) {
         log(`Error registering slash commands: ${error.message}`, 'ERROR');
