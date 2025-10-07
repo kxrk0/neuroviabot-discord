@@ -102,7 +102,7 @@ module.exports = {
                 .setDescription('Bu komutu kullanabilmek için **Yönetici** yetkisine sahip olmanız gerekiyor!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -142,9 +142,9 @@ module.exports = {
                 .setTimestamp();
 
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.followUp({ embeds: [errorEmbed], flags: 64 });
             } else {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         }
     },
@@ -257,7 +257,7 @@ module.exports = {
                 .setDescription('Bu komut sadece aktif ticket kanallarında kullanılabilir!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         // Yetki kontrolü
@@ -273,7 +273,7 @@ module.exports = {
                 .setDescription('Bu ticket\'i kapatmak için gerekli yetkiniz yok!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         await interaction.deferReply();
@@ -332,7 +332,7 @@ module.exports = {
                 .setDescription('Bu komut sadece aktif ticket kanallarında kullanılabilir!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -393,7 +393,7 @@ module.exports = {
                 .setDescription('Bu komut sadece aktif ticket kanallarında kullanılabilir!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -441,7 +441,7 @@ module.exports = {
                 .setDescription('Bu komut sadece aktif ticket kanallarında kullanılabilir!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         if (ticket.assignedTo) {
@@ -451,7 +451,7 @@ module.exports = {
                 .setDescription(`Bu ticket zaten <@${ticket.assignedTo}> tarafından sahiplenilmiş!`)
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -493,7 +493,7 @@ module.exports = {
                 .setDescription('Bu komut sadece aktif ticket kanallarında kullanılabilir!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         if (ticket.assignedTo !== interaction.user.id) {
@@ -503,7 +503,7 @@ module.exports = {
                 .setDescription('Bu ticket\'i sadece sahiplenen kişi bırakabilir!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         try {
@@ -541,7 +541,7 @@ module.exports = {
                 .setDescription('Bu komut sadece ticket kanallarında kullanılabilir!')
                 .setTimestamp();
             
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
         await interaction.deferReply();
