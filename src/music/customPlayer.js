@@ -97,6 +97,30 @@ class CustomMusicPlayer {
                 // Önce video info al
                 const videoInfo = await playdl.video_basic_info(track.url);
                 console.log(`[CUSTOM-PLAYER] Video info retrieved successfully`);
+                console.log(`[CUSTOM-PLAYER] Video info structure:`, {
+                    hasVideoDetails: !!videoInfo.video_details,
+                    videoDetailsUrl: videoInfo.video_details?.url,
+                    videoDetailsId: videoInfo.video_details?.id,
+                    trackUrl: track.url
+                });
+                
+                // videoInfo.video_details.url'yi kontrol et ve gerekirse düzelt
+                if (!videoInfo.video_details.url) {
+                    console.log(`[CUSTOM-PLAYER] video_details.url is missing, setting to track.url: ${track.url}`);
+                    videoInfo.video_details.url = track.url;
+                }
+                
+                // videoInfo.video_details.id'yi de kontrol et
+                if (!videoInfo.video_details.id && track.url.includes('watch?v=')) {
+                    const videoId = track.url.split('watch?v=')[1].split('&')[0];
+                    console.log(`[CUSTOM-PLAYER] Setting video_details.id to: ${videoId}`);
+                    videoInfo.video_details.id = videoId;
+                }
+                
+                console.log(`[CUSTOM-PLAYER] Attempting stream_from_info with:`, {
+                    url: videoInfo.video_details.url,
+                    id: videoInfo.video_details.id
+                });
                 
                 // Stream'i info'dan oluştur
                 stream = await playdl.stream_from_info(videoInfo);
@@ -111,7 +135,28 @@ class CustomMusicPlayer {
                     console.log(`[CUSTOM-PLAYER] Direct stream created successfully, type: ${stream.type}`);
                 } catch (directError) {
                     console.error(`[CUSTOM-PLAYER] Direct stream also failed:`, directError);
-                    throw new Error('Failed to create stream with both methods');
+                    
+                    // Son çare: Video ID ile deneme
+                    try {
+                        const videoId = track.url.split('watch?v=')[1]?.split('&')[0];
+                        if (videoId) {
+                            console.log(`[CUSTOM-PLAYER] Trying with video ID: ${videoId}`);
+                            const directUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                            
+                            // Video info ile deneme
+                            const videoInfo = await playdl.video_basic_info(directUrl);
+                            if (!videoInfo.video_details.url) {
+                                videoInfo.video_details.url = directUrl;
+                            }
+                            stream = await playdl.stream_from_info(videoInfo);
+                            console.log(`[CUSTOM-PLAYER] Video ID stream created successfully`);
+                        } else {
+                            throw new Error('No video ID found');
+                        }
+                    } catch (idError) {
+                        console.error(`[CUSTOM-PLAYER] Video ID approach also failed:`, idError);
+                        throw new Error('Failed to create stream with all methods');
+                    }
                 }
             }
 
