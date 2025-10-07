@@ -164,10 +164,30 @@ class MusicPlayer {
             });
         });
 
-        // Track error - Discord Player v6'da 'error' event'i kullanılıyor
+        // Track error - Discord Player v6'da hem 'error' hem 'playerError' event'leri var
         this.player.on('error', (queue, error, track) => {
             console.error(`[DEBUG-PLAYER] Player error in ${queue.guild.name} for track ${track?.title}:`, error);
             console.error(`[DEBUG-PLAYER] Error details:`, {
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
+            logger.playerError(error, {
+                guild: queue.guild.name,
+                track: track?.title || 'Unknown',
+                event: 'error'
+            });
+
+            // Hata mesajı gönder
+            if (queue.metadata && track) {
+                queue.metadata.send(`❌ **Şarkı çalınamadı:** ${track.title}\n\`\`\`${error.message}\`\`\``);
+            }
+        });
+
+        // PlayerError event listener (Discord Player v6'da bu da var)
+        this.player.on('playerError', (queue, error, track) => {
+            console.error(`[DEBUG-PLAYER] PlayerError in ${queue.guild.name} for track ${track?.title}:`, error);
+            console.error(`[DEBUG-PLAYER] PlayerError details:`, {
                 message: error.message,
                 code: error.code,
                 stack: error.stack
