@@ -19,8 +19,13 @@ class CustomMusicPlayer {
                 }
             },
             ffmpegPath: require('@ffmpeg-installer/ffmpeg').path,
-            ffprobePath: require('ffprobe-static').path
+            ffprobePath: require('ffprobe-static').path,
+            skipFFmpeg: false,
+            useLegacyFFmpeg: false
         });
+        
+        console.log(`[CUSTOM-PLAYER] FFmpeg path: ${require('@ffmpeg-installer/ffmpeg').path}`);
+        console.log(`[CUSTOM-PLAYER] FFprobe path: ${require('ffprobe-static').path}`);
         
         // Extractors yükle
         this.player.extractors.register(YoutubeiExtractor, {});
@@ -144,8 +149,31 @@ class CustomMusicPlayer {
             
             if (!queue.isPlaying()) {
                 console.log(`[CUSTOM-PLAYER] Starting playback...`);
-                await queue.node.play();
-                console.log(`[CUSTOM-PLAYER] Playback started successfully`);
+                
+                // Timeout ile playback başlatma
+                const playbackPromise = queue.node.play();
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Playback timeout')), 10000)
+                );
+                
+                try {
+                    await Promise.race([playbackPromise, timeoutPromise]);
+                    console.log(`[CUSTOM-PLAYER] Playback started successfully`);
+                } catch (error) {
+                    console.error(`[CUSTOM-PLAYER] Playback failed:`, error);
+                    
+                    // Fallback: Manuel olarak track'i çalmaya çalış
+                    try {
+                        console.log(`[CUSTOM-PLAYER] Trying manual playback...`);
+                        const track = queue.tracks.at(0);
+                        if (track) {
+                            await queue.node.play(track);
+                            console.log(`[CUSTOM-PLAYER] Manual playback started`);
+                        }
+                    } catch (manualError) {
+                        console.error(`[CUSTOM-PLAYER] Manual playback also failed:`, manualError);
+                    }
+                }
             } else {
                 console.log(`[CUSTOM-PLAYER] Already playing, track added to queue`);
             }
