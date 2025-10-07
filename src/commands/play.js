@@ -44,7 +44,7 @@ module.exports = {
                 return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
-            // Başarı mesajı
+            // Başarı mesajı - debug-play ile aynı pattern
             const embed = new EmbedBuilder()
                 .setColor('#1db954')
                 .setTitle('✅ Şarkı Eklendi')
@@ -80,12 +80,20 @@ module.exports = {
                 .setColor('#ff0000')
                 .setTitle('❌ Hata')
                 .setDescription('Komut çalıştırılırken bir hata oluştu!')
+                .addFields({
+                    name: '🔧 Hata Detayı',
+                    value: `\`\`\`${error.message}\`\`\``
+                })
                 .setTimestamp();
-            
-            if (interaction.replied) {
-                await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
-            } else {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+
+            try {
+                if (interaction.replied) {
+                    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+                } else {
+                    await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                }
+            } catch (replyError) {
+                console.error(`[PLAY] Failed to send error message:`, replyError);
             }
         }
     }
