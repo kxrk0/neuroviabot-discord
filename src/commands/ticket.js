@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
-const { Guild, Ticket } = require('../models');
+const { Guild, Ticket, db } = require('../models');
 const { logger } = require('../utils/logger');
 const { v4: uuidv4 } = require('uuid');
 
@@ -175,13 +175,11 @@ async function handleSetup(interaction) {
 
         try {
             // Guild ayarlarını güncelle
-            await Guild.update({
+            await Guild.update(interaction.guild.id, {
                 ticketEnabled: true,
                 ticketCategoryId: category.id,
                 ticketSupportRoleId: supportRole.id,
                 ticketLogChannelId: logChannel?.id || null
-            }, {
-                where: { id: interaction.guild.id }
             });
 
             // Ticket mesajı embed'i
@@ -259,12 +257,7 @@ async function handleClose(interaction) {
         const reason = interaction.options.getString('sebep') || 'Sebep belirtilmedi';
 
         // Ticket kanalında mı kontrol et
-        const ticket = await Ticket.findOne({
-            where: {
-                channelId: interaction.channel.id,
-                status: 'open'
-            }
-        });
+        const ticket = await Ticket.findByChannel(interaction.channel.id);
 
         if (!ticket) {
             const errorEmbed = new EmbedBuilder()
@@ -334,12 +327,7 @@ async function handleAdd(interaction) {
         const user = interaction.options.getUser('kullanıcı');
 
         // Ticket kanalında mı kontrol et
-        const ticket = await Ticket.findOne({
-            where: {
-                channelId: interaction.channel.id,
-                status: 'open'
-            }
-        });
+        const ticket = await Ticket.findByChannel(interaction.channel.id);
 
         if (!ticket) {
             const errorEmbed = new EmbedBuilder()
@@ -395,12 +383,7 @@ async function handleAdd(interaction) {
 async function handleRemove(interaction) {
         const user = interaction.options.getUser('kullanıcı');
 
-        const ticket = await Ticket.findOne({
-            where: {
-                channelId: interaction.channel.id,
-                status: 'open'
-            }
-        });
+        const ticket = await Ticket.findByChannel(interaction.channel.id);
 
         if (!ticket) {
             const errorEmbed = new EmbedBuilder()
@@ -443,12 +426,7 @@ async function handleRemove(interaction) {
     }
 
 async function handleClaim(interaction) {
-        const ticket = await Ticket.findOne({
-            where: {
-                channelId: interaction.channel.id,
-                status: 'open'
-            }
-        });
+        const ticket = await Ticket.findByChannel(interaction.channel.id);
 
         if (!ticket) {
             const errorEmbed = new EmbedBuilder()
@@ -601,21 +579,17 @@ async function handleStats(interaction) {
 
         try {
             // Kullanıcının ticket istatistikleri
-            const userTickets = await Ticket.findAll({
-                where: {
-                    guildId: interaction.guild.id,
-                    userId: targetUser.id
-                }
-            });
+            const allTickets = Array.from(db.data.tickets.values());
+            const userTickets = allTickets.filter(t => 
+                t.guildId === interaction.guild.id && t.userId === targetUser.id
+            );
 
             const openTickets = userTickets.filter(t => t.status === 'open').length;
             const closedTickets = userTickets.filter(t => t.status === 'closed').length;
             const totalTickets = userTickets.length;
 
             // Sunucu geneli istatistikler
-            const guildTickets = await Ticket.findAll({
-                where: { guildId: interaction.guild.id }
-            });
+            const guildTickets = allTickets.filter(t => t.guildId === interaction.guild.id);
 
             const guildOpenTickets = guildTickets.filter(t => t.status === 'open').length;
             const guildTotalTickets = guildTickets.length;
