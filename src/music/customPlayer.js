@@ -8,15 +8,11 @@ class CustomMusicPlayer {
         
         // Create DisTube instance
         this.distube = new DisTube(client, {
-            emitNewSongOnly: false,
-            leaveOnFinish: false,
-            leaveOnStop: false,
-            savePreviousSongs: true,
-            searchSongs: 5,
             nsfw: false,
+            emitNewSongOnly: false,
+            searchSongs: 5,
             emptyCooldown: 30,
             leaveOnEmpty: true,
-            customFilters: {},
             ffmpeg: {
                 path: ffmpegPath
             }
