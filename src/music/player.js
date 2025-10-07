@@ -12,6 +12,7 @@ class MusicPlayer {
         this.client = client;
         this.player = null;
         this.initialized = false;
+        this.eventListenersSetup = false;
     }
 
     async initialize() {
@@ -42,8 +43,11 @@ class MusicPlayer {
                 return false;
             }
             
-            // Event listener'ları kur
-            this.setupEventListeners();
+            // Event listener'ları kur (sadece bir kez)
+            if (!this.eventListenersSetup) {
+                this.setupEventListeners();
+                this.eventListenersSetup = true;
+            }
             
             this.initialized = true;
             logger.success('Discord Music Player başlatıldı!');
@@ -119,6 +123,14 @@ class MusicPlayer {
             this.sendNowPlayingMessage(queue, track);
         });
 
+        // Player ready event
+        this.player.on('playerReady', (queue) => {
+            console.log(`[DEBUG-PLAYER] Player ready in ${queue.guild.name}`);
+            logger.musicEvent('Player Ready', {
+                guild: queue.guild.name
+            });
+        });
+
         // Track ended
         this.player.on('playerFinish', (queue, track) => {
             console.log(`[DEBUG-PLAYER] Track finished: ${track.title} in ${queue.guild.name}`);
@@ -187,6 +199,12 @@ class MusicPlayer {
             logger.warn(`Arama sonucu bulunamadı: ${query}`, {
                 guild: queue.guild.name
             });
+        });
+
+        // Error event listener (genel hatalar için)
+        this.player.on('error', (error) => {
+            console.error(`[DEBUG-PLAYER] General player error:`, error);
+            logger.error('Player error', error);
         });
 
         // Debug events (sadece development'ta)
