@@ -3,7 +3,7 @@
 // ==========================================
 
 const { Player } = require('discord-player');
-const { YoutubeiExtractor } = require('@discord-player/extractor');
+const { YoutubeiExtractor, YouTubeExtractor } = require('@discord-player/extractor');
 const { logger } = require('../utils/logger');
 const config = require('../config.js');
 
@@ -36,7 +36,11 @@ class MusicPlayer {
             });
 
             // Extractor'ları yükle
-            await this.loadExtractors();
+            const extractorsLoaded = await this.loadExtractors();
+            if (!extractorsLoaded) {
+                logger.error('Extractor yüklenemedi - Müzik sistemi devre dışı');
+                return false;
+            }
             
             // Event listener'ları kur
             this.setupEventListeners();
@@ -53,52 +57,50 @@ class MusicPlayer {
 
     async loadExtractors() {
         try {
-            // YouTube Extractor - Birden fazla deneme
-            const extractors = [
-                { name: 'YoutubeiExtractor', client: 'IOS' },
-                { name: 'YoutubeiExtractor', client: 'ANDROID' },
-                { name: 'YoutubeiExtractor', client: 'WEB' }
+            // Multiple extractor attempts
+            const extractorConfigs = [
+                { extractor: YouTubeExtractor, name: 'YouTubeExtractor', options: {} },
+                { extractor: YoutubeiExtractor, name: 'YoutubeiExtractor', options: { useClient: 'IOS' } },
+                { extractor: YoutubeiExtractor, name: 'YoutubeiExtractor', options: { useClient: 'ANDROID' } },
+                { extractor: YoutubeiExtractor, name: 'YoutubeiExtractor', options: { useClient: 'WEB' } },
+                { extractor: YoutubeiExtractor, name: 'YoutubeiExtractor', options: {} }
             ];
 
             let extractorLoaded = false;
-            for (const extractor of extractors) {
+            for (const config of extractorConfigs) {
                 try {
-                    await this.player.extractors.register(YoutubeiExtractor, {
-                        streamOptions: {
-                            useClient: extractor.client,
-                            highWaterMark: 1 << 25
-                        }
-                    });
-                    logger.success(`YouTube Extractor yüklendi (${extractor.client})`);
+                    if (Object.keys(config.options).length > 0) {
+                        await this.player.extractors.register(config.extractor, {
+                            streamOptions: config.options
+                        });
+                    } else {
+                        await this.player.extractors.register(config.extractor);
+                    }
+                    logger.success(`${config.name} yüklendi`);
                     extractorLoaded = true;
                     break;
                 } catch (err) {
-                    logger.warn(`${extractor.name} (${extractor.client}) yüklenemedi: ${err.message}`);
+                    logger.warn(`${config.name} yüklenemedi: ${err.message}`);
                 }
             }
 
             if (!extractorLoaded) {
-                logger.error('Hiçbir YouTube extractor yüklenemedi!');
-                // Fallback: Basic extractor
-                try {
-                    await this.player.extractors.register(YoutubeiExtractor);
-                    logger.success('Fallback YouTube extractor yüklendi');
-                } catch (fallbackErr) {
-                    logger.error('Fallback extractor da başarısız:', fallbackErr);
-                }
+                logger.error('Hiçbir extractor yüklenemedi! Müzik sistemi devre dışı.');
+                return false;
             }
 
             // Spotify desteği (eğer API anahtarları varsa)
             if (config.spotify.enabled) {
-                // Spotify extractor burada eklenebilir
                 logger.success('Spotify integration aktif');
             } else {
                 logger.warn('Spotify API anahtarları bulunamadı - sadece YouTube aktif');
             }
 
             logger.success('Music extractors yükleme tamamlandı');
+            return true;
         } catch (error) {
             logger.error('Extractor yükleme hatası', error);
+            return false;
         }
     }
 
