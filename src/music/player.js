@@ -53,13 +53,40 @@ class MusicPlayer {
 
     async loadExtractors() {
         try {
-            // YouTube Extractor
-            await this.player.extractors.register(YoutubeiExtractor, {
-                streamOptions: {
-                    useClient: 'IOS', // or 'ANDROID', 'WEB'
-                    highWaterMark: 1 << 25
+            // YouTube Extractor - Birden fazla deneme
+            const extractors = [
+                { name: 'YoutubeiExtractor', client: 'IOS' },
+                { name: 'YoutubeiExtractor', client: 'ANDROID' },
+                { name: 'YoutubeiExtractor', client: 'WEB' }
+            ];
+
+            let extractorLoaded = false;
+            for (const extractor of extractors) {
+                try {
+                    await this.player.extractors.register(YoutubeiExtractor, {
+                        streamOptions: {
+                            useClient: extractor.client,
+                            highWaterMark: 1 << 25
+                        }
+                    });
+                    logger.success(`YouTube Extractor yüklendi (${extractor.client})`);
+                    extractorLoaded = true;
+                    break;
+                } catch (err) {
+                    logger.warn(`${extractor.name} (${extractor.client}) yüklenemedi: ${err.message}`);
                 }
-            });
+            }
+
+            if (!extractorLoaded) {
+                logger.error('Hiçbir YouTube extractor yüklenemedi!');
+                // Fallback: Basic extractor
+                try {
+                    await this.player.extractors.register(YoutubeiExtractor);
+                    logger.success('Fallback YouTube extractor yüklendi');
+                } catch (fallbackErr) {
+                    logger.error('Fallback extractor da başarısız:', fallbackErr);
+                }
+            }
 
             // Spotify desteği (eğer API anahtarları varsa)
             if (config.spotify.enabled) {
@@ -69,7 +96,7 @@ class MusicPlayer {
                 logger.warn('Spotify API anahtarları bulunamadı - sadece YouTube aktif');
             }
 
-            logger.success('Music extractors yüklendi');
+            logger.success('Music extractors yükleme tamamlandı');
         } catch (error) {
             logger.error('Extractor yükleme hatası', error);
         }

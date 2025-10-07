@@ -116,10 +116,25 @@ module.exports = {
 
             // Normal arama (Spotify değilse veya Spotify başarısızsa)
             if (!searchResult) {
-                searchResult = await player.search(query, {
-                    requestedBy: interaction.user,
-                    searchEngine: QueryType.AUTO
-                });
+                // Birden fazla search engine dene
+                const searchEngines = [QueryType.AUTO, QueryType.YOUTUBE_SEARCH, QueryType.YOUTUBE];
+                
+                for (const engine of searchEngines) {
+                    try {
+                        searchResult = await player.search(query, {
+                            requestedBy: interaction.user,
+                            searchEngine: engine
+                        });
+                        
+                        if (searchResult && searchResult.tracks.length > 0) {
+                            logger.info(`Search başarılı: ${engine} ile ${query}`);
+                            break;
+                        }
+                    } catch (err) {
+                        logger.warn(`Search engine ${engine} başarısız: ${err.message}`);
+                        continue;
+                    }
+                }
             }
 
             if (!searchResult || !searchResult.tracks.length) {
