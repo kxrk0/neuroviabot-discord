@@ -104,6 +104,15 @@ class CustomMusicPlayer {
             // Önce video bilgisini al
             const videoInfo = await playdl.video_basic_info(track.url);
             console.log(`[CUSTOM-PLAYER] Video info obtained, title: ${videoInfo.video_details.title}`);
+            console.log(`[CUSTOM-PLAYER] Video info keys:`, Object.keys(videoInfo));
+            console.log(`[CUSTOM-PLAYER] Video details keys:`, Object.keys(videoInfo.video_details));
+            console.log(`[CUSTOM-PLAYER] Video details URL:`, videoInfo.video_details.url);
+            
+            // Video info'ya URL ekle (eğer yoksa)
+            if (!videoInfo.video_details.url) {
+                videoInfo.video_details.url = track.url;
+                console.log(`[CUSTOM-PLAYER] Added URL to video details: ${track.url}`);
+            }
             
             // Sonra stream oluştur
             const stream = await playdl.stream_from_info(videoInfo, {
