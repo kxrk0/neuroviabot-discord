@@ -226,35 +226,7 @@ client.once('clientReady', async () => {
     log('Bot is ready and operational!', 'SUCCESS');
 });
 
-// Slash komut etkileşimleri
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-    
-    const command = client.commands.get(interaction.commandName);
-    
-    if (!command) {
-        log(`No command matching ${interaction.commandName} was found.`, 'ERROR');
-        return;
-    }
-    
-    try {
-        await command.execute(interaction);
-        log(`Command ${interaction.commandName} executed by ${interaction.user.tag}`, 'INFO');
-    } catch (error) {
-        log(`Error executing command ${interaction.commandName}: ${error.message}`, 'ERROR');
-        
-        const reply = {
-            content: 'Bu komutu çalıştırırken bir hata oluştu!',
-            ephemeral: true
-        };
-        
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp(reply);
-        } else {
-            await interaction.reply(reply);
-        }
-    }
-});
+// Slash komut etkileşimleri artık src/events/interactionCreate.js'de yönetiliyor
 
 // Handlers
 const loggingHandler = require('./src/handlers/loggingHandler');
