@@ -209,8 +209,11 @@ class CustomMusicPlayer {
             // Get fresh video info for streaming
             const videoInfo = await playdl.video_info(song.url);
             console.log(`[CUSTOM-PLAYER] Got video info for streaming`);
+            console.log(`[CUSTOM-PLAYER] VideoInfo type:`, typeof videoInfo);
+            console.log(`[CUSTOM-PLAYER] VideoInfo keys:`, Object.keys(videoInfo));
             
-            const stream = await playdl.stream_from_info(videoInfo, { quality: 2 });
+            // Use video_details from the info object
+            const stream = await playdl.stream_from_info(videoInfo.video_details, { quality: 2 });
             console.log(`[CUSTOM-PLAYER] Stream created successfully`);
             
             const resource = createAudioResource(stream.stream, {
