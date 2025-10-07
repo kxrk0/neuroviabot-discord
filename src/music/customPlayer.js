@@ -93,6 +93,11 @@ class CustomMusicPlayer {
         console.log(`[CUSTOM-PLAYER] Playing: ${track.title}`);
 
         try {
+            // URL kontrolü
+            if (!track.url || track.url === 'undefined' || track.url === 'null') {
+                throw new Error(`Invalid track URL: ${track.url}`);
+            }
+            
             // Play-dl ile stream oluştur
             console.log(`[CUSTOM-PLAYER] Creating stream for: ${track.url}`);
             const stream = await playdl.stream(track.url, {

@@ -97,13 +97,18 @@ module.exports = {
             }
 
             // Track bilgilerini hazırla
+            console.log(`[CUSTOM-PLAY] Search result keys:`, Object.keys(searchResult));
+            console.log(`[CUSTOM-PLAY] Search result URL:`, searchResult.url);
+            
             const track = {
                 title: searchResult.title,
                 author: searchResult.channel?.name || 'Bilinmiyor',
                 duration: searchResult.durationFormatted || 'Bilinmiyor',
-                url: searchResult.url,
+                url: searchResult.url || searchResult.link || `https://www.youtube.com/watch?v=${searchResult.id}`,
                 thumbnail: searchResult.thumbnails?.[0]?.url || null
             };
+            
+            console.log(`[CUSTOM-PLAY] Track URL:`, track.url);
 
             // Kuyruğa ekle
             await customPlayer.addTrack(interaction.guild.id, track, interaction.channel);
