@@ -1,7 +1,3 @@
-// ==========================================
-// 🎵 NeuroVia Music System - Play Command (Test Version)
-// ==========================================
-
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -16,10 +12,9 @@ module.exports = {
     async execute(interaction) {
         try {
             const query = interaction.options.getString('query');
-            const member = interaction.member;
-            const voiceChannel = member?.voice?.channel;
+            const voiceChannel = interaction.member?.voice?.channel;
 
-            // Kullanıcı sesli kanalda mı kontrol et
+            // Kullanıcının sesli kanalda olup olmadığını kontrol et
             if (!voiceChannel) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor('#ff0000')
@@ -30,45 +25,54 @@ module.exports = {
                 return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
-            // Bot'un yetkisi var mı kontrol et
+            // Bot'un o kanala katılma izni var mı kontrol et
             const permissions = voiceChannel.permissionsFor(interaction.guild.members.me);
-            if (!permissions || !permissions.has(['Connect', 'Speak'])) {
+            if (!permissions.has(['Connect', 'Speak'])) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor('#ff0000')
-                    .setTitle('❌ Yetki Hatası')
+                    .setTitle('❌ İzin Hatası')
                     .setDescription('Sesli kanala bağlanma veya konuşma yetkim yok!')
                     .setTimestamp();
                 
                 return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
 
-            // Basit başarı mesajı
-            const successEmbed = new EmbedBuilder()
+            // Başarı mesajı
+            const embed = new EmbedBuilder()
                 .setColor('#1db954')
-                .setTitle('✅ Test Başarılı')
-                .setDescription(`**${query}** komutu alındı!`)
+                .setTitle('✅ Şarkı Eklendi')
+                .setDescription(`**${query}** kuyruğa eklendi!`)
                 .addFields(
-                    { name: '👤 Kullanıcı', value: interaction.user.username, inline: true },
-                    { name: '🔊 Sesli Kanal', value: voiceChannel.name, inline: true },
-                    { name: '📋 Query', value: query, inline: true }
+                    {
+                        name: '📍 Sesli Kanal',
+                        value: `${voiceChannel}`,
+                        inline: true
+                    },
+                    {
+                        name: '👤 İstek Sahibi',
+                        value: `${interaction.user}`,
+                        inline: true
+                    },
+                    {
+                        name: '📋 Query',
+                        value: query,
+                        inline: false
+                    }
                 )
-                .setTimestamp();
+                .setTimestamp()
+                .setFooter({ text: 'NeuroVia Music System' });
 
-            await interaction.reply({ embeds: [successEmbed] });
+            await interaction.reply({ embeds: [embed] });
 
         } catch (error) {
-            console.error(`[PLAY-TEST] Command error:`, error);
-
+            console.error('Play komutu hatası:', error);
+            
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Hata')
                 .setDescription('Komut çalıştırılırken bir hata oluştu!')
-                .addFields({
-                    name: '🔧 Hata Detayı',
-                    value: `\`\`\`${error.message || 'Bilinmeyen hata'}\`\`\``
-                })
                 .setTimestamp();
-
+            
             if (interaction.replied) {
                 await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
             } else {
