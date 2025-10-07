@@ -20,9 +20,7 @@ class CustomMusicPlayer {
         });
         
         // Extractors'ları yükle
-        console.log('[CUSTOM-PLAYER] Loading extractors...');
-        this.player.extractors.loadDefault();
-        console.log('[CUSTOM-PLAYER] Extractors loaded successfully');
+        this.initializeExtractors();
         
         // Bağımlılık raporunu kontrol et
         console.log('[CUSTOM-PLAYER] Dependency report:', this.player.scanDeps());
@@ -31,6 +29,24 @@ class CustomMusicPlayer {
         this.player.on('debug', console.log);
         
         this.setupEventListeners();
+    }
+
+    async initializeExtractors() {
+        console.log('[CUSTOM-PLAYER] Loading extractors...');
+        try {
+            await this.player.extractors.loadDefault();
+            console.log('[CUSTOM-PLAYER] Extractors loaded successfully');
+        } catch (error) {
+            console.error('[CUSTOM-PLAYER] Failed to load extractors:', error);
+            // Manuel extractor yükleme
+            try {
+                const { YouTubeExtractor } = require('@discord-player/extractor');
+                this.player.extractors.register(YouTubeExtractor, {});
+                console.log('[CUSTOM-PLAYER] YouTube extractor registered manually');
+            } catch (manualError) {
+                console.error('[CUSTOM-PLAYER] Manual extractor registration failed:', manualError);
+            }
+        }
     }
 
     setupEventListeners() {

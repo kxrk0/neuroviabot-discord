@@ -384,6 +384,10 @@ async function startBot() {
         // Music Player'ı başlat
         const CustomMusicPlayer = require('./src/music/customPlayer');
         client.customPlayer = new CustomMusicPlayer(client);
+        
+        // Extractors'ları başlat
+        await client.customPlayer.initializeExtractors();
+        
         log('Custom Music Player başlatıldı!', 'SUCCESS');
         
         // Security ve Analytics sistemlerini başlat
