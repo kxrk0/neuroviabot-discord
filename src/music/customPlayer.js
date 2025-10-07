@@ -1,4 +1,5 @@
 const { DisTube } = require('distube');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
 const ffmpeg = require('ffmpeg-static');
@@ -7,32 +8,22 @@ class CustomMusicPlayer {
     constructor(client) {
         this.client = client;
         
-        // DisTube v4 oluştur - Stable YouTube support with FFmpeg
+        // DisTube v5 with yt-dlp plugin for robust YouTube support
         this.distube = new DisTube(client, {
-            leaveOnEmpty: true,
-            leaveOnFinish: false,
-            leaveOnStop: true,
-            savePreviousSongs: true,
-            emitNewSongOnly: true,
-            emitAddSongWhenCreatingQueue: false,
-            emitAddListWhenCreatingQueue: false,
-            nsfw: false,
-            emptyCooldown: 25,
+            plugins: [
+                new YtDlpPlugin({
+                    update: false // Set to true for auto-updates (requires yt-dlp binary)
+                })
+            ],
             ffmpeg: {
                 path: ffmpeg
-            },
-            ytdlOptions: {
-                quality: 'highestaudio',
-                filter: 'audioonly',
-                highWaterMark: 1 << 25,
-                dlChunkSize: 0
             }
         });
         
         // Event listener'ları kur
         this.setupEventListeners();
         
-        console.log('[CUSTOM-PLAYER] DisTube Music Player initialized successfully');
+        console.log('[CUSTOM-PLAYER] DisTube v5 with yt-dlp initialized successfully');
     }
     
     setupEventListeners() {
