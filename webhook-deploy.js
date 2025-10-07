@@ -13,7 +13,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.WEBHOOK_PORT || 9000;
-const SECRET = process.env.WEBHOOK_SECRET || 'change-this-secret';
+const SECRET = process.env.WEBHOOK_SECRET || 'fdd863a42064ec909542df57b48d3f160d6f6ccc36ce8e31c303d480e1f03186';
 const REPO_PATH = '/root/neuroviabot/bot';
 
 // Middleware
