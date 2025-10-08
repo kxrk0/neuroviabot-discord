@@ -172,8 +172,20 @@ async function handleEnable(interaction) {
 
     try {
         success = await toggleFeature(feature, true);
+        // Kısa bir bekleme ekle - config güncellemesi için
+        await new Promise(resolve => setTimeout(resolve, 100));
         // Hemen kontrol et
         isEnabled = featureManager.isFeatureEnabled(feature);
+        // ConfigSync ile de kontrol et
+        const configSync = require('../utils/configSync');
+        const configSyncEnabled = configSync.isFeatureEnabled(feature);
+        
+        if (isEnabled !== configSyncEnabled) {
+            logger.warn(`Feature senkronizasyon sorunu: featureManager=${isEnabled}, configSync=${configSyncEnabled}`);
+            // ConfigSync'i yeniden yükle
+            configSync.reloadConfig();
+            isEnabled = configSync.isFeatureEnabled(feature);
+        }
     } catch (error) {
         logger.error('Feature toggle error', error);
     }
@@ -264,8 +276,20 @@ async function handleDisable(interaction) {
 
     try {
         success = await toggleFeature(feature, false);
+        // Kısa bir bekleme ekle - config güncellemesi için
+        await new Promise(resolve => setTimeout(resolve, 100));
         // Hemen kontrol et
         isEnabled = featureManager.isFeatureEnabled(feature);
+        // ConfigSync ile de kontrol et
+        const configSync = require('../utils/configSync');
+        const configSyncEnabled = configSync.isFeatureEnabled(feature);
+        
+        if (isEnabled !== configSyncEnabled) {
+            logger.warn(`Feature senkronizasyon sorunu: featureManager=${isEnabled}, configSync=${configSyncEnabled}`);
+            // ConfigSync'i yeniden yükle
+            configSync.reloadConfig();
+            isEnabled = configSync.isFeatureEnabled(feature);
+        }
     } catch (error) {
         logger.error('Feature toggle error', error);
     }

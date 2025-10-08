@@ -115,8 +115,10 @@ class FeatureManager {
     // Config'i yeniden yükle
     reloadConfig() {
         try {
-            // Config cache'ini temizle
-            delete require.cache[require.resolve('../config.js')];
+            // Config cache'ini temizle - hem configPath hem de require.resolve kullan
+            const configResolvedPath = require.resolve('../config.js');
+            delete require.cache[this.configPath];
+            delete require.cache[configResolvedPath];
             
             logger.info('Config başarıyla yeniden yüklendi');
         } catch (error) {
@@ -127,8 +129,10 @@ class FeatureManager {
     // Özellik durumunu kontrol et (cache'siz)
     isFeatureEnabled(feature) {
         try {
-            // Config cache'ini temizle ve yeniden oku
-            delete require.cache[require.resolve('../config.js')];
+            // Config cache'ini temizle ve yeniden oku - hem configPath hem de require.resolve kullan
+            const configResolvedPath = require.resolve('../config.js');
+            delete require.cache[this.configPath];
+            delete require.cache[configResolvedPath];
             const config = require('../config.js');
             
             // Güvenli kontrol
@@ -147,8 +151,10 @@ class FeatureManager {
     // Tüm özellik durumlarını al (cache'siz)
     getAllFeatureStatus() {
         try {
-            // Config cache'ini temizle ve yeniden oku
-            delete require.cache[require.resolve('../config.js')];
+            // Config cache'ini temizle ve yeniden oku - hem configPath hem de require.resolve kullan
+            const configResolvedPath = require.resolve('../config.js');
+            delete require.cache[this.configPath];
+            delete require.cache[configResolvedPath];
             const config = require('../config.js');
             return config.features;
         } catch (error) {

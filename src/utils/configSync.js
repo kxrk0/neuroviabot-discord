@@ -15,8 +15,10 @@ class ConfigSync extends EventEmitter {
     // Config'i yeniden yükle ve tüm modüllere bildir
     reloadConfig() {
         try {
-            // Cache'i temizle
+            // Cache'i temizle - hem configPath hem de require.resolve kullan
+            const configResolvedPath = require.resolve('../config.js');
             delete require.cache[this.configPath];
+            delete require.cache[configResolvedPath];
             
             // Yeni config'i yükle
             const config = require('../config.js');
@@ -38,8 +40,10 @@ class ConfigSync extends EventEmitter {
     // Config'i güvenli şekilde al (her zaman güncel)
     getConfig() {
         try {
-            // Cache'i temizle
+            // Cache'i temizle - hem configPath hem de require.resolve kullan
+            const configResolvedPath = require.resolve('../config.js');
             delete require.cache[this.configPath];
+            delete require.cache[configResolvedPath];
             return require('../config.js');
         } catch (error) {
             logger.error('Config alma hatası', error);
