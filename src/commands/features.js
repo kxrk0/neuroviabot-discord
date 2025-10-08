@@ -103,6 +103,8 @@ module.exports = {
 
 // Özellik durumlarını göster
 async function handleStatus(interaction) {
+    await interaction.deferReply({ flags: 64 });
+    
     // Config cache'ini temizle ve yeniden yükle
     delete require.cache[require.resolve('../config.js')];
     const config = require('../config.js');
@@ -145,7 +147,7 @@ async function handleStatus(interaction) {
         })
         .setTimestamp();
 
-    await interaction.reply({ embeds: [statusEmbed], flags: 64 });
+    await interaction.editReply({ embeds: [statusEmbed] });
 }
 
 // Tek özelliği aktifleştir
@@ -153,7 +155,7 @@ async function handleEnable(interaction) {
     const feature = interaction.options.getString('özellik');
     
     // Defer reply to prevent timeout
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
     
     // Özelliği aktifleştir
     const success = await toggleFeature(feature, true);
@@ -214,7 +216,7 @@ async function handleDisable(interaction) {
     const feature = interaction.options.getString('özellik');
     
     // Defer reply to prevent timeout
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
     
     // Özelliği devre dışı bırak
     const success = await toggleFeature(feature, false);
