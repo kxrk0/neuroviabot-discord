@@ -67,8 +67,8 @@ module.exports = {
         
         console.log('🚀 Bot tamamen hazır ve çalışıyor!');
         
-        // Otomatik komut kaydı
-        registerCommands(client);
+        // Otomatik komut kaydı - Discord API rate limit nedeniyle geçici olarak devre dışı
+        // registerCommands(client);
     },
 };
 

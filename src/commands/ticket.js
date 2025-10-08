@@ -98,9 +98,6 @@ module.exports = {
         const configSync = require('../utils/configSync');
         const isEnabled = configSync.isFeatureEnabled('tickets');
         
-        // Debug log
-        console.log(`[TICKET-DEBUG] Ticket sistemi durumu: ${isEnabled}`);
-        console.log(`[TICKET-DEBUG] ConfigSync features:`, configSync.getAllFeatures());
         
         
         if (!isEnabled) {
@@ -181,9 +178,7 @@ async function handleSetup(interaction) {
         try {
             // Guild ayarlarını güncelle (Simple DB için)
             const db = require('../models');
-            const guildData = db.Guild.get(interaction.guild.id) || {};
-            db.Guild.set(interaction.guild.id, {
-                ...guildData,
+            await db.Guild.update(interaction.guild.id, {
                 ticketEnabled: true,
                 ticketCategoryId: category.id,
                 ticketSupportRoleId: supportRole.id,
