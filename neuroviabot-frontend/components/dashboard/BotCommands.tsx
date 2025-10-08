@@ -170,9 +170,10 @@ export default function BotCommands({ guildId, userId }: BotCommandsProps) {
       console.error('Command execution error:', error);
       
       // Error notification
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
       setNotifications(prev => [...prev, {
         id: Date.now().toString(),
-        message: `❌ ${command}${subcommand ? ` ${subcommand}` : ''} komutu hatası: ${error.message}`,
+        message: `❌ ${command}${subcommand ? ` ${subcommand}` : ''} komutu hatası: ${errorMessage}`,
         type: 'error'
       }]);
       

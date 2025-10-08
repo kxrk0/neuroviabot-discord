@@ -241,8 +241,8 @@ client.once('clientReady', async () => {
     
     // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
     
-    // Slash komutları kaydet - Rate limit queue sistemi ile
-    await registerSlashCommandsWithQueue();
+    // Slash komutları kaydet - Rate limit nedeniyle devre dışı
+    // await registerSlashCommandsWithQueue();
     
     log('Bot is ready and operational!', 'SUCCESS');
 });
