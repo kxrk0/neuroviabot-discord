@@ -97,9 +97,8 @@ module.exports = {
 
         // Çekiliş sistemi kontrolü
         // Config cache'ini temizle ve yeniden yükle
-        delete require.cache[require.resolve('../config.js')];
-        const config = require('../config.js');
-        if (!config.features.giveaways) {
+        const configSync = require('../utils/configSync');
+        if (!configSync.isFeatureEnabled('giveaways')) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Çekiliş Sistemi Kapalı')

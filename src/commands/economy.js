@@ -95,10 +95,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         // Ekonomi sistemi kontrolü
-        // Config cache'ini temizle ve yeniden yükle
-        delete require.cache[require.resolve('../config.js')];
-        const config = require('../config.js');
-        if (!config.features.economy) {
+        const configSync = require('../utils/configSync');
+        if (!configSync.isFeatureEnabled('economy')) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Ekonomi Sistemi Kapalı')

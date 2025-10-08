@@ -118,10 +118,9 @@ async function handleStatus(interaction) {
         await interaction.deferReply({ flags: 64 });
     }
     
-    // Config cache'ini temizle ve yeniden yükle
-    delete require.cache[require.resolve('../config.js')];
-    const config = require('../config.js');
-    const features = config.features;
+    // Config güncel durumunu al
+    const configSync = require('../utils/configSync');
+    const features = configSync.getAllFeatures();
     
     const statusEmbed = new EmbedBuilder()
         .setColor('#0099ff')

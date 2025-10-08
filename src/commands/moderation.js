@@ -206,9 +206,8 @@ module.exports = {
 
         // Moderasyon sistemi kontrolü
         // Config cache'ini temizle ve yeniden yükle
-        delete require.cache[require.resolve('../config.js')];
-        const config = require('../config.js');
-        if (!config.features.moderation) {
+        const configSync = require('../utils/configSync');
+        if (!configSync.isFeatureEnabled('moderation')) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Moderasyon Sistemi Kapalı')
