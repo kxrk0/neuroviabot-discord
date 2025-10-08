@@ -25,10 +25,11 @@ module.exports = {
                 
                 const totalServers = client.guilds.cache.size;
                 
-                // Rotate between website and stats
+                // Rotate between website, stats and maintenance notice
                 const activities = [
                     `neuroviabot.xyz 🌐`,
-                    `${totalUsers.toLocaleString()} kullanıcı | ${totalServers} sunucu 📊`
+                    `${totalUsers.toLocaleString()} kullanıcı | ${totalServers} sunucu 📊`,
+                    `🔧 Bakım modunda - Geliştirme devam ediyor`
                 ];
                 
                 const activityText = activities[activityIndex];

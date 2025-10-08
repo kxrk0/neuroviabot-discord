@@ -152,6 +152,9 @@ async function handleStatus(interaction) {
 async function handleEnable(interaction) {
     const feature = interaction.options.getString('özellik');
     
+    // Defer reply to prevent timeout
+    await interaction.deferReply({ ephemeral: true });
+    
     // Özelliği aktifleştir
     const success = await toggleFeature(feature, true);
     
@@ -162,7 +165,7 @@ async function handleEnable(interaction) {
             .setDescription('Özellik aktifleştirilirken bir hata oluştu!')
             .setTimestamp();
         
-        return await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        return await interaction.editReply({ embeds: [errorEmbed] });
     }
     
     // Değişikliği doğrula (güvenli)
@@ -203,12 +206,15 @@ async function handleEnable(interaction) {
         })
         .setTimestamp();
 
-    await interaction.reply({ embeds: [successEmbed], flags: 64 });
+    await interaction.editReply({ embeds: [successEmbed] });
 }
 
 // Tek özelliği devre dışı bırak
 async function handleDisable(interaction) {
     const feature = interaction.options.getString('özellik');
+    
+    // Defer reply to prevent timeout
+    await interaction.deferReply({ ephemeral: true });
     
     // Özelliği devre dışı bırak
     const success = await toggleFeature(feature, false);
@@ -220,7 +226,7 @@ async function handleDisable(interaction) {
             .setDescription('Özellik devre dışı bırakılırken bir hata oluştu!')
             .setTimestamp();
         
-        return await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        return await interaction.editReply({ embeds: [errorEmbed] });
     }
     
     // Değişikliği doğrula (güvenli)
@@ -261,11 +267,13 @@ async function handleDisable(interaction) {
         })
         .setTimestamp();
 
-    await interaction.reply({ embeds: [successEmbed], flags: 64 });
+    await interaction.editReply({ embeds: [successEmbed] });
 }
 
 // Tüm özellikleri aktifleştir
 async function handleEnableAll(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+    
     const features = ['tickets', 'economy', 'moderation', 'leveling', 'giveaways'];
     
     for (const feature of features) {
@@ -289,11 +297,13 @@ async function handleEnableAll(interaction) {
         })
         .setTimestamp();
 
-    await interaction.reply({ embeds: [successEmbed], flags: 64 });
+    await interaction.editReply({ embeds: [successEmbed] });
 }
 
 // Tüm özellikleri devre dışı bırak
 async function handleDisableAll(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+    
     const features = ['tickets', 'economy', 'moderation', 'leveling', 'giveaways'];
     
     for (const feature of features) {
@@ -322,7 +332,7 @@ async function handleDisableAll(interaction) {
         })
         .setTimestamp();
 
-    await interaction.reply({ embeds: [successEmbed], flags: 64 });
+    await interaction.editReply({ embeds: [successEmbed] });
 }
 
 // Özellik toggle fonksiyonu
