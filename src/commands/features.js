@@ -114,7 +114,9 @@ module.exports = {
 
 // Özellik durumlarını göster
 async function handleStatus(interaction) {
-    await interaction.deferReply({ flags: 64 });
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.deferReply({ flags: 64 });
+    }
     
     // Config cache'ini temizle ve yeniden yükle
     delete require.cache[require.resolve('../config.js')];
@@ -165,8 +167,10 @@ async function handleStatus(interaction) {
 async function handleEnable(interaction) {
     const feature = interaction.options.getString('özellik');
     
-    // Defer reply to prevent timeout
-    await interaction.deferReply({ flags: 64 });
+    // Defer reply to prevent timeout (only if not already replied/deferred)
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.deferReply({ flags: 64 });
+    }
     
     // Özelliği aktifleştir
     const success = await toggleFeature(feature, true);
@@ -226,8 +230,10 @@ async function handleEnable(interaction) {
 async function handleDisable(interaction) {
     const feature = interaction.options.getString('özellik');
     
-    // Defer reply to prevent timeout
-    await interaction.deferReply({ flags: 64 });
+    // Defer reply to prevent timeout (only if not already replied/deferred)
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.deferReply({ flags: 64 });
+    }
     
     // Özelliği devre dışı bırak
     const success = await toggleFeature(feature, false);
@@ -285,7 +291,9 @@ async function handleDisable(interaction) {
 
 // Tüm özellikleri aktifleştir
 async function handleEnableAll(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.deferReply({ flags: 64 });
+    }
     
     const features = ['tickets', 'economy', 'moderation', 'leveling', 'giveaways'];
     
@@ -315,7 +323,9 @@ async function handleEnableAll(interaction) {
 
 // Tüm özellikleri devre dışı bırak
 async function handleDisableAll(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.deferReply({ flags: 64 });
+    }
     
     const features = ['tickets', 'economy', 'moderation', 'leveling', 'giveaways'];
     
