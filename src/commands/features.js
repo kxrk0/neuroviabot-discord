@@ -85,17 +85,28 @@ module.exports = {
             }
         } catch (error) {
             logger.error('Features komut hatası', error);
+            console.error('❌ Features command error details:', {
+                message: error.message,
+                stack: error.stack,
+                subcommand: interaction.options.getSubcommand(),
+                user: interaction.user.tag,
+                guild: interaction.guild?.name
+            });
             
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Hata')
-                .setDescription('Komut çalıştırılırken bir hata oluştu!')
+                .setDescription(`Komut çalıştırılırken bir hata oluştu!\n\`\`\`${error.message}\`\`\``)
                 .setTimestamp();
 
-            if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [errorEmbed] });
-            } else {
-                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+            try {
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.editReply({ embeds: [errorEmbed] });
+                } else {
+                    await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+                }
+            } catch (replyError) {
+                logger.error('Failed to send error message', replyError);
             }
         }
     }

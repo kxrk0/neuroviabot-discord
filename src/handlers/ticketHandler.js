@@ -1,6 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
 const { Guild, Ticket, User } = require('../models');
 const { logger } = require('../utils/logger');
+const configSync = require('../utils/configSync');
 const { v4: uuidv4 } = require('uuid');
 
 class TicketHandler {
@@ -8,14 +9,18 @@ class TicketHandler {
         this.client = client;
         this.isEnabled = false;
         this.checkAndSetup();
+        
+        // Config güncellemelerini dinle
+        configSync.on('configUpdated', () => {
+            console.log('[TICKET-HANDLER] Config güncellendi, yeniden kontrol ediliyor...');
+            this.checkAndSetup();
+        });
     }
 
     checkAndSetup() {
         try {
-            // Config cache'ini temizle ve yeniden yükle
-            delete require.cache[require.resolve('../config.js')];
-            const config = require('../config.js');
-            this.isEnabled = config.features.tickets;
+            // ConfigSync ile güncel durumu al
+            this.isEnabled = configSync.isFeatureEnabled('tickets');
             
             if (this.isEnabled) {
                 this.setupEventListeners();

@@ -1,5 +1,6 @@
 const { ActivityType } = require('discord.js');
 const { logger } = require('../utils/logger');
+const CommandRegistrar = require('../utils/commandRegistrar');
 
 module.exports = {
     name: 'clientReady',
@@ -65,8 +66,25 @@ module.exports = {
         });
         
         console.log('🚀 Bot tamamen hazır ve çalışıyor!');
+        
+        // Otomatik komut kaydı
+        registerCommands(client);
     },
 };
+
+// Otomatik komut kaydı
+async function registerCommands(client) {
+    try {
+        // 5 saniye bekle - bot tamamen hazır olsun
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        logger.info('🔄 Otomatik komut kaydı başlatılıyor...');
+        const registrar = new CommandRegistrar(client);
+        await registrar.autoRegister();
+    } catch (error) {
+        logger.error('Otomatik komut kaydı hatası', error);
+    }
+}
 
 // Mevcut guild'leri database'e yükle
 function loadExistingGuilds(client) {

@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { logger } = require('./logger');
+const configSync = require('./configSync');
 
 class FeatureManager {
     constructor() {
@@ -27,8 +28,9 @@ class FeatureManager {
             // Config dosyasını güncelle
             fs.writeFileSync(this.configPath, updatedContent, 'utf8');
             
-            // Config'i yeniden yükle
+            // Config'i yeniden yükle ve senkronize et
             this.reloadConfig();
+            configSync.reloadConfig(); // ConfigSync'e de bildir
             
             // Değişikliği doğrula
             const isActuallyEnabled = this.isFeatureEnabled(feature);
