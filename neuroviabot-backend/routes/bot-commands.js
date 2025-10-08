@@ -17,7 +17,7 @@ router.post('/execute/:command', async (req, res) => {
 
         // Gerçek komut çalıştırma - Bot'a HTTP isteği gönder
         try {
-            const botResponse = await fetch(`http://localhost:3000/api/bot/execute-command`, {
+            const botResponse = await fetch(`http://localhost:3001/api/bot/execute-command`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ router.get('/commands/:guildId', async (req, res) => {
         
         // Bot'tan gerçek komut listesini al
         try {
-            const botResponse = await fetch(`http://localhost:3000/api/bot/commands`, {
+            const botResponse = await fetch(`http://localhost:3001/api/bot/commands`, {
                 headers: {
                     'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
                 },

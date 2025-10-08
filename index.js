@@ -502,15 +502,21 @@ startBot();
 
 // HTTP API Server for web interface
 const express = require('express');
-const webApi = require('./src/routes/webApi');
+const { router: webApiRouter, setClient } = require('./src/routes/webApi');
 
 const apiApp = express();
 apiApp.use(express.json());
-apiApp.use('/api/bot', webApi);
+apiApp.use('/api/bot', webApiRouter);
 
-const apiPort = process.env.BOT_API_PORT || 3000;
+const apiPort = process.env.BOT_API_PORT || 3001;
 apiApp.listen(apiPort, () => {
     log(`🌐 Bot HTTP API server started on port ${apiPort}`, 'SUCCESS');
+});
+
+// Client'ı bot hazır olduktan sonra set et
+client.once('ready', () => {
+    setClient(client);
+    log(`🌐 Client web API'ye bağlandı`, 'SUCCESS');
 });
 
 // Export client for other modules

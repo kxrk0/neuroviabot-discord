@@ -3,6 +3,14 @@ const router = express.Router();
 const { logger } = require('../utils/logger');
 const configSync = require('../utils/configSync');
 
+// Client'ı global olarak sakla
+let client = null;
+
+// Client'ı set et
+function setClient(clientInstance) {
+    client = clientInstance;
+}
+
 // Bot API anahtarı kontrolü
 const authenticateBotApi = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -49,12 +57,16 @@ router.post('/execute-command', authenticateBotApi, async (req, res) => {
 
 // Mock interaction objesi oluştur
 async function createMockInteraction(command, guildId, userId, subcommand, params) {
-    const guild = global.client.guilds.cache.get(guildId);
+    if (!client) {
+        throw new Error('Client henüz başlatılmadı');
+    }
+    
+    const guild = client.guilds.cache.get(guildId);
     if (!guild) {
         throw new Error('Sunucu bulunamadı');
     }
     
-    const user = global.client.users.cache.get(userId);
+    const user = client.users.cache.get(userId);
     if (!user) {
         throw new Error('Kullanıcı bulunamadı');
     }
@@ -99,13 +111,17 @@ async function createMockInteraction(command, guildId, userId, subcommand, param
 
 // Komut çalıştır
 async function executeCommand(interaction, commandName) {
-    const command = global.client.commands.get(commandName);
+    if (!client) {
+        throw new Error('Client henüz başlatılmadı');
+    }
+    
+    const command = client.commands.get(commandName);
     if (!command) {
         throw new Error(`Komut bulunamadı: ${commandName}`);
     }
     
     try {
-        await command.execute(interaction, global.client);
+        await command.execute(interaction, client);
         return `${commandName} komutu başarıyla çalıştırıldı`;
     } catch (error) {
         logger.error(`Komut çalıştırma hatası (${commandName}):`, error);
@@ -115,9 +131,13 @@ async function executeCommand(interaction, commandName) {
 
 // Komut listesi endpoint'i
 router.get('/commands', authenticateBotApi, (req, res) => {
+    if (!client) {
+        return res.status(500).json({ error: 'Client henüz başlatılmadı' });
+    }
+    
     const commands = [];
     
-    for (const [name, command] of global.client.commands) {
+    for (const [name, command] of client.commands) {
         const commandData = {
             name,
             description: command.data?.description || 'Açıklama yok',
@@ -165,12 +185,16 @@ function getCommandCategory(commandName) {
 
 // Bot durumu endpoint'i
 router.get('/status', authenticateBotApi, (req, res) => {
+    if (!client) {
+        return res.status(500).json({ error: 'Client henüz başlatılmadı' });
+    }
+    
     res.json({
-        online: global.client.readyAt ? true : false,
-        uptime: global.client.uptime,
-        guilds: global.client.guilds.cache.size,
-        users: global.client.users.cache.size,
-        commands: global.client.commands.size,
+        online: client.readyAt ? true : false,
+        uptime: client.uptime,
+        guilds: client.guilds.cache.size,
+        users: client.users.cache.size,
+        commands: client.commands.size,
         features: {
             economy: configSync.isFeatureEnabled('economy'),
             moderation: configSync.isFeatureEnabled('moderation'),
@@ -209,4 +233,4 @@ router.post('/toggle-feature', authenticateBotApi, async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = { router, setClient };
