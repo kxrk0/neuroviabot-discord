@@ -178,8 +178,11 @@ async function handleSetup(interaction) {
         await interaction.deferReply();
 
         try {
-            // Guild ayarlarını güncelle
-            await Guild.update(interaction.guild.id, {
+            // Guild ayarlarını güncelle (Simple DB için)
+            const db = require('../models');
+            const guildData = db.Guild.get(interaction.guild.id) || {};
+            db.Guild.set(interaction.guild.id, {
+                ...guildData,
                 ticketEnabled: true,
                 ticketCategoryId: category.id,
                 ticketSupportRoleId: supportRole.id,
@@ -477,12 +480,8 @@ async function handleClaim(interaction) {
     }
 
 async function handleUnclaim(interaction) {
-        const ticket = await Ticket.findOne({
-            where: {
-                channelId: interaction.channel.id,
-                status: { $in: ['open', 'in_progress'] }
-            }
-        });
+        const db = require('../models');
+        const ticket = db.Ticket.findByChannel(interaction.channel.id);
 
         if (!ticket) {
             const errorEmbed = new EmbedBuilder()
@@ -528,9 +527,8 @@ async function handleUnclaim(interaction) {
     }
 
 async function handleTranscript(interaction) {
-        const ticket = await Ticket.findOne({
-            where: { channelId: interaction.channel.id }
-        });
+        const db = require('../models');
+        const ticket = db.Ticket.findByChannel(interaction.channel.id);
 
         if (!ticket) {
             const errorEmbed = new EmbedBuilder()
