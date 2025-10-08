@@ -66,9 +66,7 @@ class FeatureManager {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             // Feature flag satırını bul (tickets: false, economy: true gibi)
-            const featureRegex = new RegExp(`^\\s*${feature}\\s*:\\s*(true|false)\\s*,?\\s*$`);
-            
-            if (featureRegex.test(line)) {
+            if (line.includes(`${feature}:`) && (line.includes('true') || line.includes('false'))) {
                 // Satırı güncelle
                 lines[i] = line.replace(/:\s*(true|false)/, `: ${enabled}`);
                 found = true;
