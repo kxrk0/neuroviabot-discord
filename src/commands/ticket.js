@@ -96,7 +96,13 @@ module.exports = {
 
         // Ticket sistemi kontrolü
         const configSync = require('../utils/configSync');
-        if (!configSync.isFeatureEnabled('tickets')) {
+        const isEnabled = configSync.isFeatureEnabled('tickets');
+        
+        // Debug log ekle
+        console.log(`[TICKET-DEBUG] Ticket sistemi durumu: ${isEnabled}`);
+        console.log(`[TICKET-DEBUG] ConfigSync features:`, configSync.getAllFeatures());
+        
+        if (!isEnabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Ticket Sistemi Kapalı')

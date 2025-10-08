@@ -55,9 +55,12 @@ class ConfigSync extends EventEmitter {
     isFeatureEnabled(feature) {
         const config = this.getConfig();
         if (!config || !config.features) {
+            console.log(`[CONFIGSYNC-DEBUG] Config veya features bulunamadı:`, { config: !!config, features: config?.features });
             return false;
         }
-        return config.features[feature] === true;
+        const isEnabled = config.features[feature] === true;
+        console.log(`[CONFIGSYNC-DEBUG] ${feature} durumu: ${isEnabled} (config.features.${feature} = ${config.features[feature]})`);
+        return isEnabled;
     }
 
     // Tüm özellik durumlarını al
