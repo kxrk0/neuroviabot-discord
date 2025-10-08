@@ -9,41 +9,8 @@ class WebCommandHandler {
     }
 
     setupSocketHandlers() {
-        // Web arayüzünden gelen komutları dinle
-        this.client.on('webCommand', async (data) => {
-            try {
-                const { command, guildId, userId, subcommand, params } = data;
-                
-                logger.info(`🌐 Web komutu alındı: ${command}${subcommand ? ` ${subcommand}` : ''} - Guild: ${guildId}, User: ${userId}`);
-                
-                // Komutu çalıştır
-                const result = await this.executeWebCommand(command, guildId, userId, subcommand, params);
-                
-                // Sonucu web arayüzüne gönder
-                this.client.emit('webCommandResult', {
-                    command,
-                    guildId,
-                    userId,
-                    subcommand,
-                    success: true,
-                    result,
-                    timestamp: Date.now()
-                });
-                
-            } catch (error) {
-                logger.error('Web komut hatası:', error);
-                
-                this.client.emit('webCommandResult', {
-                    command: data.command,
-                    guildId: data.guildId,
-                    userId: data.userId,
-                    subcommand: data.subcommand,
-                    success: false,
-                    error: error.message,
-                    timestamp: Date.now()
-                });
-            }
-        });
+        // HTTP API üzerinden komut çalıştırma desteği
+        logger.info('🌐 WebCommandHandler başlatıldı - HTTP API modunda');
     }
 
     async executeWebCommand(command, guildId, userId, subcommand, params) {

@@ -136,20 +136,13 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Web command execution
+  // Web command execution - HTTP API üzerinden
   socket.on('executeCommand', (data) => {
     const { command, guildId, userId, subcommand, params } = data;
     console.log(`[Socket.IO] Web command execution: ${command}${subcommand ? ` ${subcommand}` : ''} for guild ${guildId}`);
     
-    // Forward to bot
-    io.to(`guild_${guildId}`).emit('webCommand', {
-      command,
-      guildId,
-      userId,
-      subcommand,
-      params,
-      timestamp: Date.now()
-    });
+    // HTTP API üzerinden komut çalıştırma
+    // Bu işlem artık doğrudan HTTP endpoint'leri üzerinden yapılacak
   });
 
   // Broadcast to guild room (from bot)

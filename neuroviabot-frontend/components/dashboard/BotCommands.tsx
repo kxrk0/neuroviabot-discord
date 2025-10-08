@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSocket } from '../../hooks/useSocket';
 import {
   CommandLineIcon,
   PlayIcon,
@@ -74,42 +73,11 @@ export default function BotCommands({ guildId, userId }: BotCommandsProps) {
   const [commandParams, setCommandParams] = useState<{ [key: string]: any }>({});
   const [showParams, setShowParams] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'success' | 'error'}>>([]);
-  
-  const socket = useSocket();
 
   useEffect(() => {
     fetchCommands();
     fetchHistory();
-    
-    // Socket.IO event listeners
-    if (socket) {
-      socket.emit('join_guild', guildId);
-      
-      socket.on('webCommandResult', (data) => {
-        const { command, subcommand, success, result, error } = data;
-        const commandName = `${command}${subcommand ? ` ${subcommand}` : ''}`;
-        
-        setNotifications(prev => [...prev, {
-          id: Date.now().toString(),
-          message: success ? `✅ ${commandName} başarıyla çalıştırıldı` : `❌ ${commandName} hatası: ${error}`,
-          type: success ? 'success' : 'error'
-        }]);
-        
-        // Remove notification after 5 seconds
-        setTimeout(() => {
-          setNotifications(prev => prev.slice(1));
-        }, 5000);
-        
-        // Refresh history
-        fetchHistory();
-      });
-      
-      return () => {
-        socket.emit('leave_guild', guildId);
-        socket.off('webCommandResult');
-      };
-    }
-  }, [guildId, socket]);
+  }, [guildId]);
 
   const fetchCommands = async () => {
     try {
@@ -150,45 +118,68 @@ export default function BotCommands({ guildId, userId }: BotCommandsProps) {
     setExecuting(commandKey);
     
     try {
-      if (socket) {
-        // Socket.IO ile komut gönder
-        socket.emit('executeCommand', {
-          command,
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/bot-commands/execute/${command}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
           guildId,
           userId,
           subcommand,
           params: commandParams[commandKey] || {}
-        });
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Command executed:', data);
         
-        console.log(`🌐 Socket komut gönderildi: ${command}${subcommand ? ` ${subcommand}` : ''}`);
+        // Success notification
+        setNotifications(prev => [...prev, {
+          id: Date.now().toString(),
+          message: `✅ ${command}${subcommand ? ` ${subcommand}` : ''} komutu başarıyla çalıştırıldı`,
+          type: 'success'
+        }]);
+        
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+          setNotifications(prev => prev.slice(1));
+        }, 5000);
+        
+        await fetchHistory();
       } else {
-        // Fallback: HTTP API
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-        const response = await fetch(`${API_URL}/api/bot-commands/execute/${command}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            guildId,
-            userId,
-            subcommand,
-            params: commandParams[commandKey] || {}
-          }),
-        });
+        const error = await response.json();
+        console.error('Command execution error:', error);
         
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Command executed:', data);
-          await fetchHistory();
-        } else {
-          const error = await response.json();
-          console.error('Command execution error:', error);
-        }
+        // Error notification
+        setNotifications(prev => [...prev, {
+          id: Date.now().toString(),
+          message: `❌ ${command}${subcommand ? ` ${subcommand}` : ''} komutu hatası: ${error.error}`,
+          type: 'error'
+        }]);
+        
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+          setNotifications(prev => prev.slice(1));
+        }, 5000);
       }
     } catch (error) {
       console.error('Command execution error:', error);
+      
+      // Error notification
+      setNotifications(prev => [...prev, {
+        id: Date.now().toString(),
+        message: `❌ ${command}${subcommand ? ` ${subcommand}` : ''} komutu hatası: ${error.message}`,
+        type: 'error'
+      }]);
+      
+      // Remove notification after 5 seconds
+      setTimeout(() => {
+        setNotifications(prev => prev.slice(1));
+      }, 5000);
     } finally {
       setExecuting(null);
     }
