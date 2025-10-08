@@ -165,6 +165,18 @@ async function handleEnable(interaction) {
         return await interaction.reply({ embeds: [errorEmbed], flags: 64 });
     }
     
+    // Değişikliği doğrula
+    const isActuallyEnabled = featureManager.isFeatureEnabled(feature);
+    if (!isActuallyEnabled) {
+        const errorEmbed = new EmbedBuilder()
+            .setColor('#ff0000')
+            .setTitle('❌ Doğrulama Hatası')
+            .setDescription('Özellik aktifleştirildi ancak doğrulama başarısız!')
+            .setTimestamp();
+        
+        return await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+    }
+    
     const featureNames = {
         tickets: '🎫 Ticket Sistemi',
         economy: '💰 Ekonomi Sistemi',
@@ -206,6 +218,18 @@ async function handleDisable(interaction) {
             .setColor('#ff0000')
             .setTitle('❌ Hata')
             .setDescription('Özellik devre dışı bırakılırken bir hata oluştu!')
+            .setTimestamp();
+        
+        return await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+    }
+    
+    // Değişikliği doğrula
+    const isActuallyEnabled = featureManager.isFeatureEnabled(feature);
+    if (isActuallyEnabled) {
+        const errorEmbed = new EmbedBuilder()
+            .setColor('#ff0000')
+            .setTitle('❌ Doğrulama Hatası')
+            .setDescription('Özellik devre dışı bırakıldı ancak doğrulama başarısız!')
             .setTimestamp();
         
         return await interaction.reply({ embeds: [errorEmbed], flags: 64 });

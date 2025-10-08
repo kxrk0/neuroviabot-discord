@@ -30,6 +30,13 @@ class FeatureManager {
             // Config'i yeniden yükle
             this.reloadConfig();
             
+            // Değişikliği doğrula
+            const isActuallyEnabled = this.isFeatureEnabled(feature);
+            if (isActuallyEnabled !== enabled) {
+                logger.error(`Feature toggle doğrulama başarısız: ${feature} beklenen=${enabled}, gerçek=${isActuallyEnabled}`);
+                return false;
+            }
+            
             logger.info(`Özellik ${enabled ? 'aktifleştirildi' : 'devre dışı bırakıldı'}: ${feature}`);
             
             return true;
@@ -52,16 +59,20 @@ class FeatureManager {
 
     // Config içeriğinde feature flag'i güncelle
     updateFeatureFlag(content, feature, enabled) {
-        // Feature flag'i bul ve değiştir - basit string replace
+        // Feature flag'i bul ve değiştir - daha güvenli regex
         const lines = content.split('\n');
         let found = false;
         
         for (let i = 0; i < lines.length; i++) {
-            // tickets: false veya tickets: true şeklindeki satırı bul
-            if (lines[i].includes(`${feature}:`) && (lines[i].includes('true') || lines[i].includes('false'))) {
+            const line = lines[i];
+            // Feature flag satırını bul (tickets: false, economy: true gibi)
+            const featureRegex = new RegExp(`^\\s*${feature}\\s*:\\s*(true|false)\\s*,?\\s*$`);
+            
+            if (featureRegex.test(line)) {
                 // Satırı güncelle
-                lines[i] = lines[i].replace(/:\s*(true|false)/, `: ${enabled}`);
+                lines[i] = line.replace(/:\s*(true|false)/, `: ${enabled}`);
                 found = true;
+                logger.info(`Feature flag güncellendi: ${feature} = ${enabled}`);
                 break;
             }
         }
@@ -113,9 +124,11 @@ class FeatureManager {
         }
     }
 
-    // Özellik durumunu kontrol et
+    // Özellik durumunu kontrol et (cache'siz)
     isFeatureEnabled(feature) {
         try {
+            // Config cache'ini temizle ve yeniden oku
+            delete require.cache[require.resolve('../config.js')];
             const config = require('../config.js');
             return config.features[feature] === true;
         } catch (error) {
@@ -124,9 +137,11 @@ class FeatureManager {
         }
     }
 
-    // Tüm özellik durumlarını al
+    // Tüm özellik durumlarını al (cache'siz)
     getAllFeatureStatus() {
         try {
+            // Config cache'ini temizle ve yeniden oku
+            delete require.cache[require.resolve('../config.js')];
             const config = require('../config.js');
             return config.features;
         } catch (error) {
