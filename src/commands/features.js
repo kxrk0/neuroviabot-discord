@@ -166,37 +166,19 @@ async function handleStatus(interaction) {
 // Tek özelliği aktifleştir
 async function handleEnable(interaction) {
     const feature = interaction.options.getString('özellik');
-    
-    // Defer reply to prevent timeout (only if not already replied/deferred)
-    if (!interaction.replied && !interaction.deferred) {
-        await interaction.deferReply({ flags: 64 });
-    }
-    
-    // Özelliği aktifleştir
-    const success = await toggleFeature(feature, true);
-    
-    if (!success) {
-        const errorEmbed = new EmbedBuilder()
-            .setColor('#ff0000')
-            .setTitle('❌ Hata')
-            .setDescription('Özellik aktifleştirilirken bir hata oluştu!')
-            .setTimestamp();
-        
-        return await interaction.editReply({ embeds: [errorEmbed] });
-    }
-    
-    // Değişikliği doğrula (güvenli)
+
+    // Özelliği aktifleştir (sync olarak dene önce)
+    let success = false;
+    let isEnabled = false;
+
     try {
-        const isActuallyEnabled = featureManager.isFeatureEnabled(feature);
-        if (!isActuallyEnabled) {
-            logger.warn(`Feature doğrulama başarısız: ${feature}`);
-            // Doğrulama başarısız olsa bile devam et, çünkü toggle başarılı oldu
-        }
+        success = await toggleFeature(feature, true);
+        // Hemen kontrol et
+        isEnabled = featureManager.isFeatureEnabled(feature);
     } catch (error) {
-        logger.error('Feature doğrulama hatası', error);
-        // Hata olsa bile devam et
+        logger.error('Feature toggle error', error);
     }
-    
+
     const featureNames = {
         tickets: '🎫 Ticket Sistemi',
         economy: '💰 Ekonomi Sistemi',
@@ -206,58 +188,61 @@ async function handleEnable(interaction) {
     };
 
     const featureName = featureNames[feature] || feature;
-    const successEmbed = new EmbedBuilder()
-        .setColor('#00ff00')
-        .setTitle('✅ Özellik Aktifleştirildi')
-        .setDescription(`${featureName} başarıyla aktifleştirildi!`)
-        .addFields(
-            {
-                name: '📝 Not',
-                value: 'Özellik aktifleştirildi. İlgili komutlar artık kullanılabilir.',
-                inline: false
-            }
-        )
-        .setFooter({ 
-            text: `Komut kullanan: ${interaction.user.tag}`,
-            iconURL: interaction.user.displayAvatarURL()
-        })
-        .setTimestamp();
 
-    await interaction.editReply({ embeds: [successEmbed] });
+    if (success && isEnabled) {
+        const successEmbed = new EmbedBuilder()
+            .setColor('#00ff00')
+            .setTitle('✅ Özellik Aktifleştirildi')
+            .setDescription(`${featureName} başarıyla aktifleştirildi!`)
+            .addFields(
+                {
+                    name: '📝 Not',
+                    value: 'Özellik aktifleştirildi. İlgili komutlar artık kullanılabilir.',
+                    inline: false
+                }
+            )
+            .setFooter({
+                text: `Komut kullanan: ${interaction.user.tag}`,
+                iconURL: interaction.user.displayAvatarURL()
+            })
+            .setTimestamp();
+
+        // Güvenli yanıt gönder
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({ embeds: [successEmbed], flags: 64 });
+        } else {
+            await interaction.editReply({ embeds: [successEmbed] });
+        }
+    } else {
+        const errorEmbed = new EmbedBuilder()
+            .setColor('#ff0000')
+            .setTitle('❌ Hata')
+            .setDescription(`Özellik aktifleştirilirken bir hata oluştu!\n\`\`\`${success ? 'Doğrulama başarısız' : 'Toggle başarısız'}\`\`\``)
+            .setTimestamp();
+
+        // Güvenli yanıt gönder
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        } else {
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    }
 }
 
 // Tek özelliği devre dışı bırak
 async function handleDisable(interaction) {
     const feature = interaction.options.getString('özellik');
-    
-    // Defer reply to prevent timeout (only if not already replied/deferred)
-    if (!interaction.replied && !interaction.deferred) {
-        await interaction.deferReply({ flags: 64 });
-    }
-    
-    // Özelliği devre dışı bırak
-    const success = await toggleFeature(feature, false);
-    
-    if (!success) {
-        const errorEmbed = new EmbedBuilder()
-            .setColor('#ff0000')
-            .setTitle('❌ Hata')
-            .setDescription('Özellik devre dışı bırakılırken bir hata oluştu!')
-            .setTimestamp();
-        
-        return await interaction.editReply({ embeds: [errorEmbed] });
-    }
-    
-    // Değişikliği doğrula (güvenli)
+
+    // Özelliği devre dışı bırak (sync olarak dene önce)
+    let success = false;
+    let isEnabled = false;
+
     try {
-        const isActuallyEnabled = featureManager.isFeatureEnabled(feature);
-        if (isActuallyEnabled) {
-            logger.warn(`Feature doğrulama başarısız: ${feature} hala aktif`);
-            // Doğrulama başarısız olsa bile devam et, çünkü toggle başarılı oldu
-        }
+        success = await toggleFeature(feature, false);
+        // Hemen kontrol et
+        isEnabled = featureManager.isFeatureEnabled(feature);
     } catch (error) {
-        logger.error('Feature doğrulama hatası', error);
-        // Hata olsa bile devam et
+        logger.error('Feature toggle error', error);
     }
     
     const featureNames = {
@@ -269,42 +254,71 @@ async function handleDisable(interaction) {
     };
 
     const featureName = featureNames[feature] || feature;
-    const successEmbed = new EmbedBuilder()
-        .setColor('#ff6b6b')
-        .setTitle('❌ Özellik Devre Dışı')
-        .setDescription(`${featureName} devre dışı bırakıldı!`)
-        .addFields(
-            {
-                name: '📝 Not',
-                value: 'Özellik devre dışı bırakıldı. İlgili komutlar artık kullanılamaz.',
-                inline: false
-            }
-        )
-        .setFooter({ 
-            text: `Komut kullanan: ${interaction.user.tag}`,
-            iconURL: interaction.user.displayAvatarURL()
-        })
-        .setTimestamp();
 
-    await interaction.editReply({ embeds: [successEmbed] });
+    if (success && !isEnabled) {
+        const successEmbed = new EmbedBuilder()
+            .setColor('#00ff00')
+            .setTitle('✅ Özellik Devre Dışı Bırakıldı')
+            .setDescription(`${featureName} başarıyla devre dışı bırakıldı!`)
+            .addFields(
+                {
+                    name: '📝 Not',
+                    value: 'Özellik devre dışı bırakıldı. İlgili komutlar artık kullanılamayacak.',
+                    inline: false
+                }
+            )
+            .setFooter({
+                text: `Komut kullanan: ${interaction.user.tag}`,
+                iconURL: interaction.user.displayAvatarURL()
+            })
+            .setTimestamp();
+
+        // Güvenli yanıt gönder
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({ embeds: [successEmbed], flags: 64 });
+        } else {
+            await interaction.editReply({ embeds: [successEmbed] });
+        }
+    } else {
+        const errorEmbed = new EmbedBuilder()
+            .setColor('#ff0000')
+            .setTitle('❌ Hata')
+            .setDescription(`Özellik devre dışı bırakılırken bir hata oluştu!\n\`\`\`${success ? 'Doğrulama başarısız' : 'Toggle başarısız'}\`\`\``)
+            .setTimestamp();
+
+        // Güvenli yanıt gönder
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        } else {
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    }
 }
 
 // Tüm özellikleri aktifleştir
 async function handleEnableAll(interaction) {
-    if (!interaction.replied && !interaction.deferred) {
-        await interaction.deferReply({ flags: 64 });
-    }
-    
     const features = ['tickets', 'economy', 'moderation', 'leveling', 'giveaways'];
-    
+
+    // Tüm özellikleri aktifleştir
+    let successCount = 0;
     for (const feature of features) {
-        await toggleFeature(feature, true);
+        try {
+            const success = await toggleFeature(feature, true);
+            if (success && featureManager.isFeatureEnabled(feature)) {
+                successCount++;
+            }
+        } catch (error) {
+            logger.error(`Feature toggle error for ${feature}`, error);
+        }
     }
 
     const successEmbed = new EmbedBuilder()
-        .setColor('#00ff00')
-        .setTitle('🚀 Tüm Özellikler Aktifleştirildi')
-        .setDescription('Tüm bot özellikleri başarıyla aktifleştirildi!')
+        .setColor(successCount === features.length ? '#00ff00' : '#ffa500')
+        .setTitle(successCount === features.length ? '🚀 Tüm Özellikler Aktifleştirildi' : '⚠️ Kısmi Başarı')
+        .setDescription(successCount === features.length ?
+            'Tüm bot özellikleri başarıyla aktifleştirildi!' :
+            `${successCount}/${features.length} özellik aktifleştirildi. Bazı özelliklerde sorun var.`
+        )
         .addFields(
             {
                 name: '✅ Aktifleştirilen Özellikler',
@@ -312,31 +326,44 @@ async function handleEnableAll(interaction) {
                 inline: false
             }
         )
-        .setFooter({ 
+        .setFooter({
             text: `Komut kullanan: ${interaction.user.tag}`,
             iconURL: interaction.user.displayAvatarURL()
         })
         .setTimestamp();
 
-    await interaction.editReply({ embeds: [successEmbed] });
+    // Güvenli yanıt gönder
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ embeds: [successEmbed], flags: 64 });
+    } else {
+        await interaction.editReply({ embeds: [successEmbed] });
+    }
 }
 
 // Tüm özellikleri devre dışı bırak
 async function handleDisableAll(interaction) {
-    if (!interaction.replied && !interaction.deferred) {
-        await interaction.deferReply({ flags: 64 });
-    }
-    
     const features = ['tickets', 'economy', 'moderation', 'leveling', 'giveaways'];
-    
+
+    // Tüm özellikleri devre dışı bırak
+    let successCount = 0;
     for (const feature of features) {
-        await toggleFeature(feature, false);
+        try {
+            const success = await toggleFeature(feature, false);
+            if (success && !featureManager.isFeatureEnabled(feature)) {
+                successCount++;
+            }
+        } catch (error) {
+            logger.error(`Feature toggle error for ${feature}`, error);
+        }
     }
 
     const successEmbed = new EmbedBuilder()
-        .setColor('#ff6b6b')
-        .setTitle('🛑 Tüm Özellikler Devre Dışı')
-        .setDescription('Tüm bot özellikleri devre dışı bırakıldı!')
+        .setColor(successCount === features.length ? '#00ff00' : '#ffa500')
+        .setTitle(successCount === features.length ? '🛑 Tüm Özellikler Devre Dışı Bırakıldı' : '⚠️ Kısmi Başarı')
+        .setDescription(successCount === features.length ?
+            'Tüm bot özellikleri başarıyla devre dışı bırakıldı!' :
+            `${successCount}/${features.length} özellik devre dışı bırakıldı. Bazı özelliklerde sorun var.`
+        )
         .addFields(
             {
                 name: '❌ Devre Dışı Bırakılan Özellikler',
@@ -349,21 +376,31 @@ async function handleDisableAll(interaction) {
                 inline: false
             }
         )
-        .setFooter({ 
+        .setFooter({
             text: `Komut kullanan: ${interaction.user.tag}`,
             iconURL: interaction.user.displayAvatarURL()
         })
         .setTimestamp();
 
-    await interaction.editReply({ embeds: [successEmbed] });
+    // Güvenli yanıt gönder
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ embeds: [successEmbed], flags: 64 });
+    } else {
+        await interaction.editReply({ embeds: [successEmbed] });
+    }
 }
 
 // Özellik toggle fonksiyonu
 async function toggleFeature(feature, enabled) {
     try {
-        // FeatureManager ile özelliği toggle et
-        const success = await featureManager.toggleFeature(feature, enabled);
-        
+        // FeatureManager ile özelliği toggle et (timeout ekle)
+        const success = await Promise.race([
+            featureManager.toggleFeature(feature, enabled),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Feature toggle timeout')), 5000)
+            )
+        ]);
+
         if (success) {
             return true;
         } else {
