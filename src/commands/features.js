@@ -207,11 +207,24 @@ async function handleEnable(interaction) {
             })
             .setTimestamp();
 
-        // Güvenli yanıt gönder
-        if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({ embeds: [successEmbed], flags: 64 });
-        } else {
-            await interaction.editReply({ embeds: [successEmbed] });
+        // Daha güvenli yanıt gönder - önce durumu kontrol et
+        try {
+            if (interaction.replied) {
+                // Zaten yanıtlandıysa hiçbir şey yapma
+                logger.info('Interaction zaten yanıtlandı, sessizce devam ediliyor');
+                return;
+            }
+
+            if (interaction.deferred) {
+                // Defer edilmişse editReply kullan
+                await interaction.editReply({ embeds: [successEmbed] });
+            } else {
+                // Hiçbir şey yoksa normal reply kullan
+                await interaction.reply({ embeds: [successEmbed], flags: 64 });
+            }
+        } catch (replyError) {
+            logger.error('Yanıt gönderme hatası (başarı durumu)', replyError);
+            // Sessizce devam et - kullanıcı zaten bilgilendirildi
         }
     } else {
         const errorEmbed = new EmbedBuilder()
@@ -220,11 +233,24 @@ async function handleEnable(interaction) {
             .setDescription(`Özellik aktifleştirilirken bir hata oluştu!\n\`\`\`${success ? 'Doğrulama başarısız' : 'Toggle başarısız'}\`\`\``)
             .setTimestamp();
 
-        // Güvenli yanıt gönder
-        if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({ embeds: [errorEmbed], flags: 64 });
-        } else {
-            await interaction.editReply({ embeds: [errorEmbed] });
+        // Daha güvenli hata mesajı gönder - önce durumu kontrol et
+        try {
+            if (interaction.replied) {
+                // Zaten yanıtlandıysa hiçbir şey yapma
+                logger.info('Interaction zaten yanıtlandı, hata mesajı gönderilemiyor');
+                return;
+            }
+
+            if (interaction.deferred) {
+                // Defer edilmişse editReply kullan
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                // Hiçbir şey yoksa normal reply kullan
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+            }
+        } catch (replyError) {
+            logger.error('Hata mesajı gönderme hatası', replyError);
+            // Sessizce devam et - zaten hata durumunda
         }
     }
 }
@@ -273,11 +299,24 @@ async function handleDisable(interaction) {
             })
             .setTimestamp();
 
-        // Güvenli yanıt gönder
-        if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({ embeds: [successEmbed], flags: 64 });
-        } else {
-            await interaction.editReply({ embeds: [successEmbed] });
+        // Daha güvenli yanıt gönder - önce durumu kontrol et
+        try {
+            if (interaction.replied) {
+                // Zaten yanıtlandıysa hiçbir şey yapma
+                logger.info('Interaction zaten yanıtlandı, sessizce devam ediliyor');
+                return;
+            }
+
+            if (interaction.deferred) {
+                // Defer edilmişse editReply kullan
+                await interaction.editReply({ embeds: [successEmbed] });
+            } else {
+                // Hiçbir şey yoksa normal reply kullan
+                await interaction.reply({ embeds: [successEmbed], flags: 64 });
+            }
+        } catch (replyError) {
+            logger.error('Yanıt gönderme hatası (başarı durumu)', replyError);
+            // Sessizce devam et - kullanıcı zaten bilgilendirildi
         }
     } else {
         const errorEmbed = new EmbedBuilder()
@@ -286,11 +325,24 @@ async function handleDisable(interaction) {
             .setDescription(`Özellik devre dışı bırakılırken bir hata oluştu!\n\`\`\`${success ? 'Doğrulama başarısız' : 'Toggle başarısız'}\`\`\``)
             .setTimestamp();
 
-        // Güvenli yanıt gönder
-        if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({ embeds: [errorEmbed], flags: 64 });
-        } else {
-            await interaction.editReply({ embeds: [errorEmbed] });
+        // Daha güvenli hata mesajı gönder - önce durumu kontrol et
+        try {
+            if (interaction.replied) {
+                // Zaten yanıtlandıysa hiçbir şey yapma
+                logger.info('Interaction zaten yanıtlandı, hata mesajı gönderilemiyor');
+                return;
+            }
+
+            if (interaction.deferred) {
+                // Defer edilmişse editReply kullan
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                // Hiçbir şey yoksa normal reply kullan
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
+            }
+        } catch (replyError) {
+            logger.error('Hata mesajı gönderme hatası', replyError);
+            // Sessizce devam et - zaten hata durumunda
         }
     }
 }
