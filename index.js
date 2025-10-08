@@ -241,8 +241,8 @@ client.once('clientReady', async () => {
     
     // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
     
-    // Slash komutları kaydet
-    await registerSlashCommands();
+    // Slash komutları kaydet - Discord API rate limit nedeniyle geçici olarak devre dışı
+    // await registerSlashCommands();
     
     log('Bot is ready and operational!', 'SUCCESS');
 });
