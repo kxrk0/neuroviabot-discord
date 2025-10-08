@@ -114,9 +114,11 @@ module.exports = {
 
 // Özellik durumlarını göster
 async function handleStatus(interaction) {
-    if (!interaction.replied && !interaction.deferred) {
-        await interaction.deferReply({ flags: 64 });
-    }
+    // Hızlı yanıt gönder - deferReply kullanma
+    try {
+        if (interaction.replied || interaction.deferred) {
+            return; // Zaten yanıtlandıysa çık
+        }
     
     // Config güncel durumunu al
     const configSync = require('../utils/configSync');
@@ -159,7 +161,12 @@ async function handleStatus(interaction) {
         })
         .setTimestamp();
 
-    await interaction.editReply({ embeds: [statusEmbed] });
+        // Hızlı yanıt gönder
+        await interaction.reply({ embeds: [statusEmbed], flags: 64 });
+    } catch (error) {
+        logger.error('Status command error', error);
+        // Sessizce devam et
+    }
 }
 
 // Tek özelliği aktifleştir
@@ -172,8 +179,8 @@ async function handleEnable(interaction) {
 
     try {
         success = await toggleFeature(feature, true);
-        // Kısa bir bekleme ekle - config güncellemesi için
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Çok kısa bir bekleme ekle - config güncellemesi için
+        await new Promise(resolve => setTimeout(resolve, 50));
         // Hemen kontrol et
         isEnabled = featureManager.isFeatureEnabled(feature);
         // ConfigSync ile de kontrol et
@@ -276,8 +283,8 @@ async function handleDisable(interaction) {
 
     try {
         success = await toggleFeature(feature, false);
-        // Kısa bir bekleme ekle - config güncellemesi için
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Çok kısa bir bekleme ekle - config güncellemesi için
+        await new Promise(resolve => setTimeout(resolve, 50));
         // Hemen kontrol et
         isEnabled = featureManager.isFeatureEnabled(feature);
         // ConfigSync ile de kontrol et
