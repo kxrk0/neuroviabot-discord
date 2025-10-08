@@ -34,7 +34,6 @@ class FeatureManager {
             
             // Değişikliği doğrula
             const isActuallyEnabled = this.isFeatureEnabled(feature);
-            console.log(`[FEATUREMANAGER-DEBUG] ${feature} toggle sonucu: beklenen=${enabled}, gerçek=${isActuallyEnabled}`);
             
             if (isActuallyEnabled !== enabled) {
                 logger.error(`Feature toggle doğrulama başarısız: ${feature} beklenen=${enabled}, gerçek=${isActuallyEnabled}`);

@@ -194,9 +194,6 @@ async function handleEnable(interaction) {
             isEnabled = configSync.isFeatureEnabled(feature);
         }
         
-        // Debug log ekle
-        console.log(`[FEATURES-DEBUG] ${feature} aktifleştirme sonucu: success=${success}, isEnabled=${isEnabled}, configSync=${configSyncEnabled}`);
-        console.log(`[FEATURES-DEBUG] ConfigSync tüm features:`, configSync.getAllFeatures());
     } catch (error) {
         logger.error('Feature toggle error', error);
     }
@@ -302,9 +299,6 @@ async function handleDisable(interaction) {
             isEnabled = configSync.isFeatureEnabled(feature);
         }
         
-        // Debug log ekle
-        console.log(`[FEATURES-DEBUG] ${feature} aktifleştirme sonucu: success=${success}, isEnabled=${isEnabled}, configSync=${configSyncEnabled}`);
-        console.log(`[FEATURES-DEBUG] ConfigSync tüm features:`, configSync.getAllFeatures());
     } catch (error) {
         logger.error('Feature toggle error', error);
     }
