@@ -128,6 +128,13 @@ class FeatureManager {
             // Config cache'ini temizle ve yeniden oku
             delete require.cache[require.resolve('../config.js')];
             const config = require('../config.js');
+            
+            // Güvenli kontrol
+            if (!config || !config.features || typeof config.features[feature] === 'undefined') {
+                logger.warn(`Feature durumu bulunamadı: ${feature}`);
+                return false;
+            }
+            
             return config.features[feature] === true;
         } catch (error) {
             logger.error('Feature durum kontrol hatası', error);
