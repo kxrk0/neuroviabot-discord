@@ -18,7 +18,9 @@ import {
   XMarkIcon,
   ChevronDownIcon,
   HashtagIcon,
+  CommandLineIcon,
 } from '@heroicons/react/24/outline';
+import BotCommands from '../../../components/dashboard/BotCommands';
 
 // Feature Categories (MEE6 style)
 const categories = [
@@ -145,6 +147,22 @@ const categories = [
         name: 'Dil',
         description: 'Bot dilini seçin',
         settings: ['language']
+      },
+    ]
+  },
+  {
+    id: 'commands',
+    name: 'Bot Komutları',
+    description: 'Bot komutlarını web arayüzünden yönetin',
+    icon: CommandLineIcon,
+    color: 'from-indigo-500 to-purple-500',
+    premium: false,
+    features: [
+      {
+        id: 'botCommands',
+        name: 'Komut Yönetimi',
+        description: 'Tüm bot komutlarını web arayüzünden çalıştırın',
+        settings: []
       },
     ]
   },
@@ -612,7 +630,16 @@ export default function ServerDashboard() {
 
               {/* Features */}
               <div className="space-y-4">
-                {currentCategory?.features.map((feature) => {
+                {/* Bot Commands Component */}
+                {activeCategory === 'commands' && (
+                  <BotCommands 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+                
+                {/* Other Features */}
+                {activeCategory !== 'commands' && currentCategory?.features.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',

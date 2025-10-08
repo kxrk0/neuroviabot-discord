@@ -85,12 +85,14 @@ passport.use(new DiscordStrategy({
 // Routes
 const authRoutes = require('./routes/auth');
 const botRoutes = require('./routes/bot');
+const botCommandsRoutes = require('./routes/bot-commands');
 const guildRoutes = require('./routes/guilds');
 const contactRoutes = require('./routes/contact');
 const feedbackRoutes = require('./routes/feedback');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
+app.use('/api/bot-commands', botCommandsRoutes);
 app.use('/api/guilds', guildRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/feedback', feedbackRoutes);
@@ -131,6 +133,22 @@ io.on('connection', (socket) => {
       guildId,
       settings,
       timestamp: new Date().toISOString(),
+    });
+  });
+
+  // Web command execution
+  socket.on('executeCommand', (data) => {
+    const { command, guildId, userId, subcommand, params } = data;
+    console.log(`[Socket.IO] Web command execution: ${command}${subcommand ? ` ${subcommand}` : ''} for guild ${guildId}`);
+    
+    // Forward to bot
+    io.to(`guild_${guildId}`).emit('webCommand', {
+      command,
+      guildId,
+      userId,
+      subcommand,
+      params,
+      timestamp: Date.now()
     });
   });
 
