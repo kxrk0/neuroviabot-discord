@@ -30,7 +30,10 @@ class FeatureManager {
             
             // Config'i yeniden yükle ve senkronize et
             this.reloadConfig();
-            configSync.reloadConfig(); // ConfigSync'e de bildir
+            
+            // ConfigSync'i de güncelle
+            const configSync = require('./configSync');
+            configSync.reloadConfig();
             
             // Değişikliği doğrula
             const isActuallyEnabled = this.isFeatureEnabled(feature);
