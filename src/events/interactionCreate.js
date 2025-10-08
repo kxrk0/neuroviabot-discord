@@ -4,6 +4,7 @@
 
 const { logger } = require('../utils/logger');
 const config = require('../config.js');
+const CommandQueueManager = require('../utils/commandQueueManager');
 
 // Cooldown Map
 const cooldowns = new Map();
@@ -88,6 +89,16 @@ module.exports = {
                     content: '⏰ Çok hızlı komut kullanıyorsunuz! Lütfen biraz bekleyin.',
                     flags: 64
                 });
+            }
+            
+            // Komut kullanımını kuyruğa ekle
+            if (interaction.guild) {
+                const commandQueueManager = new CommandQueueManager(client);
+                await commandQueueManager.queueCommandUsage(
+                    interaction.guild.id,
+                    command.data.name,
+                    interaction.user.id
+                );
             }
             
             // Komutu çalıştır

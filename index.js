@@ -241,8 +241,8 @@ client.once('clientReady', async () => {
     
     // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
     
-    // Slash komutları kaydet - Discord API rate limit nedeniyle geçici olarak devre dışı
-    // await registerSlashCommands();
+    // Slash komutları kaydet - Rate limit queue sistemi ile
+    await registerSlashCommandsWithQueue();
     
     log('Bot is ready and operational!', 'SUCCESS');
 });
@@ -454,6 +454,44 @@ async function startBot() {
     } catch (error) {
         log(`Failed to start bot: ${error.message}`, 'ERROR');
         process.exit(1);
+    }
+}
+
+// Queue sistemi ile komut kaydı
+async function registerSlashCommandsWithQueue() {
+    const CommandQueueManager = require('./src/utils/commandQueueManager');
+    const commandQueueManager = new CommandQueueManager(client);
+    
+    const commands = [];
+    
+    for (const command of client.commands.values()) {
+        if (command.data) {
+            commands.push(command.data.toJSON());
+        }
+    }
+    
+    if (commands.length === 0) {
+        log('No slash commands to register', 'INFO');
+        return;
+    }
+    
+    try {
+        log(`Registering ${commands.length} slash commands with queue system...`, 'INFO');
+        
+        // Önce global komutları kaydet
+        await commandQueueManager.registerGlobalCommands(commands);
+        log('✅ Global commands registered', 'SUCCESS');
+        
+        // Sonra tüm sunuculara dağıt
+        await commandQueueManager.distributeCommandsToAllGuilds(commands);
+        log('✅ Guild commands distributed', 'SUCCESS');
+        
+        // Kuyruk durumunu logla
+        const queueStatus = commandQueueManager.getQueueStatus();
+        log(`📊 Queue Status: ${JSON.stringify(queueStatus, null, 2)}`, 'INFO');
+        
+    } catch (error) {
+        log(`❌ Command registration error: ${error.message}`, 'ERROR');
     }
 }
 
