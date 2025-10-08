@@ -21,6 +21,7 @@ import {
   CommandLineIcon,
 } from '@heroicons/react/24/outline';
 import BotCommands from '../../../components/dashboard/BotCommands';
+import FeatureManager from '../../../components/dashboard/FeatureManager';
 
 // Feature Categories (MEE6 style)
 const categories = [
@@ -163,6 +164,22 @@ const categories = [
         name: 'Komut Yönetimi',
         description: 'Tüm bot komutlarını web arayüzünden çalıştırın',
         settings: []
+      },
+    ]
+  },
+  {
+    id: 'features',
+    name: 'Özellik Yönetimi',
+    description: 'Bot özelliklerini aktifleştir/deaktifleştir',
+    icon: Cog6ToothIcon,
+    color: 'from-emerald-500 to-teal-500',
+    premium: false,
+    features: [
+      {
+        id: 'featureToggle',
+        name: 'Özellik Kontrolü',
+        description: 'Bot özelliklerini tek tıkla yönetin',
+        settings: ['tickets', 'economy', 'moderation', 'leveling', 'giveaways']
       },
     ]
   },
@@ -638,8 +655,16 @@ export default function ServerDashboard() {
                   />
                 )}
                 
+                {/* Feature Manager Component */}
+                {activeCategory === 'features' && (
+                  <FeatureManager 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+                
                 {/* Other Features */}
-                {activeCategory !== 'commands' && currentCategory?.features.map((feature) => {
+                {activeCategory !== 'commands' && activeCategory !== 'features' && currentCategory?.features.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',

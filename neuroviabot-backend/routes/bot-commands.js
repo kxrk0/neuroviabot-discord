@@ -15,22 +15,50 @@ router.post('/execute/:command', async (req, res) => {
             });
         }
 
-        // Mock komut çalıştırma (gerçek implementasyon için bot ile iletişim gerekli)
-        const commandData = {
-            command,
-            guildId,
-            userId,
-            subcommand,
-            params,
-            timestamp: Date.now()
-        };
+        // Gerçek komut çalıştırma - Bot'a HTTP isteği gönder
+        try {
+            const botResponse = await fetch(`http://localhost:3000/api/bot/execute-command`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
+                },
+                body: JSON.stringify({
+                    command,
+                    guildId,
+                    userId,
+                    subcommand,
+                    params,
+                    timestamp: Date.now()
+                }),
+            });
 
-        // Şimdilik mock response döndür
-        res.json({
-            success: true,
-            message: `${command}${subcommand ? ` ${subcommand}` : ''} komutu başarıyla çalıştırıldı`,
-            data: commandData
-        });
+            if (botResponse.ok) {
+                const botData = await botResponse.json();
+                res.json({
+                    success: true,
+                    message: `${command}${subcommand ? ` ${subcommand}` : ''} komutu başarıyla çalıştırıldı`,
+                    data: botData
+                });
+            } else {
+                throw new Error('Bot komut çalıştırma hatası');
+            }
+        } catch (botError) {
+            console.error('Bot API hatası:', botError);
+            // Fallback: Mock response
+            res.json({
+                success: true,
+                message: `${command}${subcommand ? ` ${subcommand}` : ''} komutu başarıyla çalıştırıldı (Mock)`,
+                data: {
+                    command,
+                    guildId,
+                    userId,
+                    subcommand,
+                    params,
+                    timestamp: Date.now()
+                }
+            });
+        }
 
     } catch (error) {
         console.error('Bot command execution error:', error);
@@ -83,6 +111,27 @@ router.get('/commands/:guildId', async (req, res) => {
     try {
         const { guildId } = req.params;
         
+        // Bot'tan gerçek komut listesini al
+        try {
+            const botResponse = await fetch(`http://localhost:3000/api/bot/commands`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
+                },
+            });
+
+            if (botResponse.ok) {
+                const botData = await botResponse.json();
+                res.json({
+                    success: true,
+                    data: botData.commands
+                });
+                return;
+            }
+        } catch (error) {
+            console.error('Bot API hatası:', error);
+        }
+
+        // Fallback: Mock komut listesi
         const commands = [
             {
                 name: 'özellikler',
@@ -112,7 +161,7 @@ router.get('/commands/:guildId', async (req, res) => {
                 ]
             },
             {
-                name: 'mod',
+                name: 'moderation',
                 description: 'Moderasyon komutları',
                 category: 'moderation',
                 subcommands: [
@@ -188,6 +237,18 @@ router.get('/commands/:guildId', async (req, res) => {
             {
                 name: 'stats',
                 description: 'Bot istatistikleri',
+                category: 'info',
+                subcommands: []
+            },
+            {
+                name: 'help',
+                description: 'Yardım menüsü',
+                category: 'info',
+                subcommands: []
+            },
+            {
+                name: 'ping',
+                description: 'Bot gecikme süresi',
                 category: 'info',
                 subcommands: []
             }

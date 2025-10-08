@@ -500,5 +500,18 @@ async function registerSlashCommandsWithQueue() {
 // Bot'u başlat
 startBot();
 
+// HTTP API Server for web interface
+const express = require('express');
+const webApi = require('./src/routes/webApi');
+
+const apiApp = express();
+apiApp.use(express.json());
+apiApp.use('/api/bot', webApi);
+
+const apiPort = process.env.BOT_API_PORT || 3000;
+apiApp.listen(apiPort, () => {
+    log(`🌐 Bot HTTP API server started on port ${apiPort}`, 'SUCCESS');
+});
+
 // Export client for other modules
 module.exports = client;
