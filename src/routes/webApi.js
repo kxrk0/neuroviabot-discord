@@ -28,7 +28,7 @@ router.post('/execute-command', authenticateBotApi, async (req, res) => {
     try {
         const { command, guildId, userId, subcommand, params } = req.body;
         
-        logger.info(`🌐 Web komutu alındı: ${command}${subcommand ? ` ${subcommand}` : ''} - Guild: ${guildId}, User: ${userId}`);
+        logger.info(`🌐 Web komutu alındı: ${command}${subcommand ? ` ${subcommand}` : ''} - Guild: ${guildId}, User: ${userId}, Params: ${JSON.stringify(params)}`);
         
         // Mock interaction objesi oluştur
         const mockInteraction = await createMockInteraction(command, guildId, userId, subcommand, params);

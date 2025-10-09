@@ -133,6 +133,21 @@ export default function BotCommands({ guildId, userId }: BotCommandsProps) {
     
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Parametreleri hazırla
+      let params = commandParams[commandKey] || {};
+      
+      // Özellikler komutu için özellik parametresini ekle
+      if (command === 'özellikler' && subcommand) {
+        if (!params.özellik) {
+          // Subcommand'a göre varsayılan özellik belirle
+          params = {
+            ...params,
+            özellik: 'leveling' // Varsayılan özellik
+          };
+        }
+      }
+      
       const response = await fetch(`${API_URL}/api/bot-commands/execute/${command}`, {
         method: 'POST',
         headers: {
@@ -143,7 +158,7 @@ export default function BotCommands({ guildId, userId }: BotCommandsProps) {
           guildId,
           userId,
           subcommand,
-          params: commandParams[commandKey] || {}
+          params
         }),
       });
       
@@ -365,17 +380,7 @@ export default function BotCommands({ guildId, userId }: BotCommandsProps) {
                               
                               {/* Execute Subcommand Button */}
                               <button
-                                onClick={() => {
-                                  // Özellikler komutu için özel parametreler
-                                  if (command.name === 'özellikler') {
-                                    const commandKey = `${command.name}_${subcommand.name}`;
-                                    const currentParams = commandParams[commandKey] || {};
-                                    if (!currentParams.özellik) {
-                                      updateCommandParams(commandKey, 'özellik', 'leveling');
-                                    }
-                                  }
-                                  executeCommand(command.name, subcommand.name);
-                                }}
+                                onClick={() => executeCommand(command.name, subcommand.name)}
                                 disabled={isExecuting}
                                 className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                               >

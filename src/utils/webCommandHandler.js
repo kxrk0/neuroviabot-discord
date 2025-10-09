@@ -48,19 +48,19 @@ class WebCommandHandler {
                 getUser: (name) => guild.members.cache.get(params[name])?.user
             },
             reply: async (options) => {
-                logger.info(`📝 Mock interaction reply: ${JSON.stringify(options)}`);
+                logger.info(`📝 Komut yanıtı: ${options.content || 'Komut çalıştırıldı'}`);
                 return { content: options.content || 'Komut çalıştırıldı' };
             },
             editReply: async (options) => {
-                logger.info(`📝 Mock interaction editReply: ${JSON.stringify(options)}`);
+                logger.info(`📝 Komut güncellendi: ${options.content || 'Komut güncellendi'}`);
                 return { content: options.content || 'Komut güncellendi' };
             },
             deferReply: async (options) => {
-                logger.info(`📝 Mock interaction deferReply: ${JSON.stringify(options)}`);
+                logger.info(`📝 Komut işleniyor...`);
                 return { content: 'Komut işleniyor...' };
             },
             followUp: async (options) => {
-                logger.info(`📝 Mock interaction followUp: ${JSON.stringify(options)}`);
+                logger.info(`📝 Takip mesajı: ${options.content || 'Takip mesajı'}`);
                 return { content: options.content || 'Takip mesajı' };
             }
         };
