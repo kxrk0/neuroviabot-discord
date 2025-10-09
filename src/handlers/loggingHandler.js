@@ -6,6 +6,19 @@ const { EmbedBuilder, AuditLogEvent } = require('discord.js');
 const { logger } = require('../utils/logger');
 const { getDatabase } = require('../database/simple-db');
 
+class LoggingHandler {
+    constructor(client) {
+        this.client = client;
+        this.isEnabled = true; // Logging her zaman aktif
+    }
+
+    // Handler'ı yeniden başlat
+    restart() {
+        // LoggingHandler için özel restart gerekmez
+        // Fonksiyonlar zaten export ediliyor
+    }
+}
+
 /**
  * Mesaj silme logu
  */

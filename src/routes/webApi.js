@@ -324,6 +324,22 @@ router.post('/settings/:guildId/update', authenticateBotApi, async (req, res) =>
             }
         }
         
+        // Guild ayarlarını veritabanına kaydet
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
+        
+        // Guild ayarlarını al veya oluştur
+        let guildSettings = db.getGuildSettings(guildId);
+        if (!guildSettings) {
+            guildSettings = {};
+        }
+        
+        // Kategori ayarlarını güncelle
+        guildSettings[category] = settings;
+        
+        // Veritabanına kaydet
+        db.setGuildSettings(guildId, guildSettings);
+        
         // Config'i güncelle (sadece reload yap)
         configSync.reloadConfig();
         
@@ -362,22 +378,24 @@ router.get('/settings/:guildId', authenticateBotApi, async (req, res) => {
             return res.status(404).json({ error: 'Guild bulunamadı' });
         }
         
-        // Config'den ayarları al
-        const config = configSync.getConfig();
+        // Veritabanından guild ayarlarını al
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
+        const guildSettings = db.getGuildSettings(guildId) || {};
         
         res.json({
             success: true,
             guildId,
             settings: {
-                welcome: config.welcome || { enabled: false },
-                leveling: config.leveling || { enabled: false },
-                moderation: config.moderation || { enabled: false },
-                economy: config.economy || { enabled: false },
-                backup: config.backup || { enabled: false },
-                security: config.security || { enabled: false },
-                analytics: config.analytics || { enabled: false },
-                automation: config.automation || { enabled: false },
-                roleReactions: config.roleReactions || { enabled: false }
+                welcome: guildSettings.welcome || { enabled: false },
+                leveling: guildSettings.leveling || { enabled: false },
+                moderation: guildSettings.moderation || { enabled: false },
+                economy: guildSettings.economy || { enabled: false },
+                backup: guildSettings.backup || { enabled: false },
+                security: guildSettings.security || { enabled: false },
+                analytics: guildSettings.analytics || { enabled: false },
+                automation: guildSettings.automation || { enabled: false },
+                roleReactions: guildSettings['role-reactions'] || { enabled: false }
             },
             timestamp: Date.now()
         });

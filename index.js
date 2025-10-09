@@ -256,7 +256,7 @@ client.once('clientReady', async () => {
 // Slash komut etkileşimleri artık src/events/interactionCreate.js'de yönetiliyor
 
 // Handlers
-const loggingHandler = require('./src/handlers/loggingHandler');
+const LoggingHandler = require('./src/handlers/loggingHandler');
 const LevelingHandler = require('./src/handlers/levelingHandler');
 const TicketHandler = require('./src/handlers/ticketHandler');
 const RoleReactionHandler = require('./src/handlers/roleReactionHandler');
@@ -268,6 +268,7 @@ const VerificationHandler = require('./src/handlers/verificationHandler');
 const WelcomeHandler = require('./src/handlers/welcomeHandler');
 
 // Initialize handlers
+client.loggingHandler = new LoggingHandler(client);
 client.levelingHandler = new LevelingHandler(client);
 client.ticketHandler = new TicketHandler(client);
 client.roleReactionHandler = new RoleReactionHandler(client);
@@ -281,6 +282,9 @@ client.welcomeHandler = new WelcomeHandler(client);
 // ConfigSync event listeners for handlers
 configSync.on('configUpdated', () => {
     // Handler'ları yeniden başlat
+    if (client.loggingHandler) {
+        client.loggingHandler.restart();
+    }
     if (client.levelingHandler) {
         client.levelingHandler.restart();
     }
@@ -311,39 +315,48 @@ configSync.on('configUpdated', () => {
 });
 
 client.on('messageDelete', async (message) => {
-    await loggingHandler.logMessageDelete(message);
+    const { logMessageDelete } = require('./src/handlers/loggingHandler');
+    await logMessageDelete(message);
 });
 
 client.on('messageUpdate', async (oldMessage, newMessage) => {
-    await loggingHandler.logMessageUpdate(oldMessage, newMessage);
+    const { logMessageUpdate } = require('./src/handlers/loggingHandler');
+    await logMessageUpdate(oldMessage, newMessage);
 });
 
 client.on('guildMemberAdd', async (member) => {
-    await loggingHandler.logMemberJoin(member);
+    const { logMemberJoin } = require('./src/handlers/loggingHandler');
+    await logMemberJoin(member);
 });
 
 client.on('guildMemberRemove', async (member) => {
-    await loggingHandler.logMemberLeave(member);
+    const { logMemberLeave } = require('./src/handlers/loggingHandler');
+    await logMemberLeave(member);
 });
 
 client.on('roleCreate', async (role) => {
-    await loggingHandler.logRoleCreate(role);
+    const { logRoleCreate } = require('./src/handlers/loggingHandler');
+    await logRoleCreate(role);
 });
 
 client.on('roleDelete', async (role) => {
-    await loggingHandler.logRoleDelete(role);
+    const { logRoleDelete } = require('./src/handlers/loggingHandler');
+    await logRoleDelete(role);
 });
 
 client.on('channelCreate', async (channel) => {
-    await loggingHandler.logChannelCreate(channel);
+    const { logChannelCreate } = require('./src/handlers/loggingHandler');
+    await logChannelCreate(channel);
 });
 
 client.on('channelDelete', async (channel) => {
-    await loggingHandler.logChannelDelete(channel);
+    const { logChannelDelete } = require('./src/handlers/loggingHandler');
+    await logChannelDelete(channel);
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-    await loggingHandler.logVoiceStateUpdate(oldState, newState);
+    const { logVoiceStateUpdate } = require('./src/handlers/loggingHandler');
+    await logVoiceStateUpdate(oldState, newState);
 });
 
 // Hata yakalama

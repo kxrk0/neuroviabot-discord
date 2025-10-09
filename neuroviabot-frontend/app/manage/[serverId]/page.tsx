@@ -269,7 +269,14 @@ export default function ServerDashboard() {
       fetchGuildData();
       fetchGuildSettings();
     }
-  }, [serverId]);
+  }, [serverId, activeCategory]);
+
+  // Kategori değişikliğinde ayarları yeniden yükle
+  useEffect(() => {
+    if (serverId && activeCategory) {
+      fetchGuildSettings();
+    }
+  }, [activeCategory]);
 
   // ESC tuşu ile dropdown kapatma
   useEffect(() => {
@@ -357,6 +364,22 @@ export default function ServerDashboard() {
     try {
       setLoading(true);
       const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Önce bot API'den ayarları al
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/settings/${serverId}`, {
+          credentials: 'include',
+        });
+        if (botResponse.ok) {
+          const botData = await botResponse.json();
+          setSettings(botData);
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const response = await fetch(`${API_URL}/api/guild-settings/${serverId}/settings`, {
         credentials: 'include',
       });
@@ -376,7 +399,32 @@ export default function ServerDashboard() {
     try {
       const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       
-      // Map frontend categories to backend categories
+      // Önce bot API'ye gönder
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/settings/${serverId}/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            category: category,
+            settings: {
+              [featureId]: !currentValue
+            }
+          }),
+        });
+        
+        if (botResponse.ok) {
+          // Refresh settings to get latest from server
+          await fetchGuildSettings();
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const categoryMap: any = {
         'welcome': 'welcome',
         'roles': 'autorole',
@@ -412,6 +460,31 @@ export default function ServerDashboard() {
     try {
       const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       
+      // Önce bot API'ye gönder
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/settings/${serverId}/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            category: category,
+            settings: {
+              [key]: value
+            }
+          }),
+        });
+        
+        if (botResponse.ok) {
+          await fetchGuildSettings();
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const categoryMap: any = {
         'welcome': 'welcome',
         'roles': 'autorole',
