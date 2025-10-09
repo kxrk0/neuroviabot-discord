@@ -372,15 +372,15 @@ async function logVoiceStateUpdate(oldState, newState) {
     }
 }
 
-module.exports = {
-    logMessageDelete,
-    logMessageUpdate,
-    logMemberJoin,
-    logMemberLeave,
-    logRoleCreate,
-    logRoleDelete,
-    logChannelCreate,
-    logChannelDelete,
-    logVoiceStateUpdate
-};
+module.exports = LoggingHandler;
+module.exports.LoggingHandler = LoggingHandler;
+module.exports.logMessageDelete = logMessageDelete;
+module.exports.logMessageUpdate = logMessageUpdate;
+module.exports.logMemberJoin = logMemberJoin;
+module.exports.logMemberLeave = logMemberLeave;
+module.exports.logRoleCreate = logRoleCreate;
+module.exports.logRoleDelete = logRoleDelete;
+module.exports.logChannelCreate = logChannelCreate;
+module.exports.logChannelDelete = logChannelDelete;
+module.exports.logVoiceStateUpdate = logVoiceStateUpdate;
 
