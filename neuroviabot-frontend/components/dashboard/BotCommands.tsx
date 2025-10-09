@@ -50,6 +50,13 @@ const categoryColors = {
   welcome: 'from-yellow-500 to-amber-500',
   roles: 'from-indigo-500 to-purple-500',
   info: 'from-gray-500 to-slate-500',
+  music: 'from-green-500 to-emerald-500',
+  games: 'from-purple-500 to-pink-500',
+  backup: 'from-blue-500 to-indigo-500',
+  security: 'from-red-500 to-orange-500',
+  analytics: 'from-indigo-500 to-purple-500',
+  custom: 'from-cyan-500 to-blue-500',
+  premium: 'from-yellow-500 to-amber-500',
 };
 
 const categoryIcons = {
@@ -61,6 +68,13 @@ const categoryIcons = {
   welcome: InformationCircleIcon,
   roles: CommandLineIcon,
   info: InformationCircleIcon,
+  music: PlayIcon,
+  games: CommandLineIcon,
+  backup: Cog6ToothIcon,
+  security: ExclamationTriangleIcon,
+  analytics: ClockIcon,
+  custom: CommandLineIcon,
+  premium: CommandLineIcon,
 };
 
 export default function BotCommands({ guildId, userId }: BotCommandsProps) {

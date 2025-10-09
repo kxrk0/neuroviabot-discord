@@ -166,21 +166,71 @@ router.get('/commands', authenticateBotApi, (req, res) => {
 // Komut kategorisi belirleme
 function getCommandCategory(commandName) {
     const categories = {
+        // Admin & Management
         'özellikler': 'admin',
+        'setup': 'admin',
+        'admin': 'admin',
+        'quicksetup': 'admin',
+        
+        // Moderation
         'ticket': 'moderation',
         'moderation': 'moderation',
+        'clear-messages': 'moderation',
+        'verify': 'moderation',
+        
+        // Economy & Games
         'economy': 'economy',
+        'shop': 'economy',
+        'buy': 'economy',
+        'inventory': 'economy',
+        'blackjack': 'games',
+        'coinflip': 'games',
+        'dice': 'games',
+        'slots': 'games',
+        
+        // Leveling & XP
         'level': 'leveling',
+        
+        // Giveaways & Events
         'giveaway': 'giveaway',
+        
+        // Welcome & Roles
         'welcome': 'welcome',
         'role': 'roles',
-        'setup': 'admin',
-        'stats': 'info',
+        
+        // Music
+        'play': 'music',
+        'pause': 'music',
+        'resume': 'music',
+        'stop': 'music',
+        'skip': 'music',
+        'queue': 'music',
+        'nowplaying': 'music',
+        'volume': 'music',
+        'clear': 'music',
+        'join': 'music',
+        'leave': 'music',
+        
+        // Backup & Security
+        'backup': 'backup',
+        'guard': 'security',
+        
+        // Analytics & Stats
+        'stats': 'analytics',
+        'queue-status': 'analytics',
+        
+        // Custom Commands
+        'custom': 'custom',
+        
+        // Premium
+        'premium': 'premium',
+        
+        // Info & General
         'help': 'info',
         'ping': 'info'
     };
     
-    return categories[commandName] || 'general';
+    return categories[commandName] || 'info';
 }
 
 // Bot durumu endpoint'i
