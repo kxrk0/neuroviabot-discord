@@ -5,7 +5,7 @@ const router = express.Router();
 router.post('/execute/:command', async (req, res) => {
     try {
         const { command } = req.params;
-        const { guildId, userId, ...params } = req.body;
+        const { guildId, userId, subcommand, ...params } = req.body;
         
         // Komut parametrelerini doğrula
         if (!guildId || !userId) {
