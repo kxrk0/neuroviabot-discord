@@ -36,7 +36,7 @@ function log(message, type = 'INFO') {
     console.log(`${color}[${timestamp}] [${type}] ${message}${colors.reset}`);
 }
 
-// Bot client oluşturma
+// Bot client oluşturma (Discord.js v15 optimized)
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -45,7 +45,9 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.GuildPresences
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildModeration
     ],
     partials: [
         Partials.Message,

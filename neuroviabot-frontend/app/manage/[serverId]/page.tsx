@@ -24,6 +24,7 @@ import {
 import BotCommands from '../../../components/dashboard/BotCommands';
 import FeatureManager from '../../../components/dashboard/FeatureManager';
 import MusicSettings from '../../../components/dashboard/MusicSettings';
+import GamesSettings from '../../../components/dashboard/GamesSettings';
 
 // Feature Categories (MEE6 style)
 const categories = [
@@ -929,6 +930,14 @@ export default function ServerDashboard() {
                 {/* Music Settings Component */}
                 {activeCategory === 'music' && (
                   <MusicSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+                
+                {/* Games Settings Component */}
+                {activeCategory === 'games' && (
+                  <GamesSettings 
                     guildId={serverId} 
                     userId={user?.id || 'unknown'} 
                   />
