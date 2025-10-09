@@ -508,7 +508,7 @@ const apiApp = express();
 apiApp.use(express.json());
 apiApp.use('/api/bot', webApiRouter);
 
-const apiPort = process.env.BOT_API_PORT || 3001;
+const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
     log(`🌐 Bot HTTP API server started on port ${apiPort}`, 'SUCCESS');
 });
