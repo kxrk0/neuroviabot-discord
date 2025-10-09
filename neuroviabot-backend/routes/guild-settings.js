@@ -22,6 +22,35 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
+// General settings endpoint
+router.get('/:guildId/settings', requireAuth, async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Mock general settings data
+    const settings = {
+      guildId,
+      lastUpdated: new Date().toISOString(),
+      features: {
+        welcome: false,
+        leveling: false,
+        moderation: false,
+        economy: false,
+        backup: false,
+        security: false,
+        analytics: false,
+        automation: false,
+        roleReactions: false
+      }
+    };
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Error fetching general settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch general settings' });
+  }
+});
+
 // Welcome settings
 router.get('/:guildId/settings/welcome', requireAuth, async (req, res) => {
   try {
@@ -52,7 +81,7 @@ router.post('/:guildId/settings/welcome', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving welcome settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Welcome settings saved successfully' });
   } catch (error) {
@@ -90,7 +119,7 @@ router.post('/:guildId/settings/leveling', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving leveling settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Leveling settings saved successfully' });
   } catch (error) {
@@ -132,7 +161,7 @@ router.post('/:guildId/settings/moderation', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving moderation settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Moderation settings saved successfully' });
   } catch (error) {
@@ -196,7 +225,7 @@ router.post('/:guildId/settings/economy', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving economy settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Economy settings saved successfully' });
   } catch (error) {
@@ -236,7 +265,7 @@ router.post('/:guildId/settings/backup', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving backup settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Backup settings saved successfully' });
   } catch (error) {
@@ -260,7 +289,7 @@ router.post('/:guildId/backup/create', requireAuth, async (req, res) => {
       type: 'manual',
     };
     
-    console.log('Creating manual backup for guild:', guildId, backup);
+    // Backup created (reduced logging)
     
     res.json({ success: true, backup });
   } catch (error) {
@@ -275,7 +304,7 @@ router.get('/:guildId/backup/:backupId/download', requireAuth, async (req, res) 
     const { guildId, backupId } = req.params;
     
     // Mock backup download - replace with actual file serving
-    console.log('Downloading backup for guild:', guildId, 'backup:', backupId);
+    // Backup download (reduced logging)
     
     // Create mock backup data
     const backupData = {
@@ -305,7 +334,7 @@ router.delete('/:guildId/backup/:backupId', requireAuth, async (req, res) => {
     const { guildId, backupId } = req.params;
     
     // Mock backup deletion - replace with actual file deletion
-    console.log('Deleting backup for guild:', guildId, 'backup:', backupId);
+    // Backup deleted (reduced logging)
     
     res.json({ success: true, message: 'Backup deleted successfully' });
   } catch (error) {
@@ -352,7 +381,7 @@ router.post('/:guildId/settings/security', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving security settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Security settings saved successfully' });
   } catch (error) {
@@ -412,7 +441,7 @@ router.post('/:guildId/settings/analytics', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving analytics settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Analytics settings saved successfully' });
   } catch (error) {
@@ -447,7 +476,7 @@ router.post('/:guildId/settings/automation', requireAuth, async (req, res) => {
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving automation settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Automation settings saved successfully' });
   } catch (error) {
@@ -480,7 +509,7 @@ router.post('/:guildId/settings/role-reactions', requireAuth, async (req, res) =
     const settings = req.body;
     
     // Mock save - replace with actual database save
-    console.log('Saving role reaction settings for guild:', guildId, settings);
+    // Settings saved (reduced logging)
     
     res.json({ success: true, message: 'Role reaction settings saved successfully' });
   } catch (error) {

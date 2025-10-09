@@ -42,9 +42,10 @@ router.get('/user', requireAuth, async (req, res) => {
     // Get bot guild IDs from database
     const botGuildIds = Array.from(db.data.guilds.keys());
     
-    console.log('[Guilds] Bot is in', botGuildIds.length, 'guilds');
-    console.log('[Guilds] Bot guild IDs:', botGuildIds);
-    console.log('[Guilds] User admin guild IDs:', adminGuilds.map(g => g.id));
+    // Bot guild info (reduced logging)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Guilds] Bot is in', botGuildIds.length, 'guilds');
+    }
     
     // Check bot presence via Discord API for each guild
     const enhancedGuilds = await Promise.all(adminGuilds.map(async (guild) => {
@@ -62,7 +63,7 @@ router.get('/user', requireAuth, async (req, res) => {
           
           if (botCheckResponse.ok) {
             botPresent = true;
-            console.log(`[Guilds] Bot found in ${guild.name} via Discord API`);
+            // Bot found via Discord API (reduced logging)
             
             // Add to database if not present
             if (!botGuild) {
@@ -75,15 +76,21 @@ router.get('/user', requireAuth, async (req, res) => {
                 joinedAt: new Date().toISOString()
               };
               db.getOrCreateGuild(guild.id, guildData);
-              console.log(`[Guilds] Added ${guild.name} to database`);
+              // Added to database (reduced logging)
             }
           }
         } catch (error) {
-          console.log(`[Guilds] Discord API check failed for ${guild.name}:`, error.message);
+          // Discord API check failed (reduced logging)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[Guilds] Discord API check failed for ${guild.name}:`, error.message);
+          }
         }
       }
       
-      console.log(`[Guilds] ${guild.name} (${guild.id}): botPresent=${botPresent}`);
+      // Guild processed (reduced logging)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Guilds] ${guild.name} (${guild.id}): botPresent=${botPresent}`);
+      }
       
       return {
         id: guild.id,
