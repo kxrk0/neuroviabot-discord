@@ -133,28 +133,6 @@ const categories = [
     ]
   },
   {
-    id: 'general',
-    name: 'Genel Ayarlar',
-    description: 'Bot yapılandırması',
-    icon: Cog6ToothIcon,
-    color: 'from-gray-500 to-slate-500',
-    premium: false,
-    features: [
-      {
-        id: 'prefix',
-        name: 'Komut Öneki',
-        description: 'Bot komutları için önek belirleyin',
-        settings: ['prefix']
-      },
-      {
-        id: 'language',
-        name: 'Dil',
-        description: 'Bot dilini seçin',
-        settings: ['language']
-      },
-    ]
-  },
-  {
     id: 'commands',
     name: 'Bot Komutları',
     description: 'Bot komutlarını web arayüzünden yönetin',
@@ -167,50 +145,6 @@ const categories = [
         name: 'Komut Yönetimi',
         description: 'Tüm bot komutlarını web arayüzünden çalıştırın',
         settings: []
-      },
-    ]
-  },
-  {
-    id: 'music',
-    name: 'Müzik Sistemi',
-    description: 'Sesli kanallarda müzik çalma ve yönetme',
-    icon: MusicalNoteIcon,
-    color: 'from-green-500 to-emerald-500',
-    premium: false,
-    features: [
-      {
-        id: 'musicPlayer',
-        name: 'Müzik Çalıcı',
-        description: 'YouTube ve Spotify\'dan müzik çalma',
-        settings: ['volume', 'queue', 'repeat', 'shuffle']
-      },
-      {
-        id: 'musicControls',
-        name: 'Müzik Kontrolleri',
-        description: 'Çalma, duraklatma, atlama ve durdurma',
-        settings: ['play', 'pause', 'skip', 'stop']
-      },
-    ]
-  },
-  {
-    id: 'games',
-    name: 'Oyunlar',
-    description: 'Eğlenceli oyunlar ve kumar sistemi',
-    icon: SparklesIcon,
-    color: 'from-purple-500 to-pink-500',
-    premium: false,
-    features: [
-      {
-        id: 'casinoGames',
-        name: 'Kumar Oyunları',
-        description: 'Blackjack, slot, zar ve coinflip oyunları',
-        settings: ['blackjack', 'slots', 'dice', 'coinflip']
-      },
-      {
-        id: 'economyGames',
-        name: 'Ekonomi Oyunları',
-        description: 'Para kazanma ve harcama oyunları',
-        settings: ['buy', 'shop', 'inventory']
       },
     ]
   },
@@ -309,7 +243,7 @@ const categories = [
   {
     id: 'features',
     name: 'Özellik Yönetimi',
-    description: 'Bot özelliklerini aktifleştir/deaktifleştir',
+    description: 'Bot özelliklerini açın/kapatın ve dil ayarlarını yapın',
     icon: Cog6ToothIcon,
     color: 'from-emerald-500 to-teal-500',
     premium: false,
@@ -319,6 +253,18 @@ const categories = [
         name: 'Özellik Kontrolü',
         description: 'Bot özelliklerini tek tıkla yönetin',
         settings: ['tickets', 'economy', 'moderation', 'leveling', 'giveaways', 'music', 'games', 'security']
+      },
+      {
+        id: 'languageSettings',
+        name: 'Dil Ayarları',
+        description: 'Bot mesajları için dil seçin ve özelleştirin',
+        settings: ['language', 'customMessages', 'translations']
+      },
+      {
+        id: 'prefixSettings',
+        name: 'Komut Öneki',
+        description: 'Bot komutları için önek belirleyin',
+        settings: ['prefix', 'customPrefix']
       },
     ]
   },

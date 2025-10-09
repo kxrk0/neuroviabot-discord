@@ -7,6 +7,9 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ArrowPathIcon,
+  LanguageIcon,
+  CommandLineIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 
 interface FeatureManagerProps {
@@ -25,7 +28,10 @@ const featureDescriptions = {
   economy: 'Ekonomi sistemi - Para, mağaza ve ekonomi komutları',
   moderation: 'Moderasyon sistemi - Ban, kick, mute gibi moderasyon komutları',
   leveling: 'Seviye sistemi - XP kazanma ve seviye ödülleri',
-  giveaways: 'Çekiliş sistemi - Çekiliş oluşturma ve yönetimi'
+  giveaways: 'Çekiliş sistemi - Çekiliş oluşturma ve yönetimi',
+  music: 'Müzik sistemi - YouTube ve Spotify müzik çalma',
+  games: 'Oyun sistemi - Kumar ve ekonomi oyunları',
+  security: 'Güvenlik sistemi - Anti-raid ve koruma özellikleri'
 };
 
 const featureNames = {
@@ -33,14 +39,29 @@ const featureNames = {
   economy: '💰 Ekonomi Sistemi',
   moderation: '🛡️ Moderasyon Sistemi',
   leveling: '📊 Seviye Sistemi',
-  giveaways: '🎁 Çekiliş Sistemi'
+  giveaways: '🎁 Çekiliş Sistemi',
+  music: '🎵 Müzik Sistemi',
+  games: '🎮 Oyun Sistemi',
+  security: '🔒 Güvenlik Sistemi'
 };
+
+const languages = [
+  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' }
+];
 
 export default function FeatureManager({ guildId, userId }: FeatureManagerProps) {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'success' | 'error'}>>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState('tr');
+  const [prefix, setPrefix] = useState('!');
+  const [activeTab, setActiveTab] = useState<'features' | 'language' | 'prefix'>('features');
 
   useEffect(() => {
     fetchFeatures();
@@ -249,7 +270,7 @@ export default function FeatureManager({ guildId, userId }: FeatureManagerProps)
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Özellik Yönetimi</h2>
-          <p className="text-gray-400 mt-1">Bot özelliklerini aktifleştirin veya devre dışı bırakın</p>
+          <p className="text-gray-400 mt-1">Bot özelliklerini, dil ve komut ayarlarını yönetin</p>
         </div>
         
         {/* Bulk Actions */}
@@ -290,8 +311,46 @@ export default function FeatureManager({ guildId, userId }: FeatureManagerProps)
         </div>
       </div>
 
-      {/* Features List */}
-      <div className="space-y-4">
+      {/* Tab Navigation */}
+      <div className="flex gap-2 p-1 bg-gray-800/50 rounded-lg">
+        <button
+          onClick={() => setActiveTab('features')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
+            activeTab === 'features'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Cog6ToothIcon className="w-4 h-4" />
+          Özellikler
+        </button>
+        <button
+          onClick={() => setActiveTab('language')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
+            activeTab === 'language'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <LanguageIcon className="w-4 h-4" />
+          Dil Ayarları
+        </button>
+        <button
+          onClick={() => setActiveTab('prefix')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
+            activeTab === 'prefix'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <CommandLineIcon className="w-4 h-4" />
+          Komut Öneki
+        </button>
+      </div>
+
+      {/* Content based on active tab */}
+      {activeTab === 'features' && (
+        <div className="space-y-4">
         {features.map((feature) => {
           const isToggling = toggling === feature.name;
           
@@ -349,7 +408,114 @@ export default function FeatureManager({ guildId, userId }: FeatureManagerProps)
             </motion.div>
           );
         })}
-      </div>
+        </div>
+      )}
+
+      {/* Language Settings Tab */}
+      {activeTab === 'language' && (
+        <div className="space-y-6">
+          <div className="bg-[#2c2f38] rounded-xl border border-white/10 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500">
+                <LanguageIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Dil Ayarları</h3>
+                <p className="text-gray-400 text-sm">Bot mesajları için dil seçin</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setSelectedLanguage(lang.code)}
+                  className={`p-4 rounded-lg border transition-all ${
+                    selectedLanguage === lang.code
+                      ? 'border-blue-500 bg-blue-500/10 text-blue-300'
+                      : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-gray-500 hover:bg-gray-600/50'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">{lang.flag}</div>
+                  <div className="font-semibold">{lang.name}</div>
+                  <div className="text-xs text-gray-400">{lang.code.toUpperCase()}</div>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-800/50 rounded-lg">
+              <h4 className="text-white font-semibold mb-2">Özel Mesajlar</h4>
+              <p className="text-gray-400 text-sm mb-4">
+                Bot mesajlarını özelleştirmek için özel çeviriler ekleyebilirsiniz.
+              </p>
+              <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all">
+                Özel Mesajları Düzenle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prefix Settings Tab */}
+      {activeTab === 'prefix' && (
+        <div className="space-y-6">
+          <div className="bg-[#2c2f38] rounded-xl border border-white/10 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+                <CommandLineIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Komut Öneki</h3>
+                <p className="text-gray-400 text-sm">Bot komutları için önek belirleyin</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-white font-semibold mb-2">Mevcut Önek</label>
+                <div className="flex items-center gap-3">
+                  <div className="px-4 py-2 bg-gray-700 rounded-lg font-mono text-lg">
+                    {prefix}
+                  </div>
+                  <span className="text-gray-400 text-sm">Komutlar: {prefix}help, {prefix}ping</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white font-semibold mb-2">Yeni Önek</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={prefix}
+                    onChange={(e) => setPrefix(e.target.value)}
+                    className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="Örnek: !, ?, /"
+                    maxLength={5}
+                  />
+                  <button className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all">
+                    Kaydet
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-gray-800/50 rounded-lg">
+                <h4 className="text-white font-semibold mb-2">Önek Önerileri</h4>
+                <div className="flex gap-2 flex-wrap">
+                  {['!', '?', '/', '>', '$', '&'].map((suggestedPrefix) => (
+                    <button
+                      key={suggestedPrefix}
+                      onClick={() => setPrefix(suggestedPrefix)}
+                      className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-white font-mono transition-all"
+                    >
+                      {suggestedPrefix}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
