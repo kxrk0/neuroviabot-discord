@@ -43,9 +43,6 @@ router.get('/user', requireAuth, async (req, res) => {
     const botGuildIds = Array.from(db.data.guilds.keys());
     
     // Bot guild info (reduced logging)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Guilds] Bot is in', botGuildIds.length, 'guilds');
-    }
     
     // Check bot presence via Discord API for each guild
     const enhancedGuilds = await Promise.all(adminGuilds.map(async (guild) => {
@@ -81,16 +78,10 @@ router.get('/user', requireAuth, async (req, res) => {
           }
         } catch (error) {
           // Discord API check failed (reduced logging)
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[Guilds] Discord API check failed for ${guild.name}:`, error.message);
-          }
         }
       }
       
       // Guild processed (reduced logging)
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[Guilds] ${guild.name} (${guild.id}): botPresent=${botPresent}`);
-      }
       
       return {
         id: guild.id,

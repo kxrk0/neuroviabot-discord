@@ -12,7 +12,6 @@ router.all('*', async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
-        ...req.headers
       },
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });

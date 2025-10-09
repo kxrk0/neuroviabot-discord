@@ -550,7 +550,6 @@ router.post('/:guildId/settings/role-reactions', requireAuth, async (req, res) =
     } catch (botError) {
       console.error('Bot API hatası:', botError);
       // Fallback: Mock save
-      console.log(`Role reaction settings saved for guild ${guildId}:`, settings);
       res.json({ success: true, message: 'Role reaction settings saved successfully' });
     }
   } catch (error) {

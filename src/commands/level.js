@@ -170,7 +170,7 @@ module.exports = {
     async handleRank(interaction) {
         const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
 
-        console.log(`[DEBUG-LEVEL] handleRank çağrıldı. Hedef Kullanıcı ID: ${targetUser.id}, Guild ID: ${interaction.guild.id}`);
+        // Debug: handleRank çağrıldı
 
         if (targetUser.bot) {
             console.log(`[DEBUG-LEVEL] Bot kullanıcısı tespit edildi: ${targetUser.username}`);
@@ -190,7 +190,7 @@ module.exports = {
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
         
-        console.log(`[DEBUG-LEVEL] Guild ayarları alındı:`, settings);
+        // Debug: Guild ayarları alındı
         console.log(`[DEBUG-LEVEL] Leveling enabled:`, settings.leveling?.enabled);
         
         if (!settings.leveling?.enabled) {
@@ -208,15 +208,14 @@ module.exports = {
         const memberKey = `${interaction.guild.id}-${targetUser.id}`;
         console.log(`[DEBUG-LEVEL] Oluşturulan memberKey: ${memberKey}`);
         
-        console.log(`[DEBUG-LEVEL] Database guildMembers map:`, db.data.guildMembers);
-        console.log(`[DEBUG-LEVEL] Database guildMembers size:`, db.data.guildMembers?.size);
+        // Debug: Database guildMembers kontrolü
         
         const guildMember = db.data.guildMembers?.get(memberKey);
-        console.log(`[DEBUG-LEVEL] Bulunan guildMember:`, guildMember);
+        // Debug: Bulunan guildMember
 
         if (!guildMember) {
             console.error(`[DEBUG-LEVEL] HATA: Üye verisi bulunamadı! memberKey: ${memberKey}`);
-            console.log(`[DEBUG-LEVEL] Mevcut tüm member key'leri:`, Array.from(db.data.guildMembers?.keys() || []));
+            // Debug: Mevcut tüm member key'leri
             
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
