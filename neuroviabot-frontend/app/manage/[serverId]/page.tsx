@@ -542,7 +542,7 @@ export default function ServerDashboard() {
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
-          className="fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 overflow-y-auto shadow-2xl"
+          className="fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 overflow-y-auto shadow-2xl z-40"
         >
           {/* Server Info with gradient */}
           <motion.div 
@@ -596,14 +596,14 @@ export default function ServerDashboard() {
                       {guildMenuOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-40"
+                            className="fixed inset-0 z-[55]"
                             onClick={() => setGuildMenuOpen(false)}
                           />
                           <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50"
+                            className="absolute left-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
                           >
                             <div className="p-3 border-b border-gray-700">
                               <h3 className="text-white font-semibold text-sm">Sunucularınız</h3>
