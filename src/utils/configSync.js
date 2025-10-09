@@ -8,7 +8,7 @@ const { logger } = require('./logger');
 class ConfigSync extends EventEmitter {
     constructor() {
         super();
-        this.configPath = require.resolve('../config.js');
+        this.configPath = require.resolve('./config.js');
         this.lastUpdate = Date.now();
     }
 
@@ -16,12 +16,12 @@ class ConfigSync extends EventEmitter {
     reloadConfig() {
         try {
             // Cache'i temizle - hem configPath hem de require.resolve kullan
-            const configResolvedPath = require.resolve('../config.js');
+            const configResolvedPath = require.resolve('./config.js');
             delete require.cache[this.configPath];
             delete require.cache[configResolvedPath];
             
             // Yeni config'i yükle
-            const config = require('../config.js');
+            const config = require('./config.js');
             
             // Güncelleme zamanını kaydet
             this.lastUpdate = Date.now();
@@ -58,10 +58,10 @@ class ConfigSync extends EventEmitter {
     getConfig() {
         try {
             // Cache'i temizle - hem configPath hem de require.resolve kullan
-            const configResolvedPath = require.resolve('../config.js');
+            const configResolvedPath = require.resolve('./config.js');
             delete require.cache[this.configPath];
             delete require.cache[configResolvedPath];
-            const config = require('../config.js');
+            const config = require('./config.js');
             return config;
         } catch (error) {
             // Config dosyası bulunamadığında varsayılan config döndür

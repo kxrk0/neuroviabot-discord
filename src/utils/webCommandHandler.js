@@ -20,6 +20,8 @@ class WebCommandHandler {
     }
 
     async executeWebCommand(command, guildId, userId, subcommand, params) {
+        logger.info(`🌐 Web komutu alındı: ${command} ${subcommand} - Guild: ${guildId}, User: ${userId}, Params: ${JSON.stringify(params)}`);
+        
         const guild = this.client.guilds.cache.get(guildId);
         if (!guild) {
             throw new Error('Sunucu bulunamadı');
