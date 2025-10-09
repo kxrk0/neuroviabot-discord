@@ -41,6 +41,12 @@ class VerificationHandler {
         });
     }
 
+    // Handler'ı yeniden başlat
+    restart() {
+        // VerificationHandler için özel restart gerekmez
+        // Event listener'lar zaten kurulu
+    }
+
     async handleButtonVerification(interaction) {
         try {
             await interaction.deferReply({ ephemeral: true });

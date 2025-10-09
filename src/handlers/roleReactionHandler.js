@@ -18,6 +18,12 @@ class RoleReactionHandler {
         });
     }
 
+    // Handler'ı yeniden başlat
+    restart() {
+        // RoleReactionHandler için özel restart gerekmez
+        // Event listener'lar zaten kurulu
+    }
+
     // Tepki rol ekleme metodu
     async addReactionRole(guildId, channelId, messageId, emoji, roleId) {
         try {

@@ -260,12 +260,54 @@ const LevelingHandler = require('./src/handlers/levelingHandler');
 const TicketHandler = require('./src/handlers/ticketHandler');
 const RoleReactionHandler = require('./src/handlers/roleReactionHandler');
 const WebCommandHandler = require('./src/utils/webCommandHandler');
+const BackupHandler = require('./src/handlers/backupHandler');
+const GiveawayHandler = require('./src/handlers/giveawayHandler');
+const GuardHandler = require('./src/handlers/guardHandler');
+const VerificationHandler = require('./src/handlers/verificationHandler');
+const WelcomeHandler = require('./src/handlers/welcomeHandler');
 
 // Initialize handlers
 client.levelingHandler = new LevelingHandler(client);
 client.ticketHandler = new TicketHandler(client);
 client.roleReactionHandler = new RoleReactionHandler(client);
 client.webCommandHandler = new WebCommandHandler(client);
+client.backupHandler = new BackupHandler(client);
+client.giveawayHandler = new GiveawayHandler(client);
+client.guardHandler = new GuardHandler(client);
+client.verificationHandler = new VerificationHandler(client);
+client.welcomeHandler = new WelcomeHandler(client);
+
+// ConfigSync event listeners for handlers
+configSync.on('configUpdated', () => {
+    // Handler'ları yeniden başlat
+    if (client.levelingHandler) {
+        client.levelingHandler.restart();
+    }
+    if (client.ticketHandler) {
+        client.ticketHandler.restart();
+    }
+    if (client.roleReactionHandler) {
+        client.roleReactionHandler.restart();
+    }
+    if (client.webCommandHandler) {
+        client.webCommandHandler.restart();
+    }
+    if (client.backupHandler) {
+        client.backupHandler.restart();
+    }
+    if (client.giveawayHandler) {
+        client.giveawayHandler.restart();
+    }
+    if (client.guardHandler) {
+        client.guardHandler.restart();
+    }
+    if (client.verificationHandler) {
+        client.verificationHandler.restart();
+    }
+    if (client.welcomeHandler) {
+        client.welcomeHandler.restart();
+    }
+});
 
 client.on('messageDelete', async (message) => {
     await loggingHandler.logMessageDelete(message);

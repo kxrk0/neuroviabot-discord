@@ -18,6 +18,12 @@ class GiveawayHandler {
         });
     }
 
+    // Handler'ı yeniden başlat
+    restart() {
+        // GiveawayHandler için özel restart gerekmez
+        // Event listener'lar zaten kurulu
+    }
+
     async handleGiveawayJoin(interaction) {
         try {
             await interaction.deferReply({ ephemeral: true });

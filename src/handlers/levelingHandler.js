@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
+const configSync = require('../utils/configSync');
 
 class LevelingHandler {
     constructor(client) {
@@ -8,14 +9,18 @@ class LevelingHandler {
         this.isEnabled = false;
         this.xpCooldowns = new Map(); // User cooldown tracking
         this.checkAndSetup();
+        
+        // Config güncellemelerini dinle
+        configSync.on('configUpdated', () => {
+            console.log('[LEVELING-HANDLER] Config güncellendi, yeniden kontrol ediliyor...');
+            this.checkAndSetup();
+        });
     }
 
     checkAndSetup() {
         try {
-            // Config cache'ini temizle ve yeniden yükle
-            delete require.cache[require.resolve('../config.js')];
-            const config = require('../config.js');
-            this.isEnabled = config.features.leveling;
+            // ConfigSync ile güncel durumu al
+            this.isEnabled = configSync.isFeatureEnabled('leveling');
             
             if (this.isEnabled) {
                 console.log('[LEVELING-HANDLER] Leveling sistemi aktif - handler başlatıldı');

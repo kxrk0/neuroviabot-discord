@@ -13,6 +13,12 @@ class WebCommandHandler {
         logger.info('🌐 WebCommandHandler başlatıldı - HTTP API modunda');
     }
 
+    // Handler'ı yeniden başlat
+    restart() {
+        // WebCommandHandler için özel restart gerekmez
+        // HTTP API zaten aktif
+    }
+
     async executeWebCommand(command, guildId, userId, subcommand, params) {
         const guild = this.client.guilds.cache.get(guildId);
         if (!guild) {

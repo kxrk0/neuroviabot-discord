@@ -45,6 +45,12 @@ class GuardHandler {
         });
     }
 
+    // Handler'ı yeniden başlat
+    restart() {
+        // GuardHandler için özel restart gerekmez
+        // Event listener'lar zaten kurulu
+    }
+
     async handleAntiRaid(member) {
         try {
             // Bot kontrolü

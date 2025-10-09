@@ -18,6 +18,12 @@ class WelcomeHandler {
         });
     }
 
+    // Handler'ı yeniden başlat
+    restart() {
+        // WelcomeHandler için özel restart gerekmez
+        // Event listener'lar zaten kurulu
+    }
+
     async handleMemberJoin(member) {
         try {
             // Bot kontrolü

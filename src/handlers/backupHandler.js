@@ -16,6 +16,12 @@ class BackupHandler {
         // this.initializeScheduledBackups();
     }
 
+    // Handler'ı yeniden başlat
+    restart() {
+        // BackupHandler için özel restart gerekmez
+        // Backup sistemi şu anda kapalı
+    }
+
     setupEventListeners() {
         // Handle backup button interactions
         this.client.on('interactionCreate', async (interaction) => {
