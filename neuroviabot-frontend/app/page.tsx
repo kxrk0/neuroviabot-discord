@@ -342,7 +342,18 @@ export default function Home() {
                 className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
               >
                 {t[language].feedback}
-            </Link>
+              </Link>
+
+              {/* Servers Link - Only show if user is logged in */}
+              {user && (
+                <Link 
+                  href="/servers"
+                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <ServerIcon className="w-4 h-4" />
+                  Sunucularım
+                </Link>
+              )}
           </div>
 
             {/* Right Actions */}

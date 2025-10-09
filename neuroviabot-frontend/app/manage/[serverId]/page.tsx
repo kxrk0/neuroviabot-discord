@@ -133,22 +133,6 @@ const categories = [
     ]
   },
   {
-    id: 'commands',
-    name: 'Bot Komutları',
-    description: 'Bot komutlarını web arayüzünden yönetin',
-    icon: CommandLineIcon,
-    color: 'from-indigo-500 to-purple-500',
-    premium: false,
-    features: [
-      {
-        id: 'botCommands',
-        name: 'Komut Yönetimi',
-        description: 'Tüm bot komutlarını web arayüzünden çalıştırın',
-        settings: []
-      },
-    ]
-  },
-  {
     id: 'backup',
     name: 'Yedekleme',
     description: 'Sunucu yedekleme ve geri yükleme sistemi',
@@ -205,22 +189,6 @@ const categories = [
         name: 'Analitik Raporlar',
         description: 'Komut kullanımı ve performans analizi',
         settings: ['commands', 'errors', 'performance', 'users']
-      },
-    ]
-  },
-  {
-    id: 'custom',
-    name: 'Özel Komutlar',
-    description: 'Özel komut oluşturma ve yönetim sistemi',
-    icon: CommandLineIcon,
-    color: 'from-cyan-500 to-blue-500',
-    premium: true,
-    features: [
-      {
-        id: 'customCommands',
-        name: 'Özel Komutlar',
-        description: 'Kendi komutlarınızı oluşturun ve yönetin',
-        settings: ['create', 'edit', 'delete', 'list', 'permissions']
       },
     ]
   },
@@ -685,7 +653,12 @@ export default function ServerDashboard() {
                 
                 {/* Server Switcher Button */}
                 {guilds.length > 1 && (
-                  <div className="relative flex items-center">
+                  <motion.div 
+                    className="relative flex items-center"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2, delay: 0.1 }}
+                  >
                     <button
                       onClick={() => setGuildMenuOpen(!guildMenuOpen)}
                       className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-150 flex items-center justify-center"
