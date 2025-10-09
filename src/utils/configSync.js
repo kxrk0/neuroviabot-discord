@@ -32,8 +32,25 @@ class ConfigSync extends EventEmitter {
             logger.info('Config başarıyla yeniden yüklendi ve senkronize edildi');
             return config;
         } catch (error) {
-            logger.error('Config yeniden yükleme hatası', error);
-            return null;
+            // Config dosyası bulunamadığında varsayılan config kullan
+            logger.warn('Config dosyası bulunamadı, varsayılan config kullanılıyor');
+            const defaultConfig = {
+                features: {
+                    leveling: false,
+                    tickets: false,
+                    economy: false,
+                    moderation: false,
+                    giveaways: false
+                }
+            };
+            
+            // Güncelleme zamanını kaydet
+            this.lastUpdate = Date.now();
+            
+            // Tüm dinleyicilere bildir
+            this.emit('configUpdated', defaultConfig);
+            
+            return defaultConfig;
         }
     }
 
@@ -44,10 +61,20 @@ class ConfigSync extends EventEmitter {
             const configResolvedPath = require.resolve('../config.js');
             delete require.cache[this.configPath];
             delete require.cache[configResolvedPath];
-            return require('../config.js');
+            const config = require('../config.js');
+            return config;
         } catch (error) {
-            logger.error('Config alma hatası', error);
-            return null;
+            // Config dosyası bulunamadığında varsayılan config döndür
+            logger.warn('Config dosyası bulunamadı, varsayılan config kullanılıyor');
+            return {
+                features: {
+                    leveling: false,
+                    tickets: false,
+                    economy: false,
+                    moderation: false,
+                    giveaways: false
+                }
+            };
         }
     }
 

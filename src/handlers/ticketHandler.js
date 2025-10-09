@@ -9,12 +9,6 @@ class TicketHandler {
         this.client = client;
         this.isEnabled = false;
         this.checkAndSetup();
-        
-        // Config güncellemelerini dinle
-        configSync.on('configUpdated', () => {
-            console.log('[TICKET-HANDLER] Config güncellendi, yeniden kontrol ediliyor...');
-            this.checkAndSetup();
-        });
     }
 
     checkAndSetup() {

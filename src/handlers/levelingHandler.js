@@ -9,12 +9,6 @@ class LevelingHandler {
         this.isEnabled = false;
         this.xpCooldowns = new Map(); // User cooldown tracking
         this.checkAndSetup();
-        
-        // Config güncellemelerini dinle
-        configSync.on('configUpdated', () => {
-            console.log('[LEVELING-HANDLER] Config güncellendi, yeniden kontrol ediliyor...');
-            this.checkAndSetup();
-        });
     }
 
     checkAndSetup() {
