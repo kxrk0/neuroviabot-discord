@@ -1,226 +1,457 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MinimalCard, Switch, Input, Button } from '@/components/ui';
-import { ChartBarIcon, TrophyIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import {
+  ChartBarIcon,
+  TrophyIcon,
+  GiftIcon,
+  Cog6ToothIcon,
+  StarIcon,
+} from '@heroicons/react/24/outline';
 
 interface LevelingSettingsProps {
-  settings: any;
-  onSettingChange: (key: string, value: any) => void;
+  guildId: string;
+  userId: string;
 }
 
-export default function LevelingSettings({ settings, onSettingChange }: LevelingSettingsProps) {
-  const [levelRoles, setLevelRoles] = useState(settings.levelRoles || []);
+interface LevelingConfig {
+  enabled: boolean;
+  xpPerMessage: number;
+  cooldown: number;
+  announceChannelId: string;
+  roleRewards: Array<{
+    level: number;
+    roleId: string;
+    roleName: string;
+  }>;
+  levelUpMessage: string;
+  showLevelUpMessage: boolean;
+}
 
-  const addLevelRole = () => {
-    const newRole = { level: 0, roleId: '' };
-    const updated = [...levelRoles, newRole];
-    setLevelRoles(updated);
-    onSettingChange('levelRoles', updated);
+const defaultConfig: LevelingConfig = {
+  enabled: false,
+  xpPerMessage: 15,
+  cooldown: 60,
+  announceChannelId: '',
+  roleRewards: [],
+  levelUpMessage: '🎉 {user} seviye {level}\'e yükseldi!',
+  showLevelUpMessage: true,
+};
+
+export default function LevelingSettings({ guildId, userId }: LevelingSettingsProps) {
+  const [config, setConfig] = useState<LevelingConfig>(defaultConfig);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [channels, setChannels] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'success' | 'error'}>>([]);
+
+  useEffect(() => {
+    fetchSettings();
+    fetchChannels();
+    fetchRoles();
+  }, [guildId]);
+
+  const fetchSettings = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/leveling`, {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setConfig(data.settings || defaultConfig);
+      }
+    } catch (error) {
+      console.error('Error fetching leveling settings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeLevelRole = (index: number) => {
-    const updated = levelRoles.filter((_: any, i: number) => i !== index);
-    setLevelRoles(updated);
-    onSettingChange('levelRoles', updated);
+  const fetchChannels = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/guilds/${guildId}/channels`, {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setChannels(data.channels || []);
+      }
+    } catch (error) {
+      console.error('Error fetching channels:', error);
+    }
   };
 
-  const updateLevelRole = (index: number, field: string, value: any) => {
-    const updated = [...levelRoles];
-    updated[index][field] = value;
-    setLevelRoles(updated);
-    onSettingChange('levelRoles', updated);
+  const fetchRoles = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/guilds/${guildId}/roles`, {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRoles(data.roles || []);
+      }
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
   };
+
+  const saveSettings = async () => {
+    setSaving(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/leveling`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(config),
+      });
+
+      if (response.ok) {
+        showNotification('✅ Seviye sistemi ayarları başarıyla kaydedildi!', 'success');
+      } else {
+        throw new Error('Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving leveling settings:', error);
+      showNotification('❌ Ayarlar kaydedilemedi', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
+  };
+
+  const updateConfig = (key: keyof LevelingConfig, value: any) => {
+    setConfig(prev => ({ ...prev, [key]: value }));
+  };
+
+  const addRoleReward = () => {
+    const newReward = {
+      level: 5,
+      roleId: '',
+      roleName: '',
+    };
+    setConfig(prev => ({
+      ...prev,
+      roleRewards: [...prev.roleRewards, newReward]
+    }));
+  };
+
+  const removeRoleReward = (index: number) => {
+    setConfig(prev => ({
+      ...prev,
+      roleRewards: prev.roleRewards.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateRoleReward = (index: number, key: string, value: any) => {
+    setConfig(prev => ({
+      ...prev,
+      roleRewards: prev.roleRewards.map((reward, i) => 
+        i === index ? { ...reward, [key]: value } : reward
+      )
+    }));
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-3 text-gray-400">Ayarlar yükleniyor...</span>
+      </div>
+    );
+  }
 
   return (
-    <MinimalCard className="p-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-blue-500/10">
-          <ChartBarIcon className="w-6 h-6 text-blue-400" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500">
+          <ChartBarIcon className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-white">Leveling System</h2>
-          <p className="text-gray-400 text-sm">XP tracking and role rewards</p>
+          <h2 className="text-xl font-bold text-white">Seviye Sistemi</h2>
+          <p className="text-gray-400 text-sm">Aktif üyeleri ödüllendirin ve seviye kazandırın</p>
         </div>
       </div>
 
-      <div className="space-y-6">
-        {/* Enable Leveling */}
-        <SettingRow
-          icon={<ChartBarIcon className="w-5 h-5" />}
-          label="Leveling System"
-          description="Track user activity with XP and levels"
-          checked={settings.levelingEnabled || false}
-          onChange={(e: any) => onSettingChange('levelingEnabled', e.target.checked)}
-        />
+      {/* Basic Settings */}
+      <div className="bg-gray-800/50 border border-white/10 rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
+            <Cog6ToothIcon className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-lg">Temel Ayarlar</h3>
+            <p className="text-gray-400 text-sm">Seviye sistemi genel ayarları</p>
+          </div>
+        </div>
 
-        {settings.levelingEnabled && (
-          <>
-            {/* XP Rates */}
-            <div className="pt-6 border-t border-white/10">
-              <h3 className="text-lg font-bold text-white mb-4">XP Earning Rates</h3>
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Min XP Per Message</label>
-                    <Input
-                      type="number"
-                      value={settings.xpMin || 15}
-                      onChange={(e: any) => onSettingChange('xpMin', parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Max XP Per Message</label>
-                    <Input
-                      type="number"
-                      value={settings.xpMax || 25}
-                      onChange={(e: any) => onSettingChange('xpMax', parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm text-gray-400 mb-2 block">XP Cooldown (seconds)</label>
-                  <Input
-                    type="number"
-                    value={settings.xpCooldown || 60}
-                    onChange={(e: any) => onSettingChange('xpCooldown', parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Prevent XP spam</p>
-                </div>
-              </div>
-            </div>
-
-            {/* XP Multiplier */}
+        <div className="space-y-4">
+          {/* Enable Leveling */}
+          <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
             <div>
-              <label className="text-white font-semibold mb-2 block">XP Multiplier</label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="0.5"
-                  max="5"
-                  step="0.5"
-                  value={settings.xpMultiplier || 1}
-                  onChange={(e) => onSettingChange('xpMultiplier', parseFloat(e.target.value))}
-                  className="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-discord"
+              <h4 className="text-white font-semibold">Seviye Sistemini Etkinleştir</h4>
+              <p className="text-gray-400 text-sm">Üyeler mesaj göndererek XP kazansın</p>
+            </div>
+            <button
+              onClick={() => updateConfig('enabled', !config.enabled)}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                config.enabled
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              }`}
+            >
+              {config.enabled ? 'Aktif' : 'Devre Dışı'}
+            </button>
+          </div>
+
+          {/* XP Per Message */}
+          {config.enabled && (
+            <div>
+              <label className="block text-white font-semibold mb-2">Mesaj Başına XP</label>
+              <input
+                type="number"
+                value={config.xpPerMessage}
+                onChange={(e) => updateConfig('xpPerMessage', parseInt(e.target.value))}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                min="1"
+                max="100"
+              />
+              <p className="text-gray-400 text-xs mt-1">Her mesaj için verilecek XP miktarı</p>
+            </div>
+          )}
+
+          {/* Cooldown */}
+          {config.enabled && (
+            <div>
+              <label className="block text-white font-semibold mb-2">XP Kazanma Süresi (saniye)</label>
+              <input
+                type="number"
+                value={config.cooldown}
+                onChange={(e) => updateConfig('cooldown', parseInt(e.target.value))}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                min="1"
+                max="3600"
+              />
+              <p className="text-gray-400 text-xs mt-1">XP kazanmak için bekleme süresi</p>
+            </div>
+          )}
+
+          {/* Announce Channel */}
+          {config.enabled && (
+            <div>
+              <label className="block text-white font-semibold mb-2">Duyuru Kanalı</label>
+              <select
+                value={config.announceChannelId}
+                onChange={(e) => updateConfig('announceChannelId', e.target.value)}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              >
+                <option value="">Duyuru kanalı seçin...</option>
+                {channels.map((channel) => (
+                  <option key={channel.id} value={channel.id}>
+                    #{channel.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-gray-400 text-xs mt-1">Seviye atlama mesajlarının gönderileceği kanal</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Level Up Messages */}
+      {config.enabled && (
+        <div className="bg-gray-800/50 border border-white/10 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500">
+              <StarIcon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg">Seviye Atlama Mesajları</h3>
+              <p className="text-gray-400 text-sm">Seviye atladığında gönderilecek mesaj</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Show Level Up Message */}
+            <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
+              <div>
+                <h4 className="text-white font-semibold">Seviye Atlama Mesajını Göster</h4>
+                <p className="text-gray-400 text-sm">Seviye atladığında mesaj gönder</p>
+              </div>
+              <button
+                onClick={() => updateConfig('showLevelUpMessage', !config.showLevelUpMessage)}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                  config.showLevelUpMessage
+                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                }`}
+              >
+                {config.showLevelUpMessage ? 'Aktif' : 'Devre Dışı'}
+              </button>
+            </div>
+
+            {/* Level Up Message */}
+            {config.showLevelUpMessage && (
+              <div>
+                <label className="block text-white font-semibold mb-2">Seviye Atlama Mesajı</label>
+                <textarea
+                  value={config.levelUpMessage}
+                  onChange={(e) => updateConfig('levelUpMessage', e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-yellow-500 focus:outline-none"
+                  rows={3}
+                  placeholder="🎉 {user} seviye {level}'e yükseldi!"
                 />
-                <span className="text-white font-bold w-12 text-right">{settings.xpMultiplier || 1}x</span>
+                <p className="text-gray-400 text-xs mt-1">
+                  Kullanılabilir değişkenler: {'{user}'}, {'{level}'}, {'{xp}'}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Role Rewards */}
+      {config.enabled && (
+        <div className="bg-gray-800/50 border border-white/10 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+                <TrophyIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Seviye Ödülleri</h3>
+                <p className="text-gray-400 text-sm">Belirli seviyelerde otomatik rol verin</p>
               </div>
             </div>
+            <button
+              onClick={addRoleReward}
+              className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center gap-2"
+            >
+              <GiftIcon className="w-4 h-4" />
+              Ödül Ekle
+            </button>
+          </div>
 
-            {/* Level-Up Messages */}
-            <div className="pt-6 border-t border-white/10">
-              <SettingRow
-                icon={<TrophyIcon className="w-5 h-5" />}
-                label="Level-Up Messages"
-                description="Send a message when users level up"
-                checked={settings.levelUpMessages || true}
-                onChange={(e: any) => onSettingChange('levelUpMessages', e.target.checked)}
-              />
-
-              {settings.levelUpMessages && (
-                <div className="ml-12 mt-4">
-                  <label className="text-sm text-gray-400 mb-2 block">Level-Up Message</label>
-                  <Input
-                    type="text"
-                    placeholder="Congrats {user}! You reached level {level}!"
-                    value={settings.levelUpMessage || 'Congrats {user}! You reached level {level}!'}
-                    onChange={(e: any) => onSettingChange('levelUpMessage', e.target.value)}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Variables: {'{user}'}, {'{level}'}</p>
+          <div className="space-y-4">
+            {config.roleRewards.map((reward, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-gray-700/50 rounded-lg border border-gray-600"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-white font-semibold">Ödül #{index + 1}</h4>
+                  <button
+                    onClick={() => removeRoleReward(index)}
+                    className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-all"
+                  >
+                    Kaldır
+                  </button>
                 </div>
-              )}
-            </div>
-
-            {/* Level Roles */}
-            <div className="pt-6 border-t border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">Level Role Rewards</h3>
-                <Button variant="secondary" onClick={addLevelRole} className="flex items-center gap-2">
-                  <PlusIcon className="w-4 h-4" />
-                  Add Role Reward
-                </Button>
-              </div>
-
-              {levelRoles.length === 0 ? (
-                <div className="text-center py-8 border-2 border-dashed border-white/10 rounded-lg">
-                  <TrophyIcon className="w-12 h-12 text-gray-600 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">No role rewards configured</p>
-                  <p className="text-gray-500 text-xs">Click "Add Role Reward" to get started</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {levelRoles.map((role: any, index: number) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-3 p-3 bg-white/5 rounded-lg"
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Seviye</label>
+                    <input
+                      type="number"
+                      value={reward.level}
+                      onChange={(e) => updateRoleReward(index, 'level', parseInt(e.target.value))}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      min="1"
+                      max="1000"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Rol</label>
+                    <select
+                      value={reward.roleId}
+                      onChange={(e) => {
+                        const selectedRole = roles.find(r => r.id === e.target.value);
+                        updateRoleReward(index, 'roleId', e.target.value);
+                        updateRoleReward(index, 'roleName', selectedRole?.name || '');
+                      }}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
                     >
-                      <div className="flex-1 grid grid-cols-2 gap-3">
-                        <Input
-                          type="number"
-                          placeholder="Level"
-                          value={role.level}
-                          onChange={(e: any) => updateLevelRole(index, 'level', parseInt(e.target.value))}
-                        />
-                        <Input
-                          type="text"
-                          placeholder="Role ID"
-                          value={role.roleId}
-                          onChange={(e: any) => updateLevelRole(index, 'roleId', e.target.value)}
-                        />
-                      </div>
-                      <button
-                        onClick={() => removeLevelRole(index)}
-                        className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </motion.div>
-                  ))}
+                      <option value="">Rol seçin...</option>
+                      {roles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              )}
-            </div>
-
-            {/* Ignored Channels */}
-            <div className="pt-6 border-t border-white/10">
-              <label className="text-white font-semibold mb-2 block">Ignored Channels</label>
-              <Input
-                type="text"
-                placeholder="Channel IDs (comma separated)"
-                value={settings.levelingIgnoredChannels || ''}
-                onChange={(e: any) => onSettingChange('levelingIgnoredChannels', e.target.value)}
-                className="w-full"
-              />
-              <p className="text-xs text-gray-500 mt-1">Channels where users won't earn XP</p>
-            </div>
-          </>
-        )}
-      </div>
-    </MinimalCard>
-  );
-}
-
-function SettingRow({ icon, label, description, checked, onChange }: any) {
-  return (
-    <div className="flex items-center justify-between py-3">
-      <div className="flex items-start gap-3 flex-1">
-        <div className="p-2 rounded-lg bg-white/5 text-gray-400 mt-1">
-          {icon}
+              </motion.div>
+            ))}
+            
+            {config.roleRewards.length === 0 && (
+              <div className="text-center py-8 text-gray-400">
+                <TrophyIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Henüz seviye ödülü eklenmemiş</p>
+                <p className="text-sm">Yukarıdaki "Ödül Ekle" butonuna tıklayarak başlayın</p>
+              </div>
+            )}
+          </div>
         </div>
-        <div>
-          <h4 className="text-white font-semibold mb-1">{label}</h4>
-          <p className="text-sm text-gray-400">{description}</p>
-        </div>
+      )}
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={saveSettings}
+          disabled={saving}
+          className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {saving ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Kaydediliyor...
+            </>
+          ) : (
+            <>
+              <Cog6ToothIcon className="w-4 h-4" />
+              Ayarları Kaydet
+            </>
+          )}
+        </button>
       </div>
-      <Switch checked={checked} onChange={onChange} />
+
+      {/* Notifications */}
+      {notifications.map((notification) => (
+        <motion.div
+          key={notification.id}
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className={`p-4 rounded-lg border ${
+            notification.type === 'success'
+              ? 'bg-green-900/20 border-green-500/30 text-green-300'
+              : 'bg-red-900/20 border-red-500/30 text-red-300'
+          }`}
+        >
+          {notification.message}
+        </motion.div>
+      ))}
     </div>
   );
 }

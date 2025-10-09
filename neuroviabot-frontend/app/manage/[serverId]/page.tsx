@@ -19,12 +19,13 @@ import {
   ChevronDownIcon,
   HashtagIcon,
   CommandLineIcon,
-  MusicalNoteIcon,
 } from '@heroicons/react/24/outline';
 import BotCommands from '../../../components/dashboard/BotCommands';
 import FeatureManager from '../../../components/dashboard/FeatureManager';
-import MusicSettings from '../../../components/dashboard/MusicSettings';
-import GamesSettings from '../../../components/dashboard/GamesSettings';
+import WelcomeSettings from '../../../components/dashboard/WelcomeSettings';
+import ModerationSettings from '../../../components/dashboard/ModerationSettings';
+import LevelingSettings from '../../../components/dashboard/LevelingSettings';
+import EconomySettings from '../../../components/dashboard/EconomySettings';
 
 // Feature Categories (MEE6 style)
 const categories = [
@@ -843,21 +844,7 @@ export default function ServerDashboard() {
                   />
                 )}
                 
-                {/* Music Settings Component */}
-                {activeCategory === 'music' && (
-                  <MusicSettings 
-                    guildId={serverId} 
-                    userId={user?.id || 'unknown'} 
-                  />
-                )}
                 
-                {/* Games Settings Component */}
-                {activeCategory === 'games' && (
-                  <GamesSettings 
-                    guildId={serverId} 
-                    userId={user?.id || 'unknown'} 
-                  />
-                )}
                 
                 {/* Feature Manager Component */}
                 {activeCategory === 'features' && (
@@ -866,9 +853,41 @@ export default function ServerDashboard() {
                     userId={user?.id || 'unknown'} 
                   />
                 )}
+
+                {/* Welcome Settings Component */}
+                {activeCategory === 'welcome' && (
+                  <WelcomeSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* Moderation Settings Component */}
+                {activeCategory === 'moderation' && (
+                  <ModerationSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* Leveling Settings Component */}
+                {activeCategory === 'leveling' && (
+                  <LevelingSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* Economy Settings Component */}
+                {activeCategory === 'economy' && (
+                  <EconomySettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
                 
                 {/* Other Features */}
-                {activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features.map((feature) => {
+                {activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',
