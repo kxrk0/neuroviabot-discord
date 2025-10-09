@@ -210,6 +210,23 @@ export default function ServerDashboard() {
     }
   }, [serverId]);
 
+  // ESC tuşu ile dropdown kapatma
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && guildMenuOpen) {
+        setGuildMenuOpen(false);
+      }
+    };
+
+    if (guildMenuOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [guildMenuOpen]);
+
   const fetchUser = async () => {
     try {
       const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
@@ -595,14 +612,25 @@ export default function ServerDashboard() {
                     <AnimatePresence>
                       {guildMenuOpen && (
                         <>
-                          <div
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
                             className="fixed inset-0 z-[55]"
                             onClick={() => setGuildMenuOpen(false)}
                           />
                           <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
+                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                            transition={{ 
+                              duration: 0.2, 
+                              ease: "easeOut",
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 30
+                            }}
                             className="absolute left-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
                           >
                             <div className="p-3 border-b border-gray-700">
@@ -610,15 +638,20 @@ export default function ServerDashboard() {
                               <p className="text-gray-400 text-xs">Yönetmek için bir sunucu seçin</p>
                             </div>
                             <div className="max-h-64 overflow-y-auto">
-                              {guilds.map(guildItem => (
-                                <Link
+                              {guilds.map((guildItem, index) => (
+                                <motion.div
                                   key={guildItem.id}
-                                  href={`/manage/${guildItem.id}`}
-                                  className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-700 transition-colors ${
-                                    guildItem.id === guild.id ? 'bg-gray-700/50' : ''
-                                  }`}
-                                  onClick={() => setGuildMenuOpen(false)}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: index * 0.05 }}
                                 >
+                                  <Link
+                                    href={`/manage/${guildItem.id}`}
+                                    className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-700 transition-all duration-200 hover:scale-[1.02] ${
+                                      guildItem.id === guild.id ? 'bg-gray-700/50' : ''
+                                    }`}
+                                    onClick={() => setGuildMenuOpen(false)}
+                                  >
                                   {guildItem.icon ? (
                                     <img
                                       src={`https://cdn.discordapp.com/icons/${guildItem.id}/${guildItem.icon}.png?size=32`}
@@ -637,7 +670,8 @@ export default function ServerDashboard() {
                                   {guildItem.id === guild.id && (
                                     <CheckCircleIcon className="w-5 h-5 text-green-500" />
                                   )}
-                                </Link>
+                                  </Link>
+                                </motion.div>
                               ))}
                             </div>
                           </motion.div>
