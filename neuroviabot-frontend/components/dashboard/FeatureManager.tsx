@@ -55,11 +55,16 @@ export default function FeatureManager({ guildId, userId }: FeatureManagerProps)
       
       if (response.ok) {
         const data = await response.json();
-        const featureList = Object.entries(data.data.features).map(([name, enabled]) => ({
-          name,
-          enabled: enabled as boolean,
-          description: featureDescriptions[name as keyof typeof featureDescriptions] || 'Açıklama yok'
-        }));
+        console.log('Features data:', data.data.features);
+        const featureList = Object.entries(data.data.features).map(([name, enabled]) => {
+          console.log('Feature:', name, enabled);
+          return {
+            name,
+            enabled: enabled as boolean,
+            description: featureDescriptions[name as keyof typeof featureDescriptions] || 'Açıklama yok'
+          };
+        });
+        console.log('Feature list:', featureList);
         setFeatures(featureList);
       }
     } catch (error) {
@@ -70,6 +75,7 @@ export default function FeatureManager({ guildId, userId }: FeatureManagerProps)
   };
 
   const toggleFeature = async (featureName: string, currentEnabled: boolean) => {
+    console.log('Toggle feature called:', featureName, currentEnabled);
     setToggling(featureName);
     
     try {

@@ -83,7 +83,10 @@ async function createMockInteraction(command, guildId, userId, subcommand, param
         commandName: command,
         options: {
             getSubcommand: () => subcommand,
-            getString: (name) => params[name],
+            getString: (name) => {
+                logger.info(`getString called with name: ${name}, params: ${JSON.stringify(params)}`);
+                return params[name];
+            },
             getInteger: (name) => parseInt(params[name]),
             getBoolean: (name) => params[name] === 'true',
             getChannel: (name) => guild.channels.cache.get(params[name]),

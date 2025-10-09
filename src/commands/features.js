@@ -172,6 +172,7 @@ async function handleStatus(interaction) {
 // Tek özelliği aktifleştir
 async function handleEnable(interaction) {
     const feature = interaction.options.getString('özellik');
+    logger.info(`handleEnable called with feature: ${feature}`);
 
     // Özelliği aktifleştir (sync olarak dene önce)
     let success = false;
