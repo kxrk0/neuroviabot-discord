@@ -19,9 +19,11 @@ import {
   ChevronDownIcon,
   HashtagIcon,
   CommandLineIcon,
+  MusicalNoteIcon,
 } from '@heroicons/react/24/outline';
 import BotCommands from '../../../components/dashboard/BotCommands';
 import FeatureManager from '../../../components/dashboard/FeatureManager';
+import MusicSettings from '../../../components/dashboard/MusicSettings';
 
 // Feature Categories (MEE6 style)
 const categories = [
@@ -168,6 +170,142 @@ const categories = [
     ]
   },
   {
+    id: 'music',
+    name: 'Müzik Sistemi',
+    description: 'Sesli kanallarda müzik çalma ve yönetme',
+    icon: MusicalNoteIcon,
+    color: 'from-green-500 to-emerald-500',
+    premium: false,
+    features: [
+      {
+        id: 'musicPlayer',
+        name: 'Müzik Çalıcı',
+        description: 'YouTube ve Spotify\'dan müzik çalma',
+        settings: ['volume', 'queue', 'repeat', 'shuffle']
+      },
+      {
+        id: 'musicControls',
+        name: 'Müzik Kontrolleri',
+        description: 'Çalma, duraklatma, atlama ve durdurma',
+        settings: ['play', 'pause', 'skip', 'stop']
+      },
+    ]
+  },
+  {
+    id: 'games',
+    name: 'Oyunlar',
+    description: 'Eğlenceli oyunlar ve kumar sistemi',
+    icon: SparklesIcon,
+    color: 'from-purple-500 to-pink-500',
+    premium: false,
+    features: [
+      {
+        id: 'casinoGames',
+        name: 'Kumar Oyunları',
+        description: 'Blackjack, slot, zar ve coinflip oyunları',
+        settings: ['blackjack', 'slots', 'dice', 'coinflip']
+      },
+      {
+        id: 'economyGames',
+        name: 'Ekonomi Oyunları',
+        description: 'Para kazanma ve harcama oyunları',
+        settings: ['buy', 'shop', 'inventory']
+      },
+    ]
+  },
+  {
+    id: 'backup',
+    name: 'Yedekleme',
+    description: 'Sunucu yedekleme ve geri yükleme sistemi',
+    icon: ShieldCheckIcon,
+    color: 'from-blue-500 to-indigo-500',
+    premium: true,
+    features: [
+      {
+        id: 'backupSystem',
+        name: 'Yedekleme Sistemi',
+        description: 'Sunucu ayarlarını yedekle ve geri yükle',
+        settings: ['create', 'restore', 'list', 'delete', 'schedule']
+      },
+    ]
+  },
+  {
+    id: 'security',
+    name: 'Güvenlik',
+    description: 'Sunucu güvenlik ve doğrulama sistemi',
+    icon: ShieldCheckIcon,
+    color: 'from-red-500 to-orange-500',
+    premium: false,
+    features: [
+      {
+        id: 'guardSystem',
+        name: 'Guard Sistemi',
+        description: 'Anti-raid ve güvenlik koruması',
+        settings: ['enabled', 'raidProtection', 'spamProtection', 'logChannel']
+      },
+      {
+        id: 'verificationSystem',
+        name: 'Doğrulama Sistemi',
+        description: 'Yeni üye doğrulama ve onay sistemi',
+        settings: ['enabled', 'method', 'role', 'timeout']
+      },
+    ]
+  },
+  {
+    id: 'analytics',
+    name: 'Analitik',
+    description: 'Sunucu istatistikleri ve analitik raporlar',
+    icon: ChartBarIcon,
+    color: 'from-indigo-500 to-purple-500',
+    premium: false,
+    features: [
+      {
+        id: 'statistics',
+        name: 'İstatistikler',
+        description: 'Detaylı sunucu ve bot istatistikleri',
+        settings: ['bot', 'server', 'activity', 'leaderboard']
+      },
+      {
+        id: 'analytics',
+        name: 'Analitik Raporlar',
+        description: 'Komut kullanımı ve performans analizi',
+        settings: ['commands', 'errors', 'performance', 'users']
+      },
+    ]
+  },
+  {
+    id: 'custom',
+    name: 'Özel Komutlar',
+    description: 'Özel komut oluşturma ve yönetim sistemi',
+    icon: CommandLineIcon,
+    color: 'from-cyan-500 to-blue-500',
+    premium: true,
+    features: [
+      {
+        id: 'customCommands',
+        name: 'Özel Komutlar',
+        description: 'Kendi komutlarınızı oluşturun ve yönetin',
+        settings: ['create', 'edit', 'delete', 'list', 'permissions']
+      },
+    ]
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    description: 'Premium özellikler ve abonelik yönetimi',
+    icon: SparklesIcon,
+    color: 'from-yellow-500 to-amber-500',
+    premium: true,
+    features: [
+      {
+        id: 'premiumFeatures',
+        name: 'Premium Özellikler',
+        description: 'Premium kullanıcılar için özel özellikler',
+        settings: ['status', 'features', 'benefits', 'upgrade']
+      },
+    ]
+  },
+  {
     id: 'features',
     name: 'Özellik Yönetimi',
     description: 'Bot özelliklerini aktifleştir/deaktifleştir',
@@ -179,7 +317,7 @@ const categories = [
         id: 'featureToggle',
         name: 'Özellik Kontrolü',
         description: 'Bot özelliklerini tek tıkla yönetin',
-        settings: ['tickets', 'economy', 'moderation', 'leveling', 'giveaways']
+        settings: ['tickets', 'economy', 'moderation', 'leveling', 'giveaways', 'music', 'games', 'security']
       },
     ]
   },
@@ -788,6 +926,14 @@ export default function ServerDashboard() {
                   />
                 )}
                 
+                {/* Music Settings Component */}
+                {activeCategory === 'music' && (
+                  <MusicSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+                
                 {/* Feature Manager Component */}
                 {activeCategory === 'features' && (
                   <FeatureManager 
@@ -797,7 +943,7 @@ export default function ServerDashboard() {
                 )}
                 
                 {/* Other Features */}
-                {activeCategory !== 'commands' && activeCategory !== 'features' && currentCategory?.features.map((feature) => {
+                {activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',
