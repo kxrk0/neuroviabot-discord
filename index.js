@@ -7,6 +7,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, Collection, REST, Routes, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const configSync = require('./src/utils/configSync');
 
 // Console renkli çıktı için
 const colors = {
