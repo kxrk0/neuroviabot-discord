@@ -175,17 +175,22 @@ router.post('/:guildId/settings/moderation', requireAuth, async (req, res) => {
 router.get('/:guildId/channels', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
-    const accessToken = req.user.accessToken;
     
-    // Fetch channels from Discord API
+    // Fetch channels from Discord API using bot token
     const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
       },
     });
     
     if (!channelsResponse.ok) {
-      throw new Error(`Discord API error: ${channelsResponse.status}`);
+      if (channelsResponse.status === 403) {
+        throw new Error('Bot does not have permission to access this guild');
+      } else if (channelsResponse.status === 404) {
+        throw new Error('Guild not found or bot is not in this guild');
+      } else {
+        throw new Error(`Discord API error: ${channelsResponse.status}`);
+      }
     }
     
     const channels = await channelsResponse.json();
@@ -537,17 +542,22 @@ router.post('/:guildId/settings/role-reactions', requireAuth, async (req, res) =
 router.get('/:guildId/roles', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
-    const accessToken = req.user.accessToken;
     
-    // Fetch roles from Discord API
+    // Fetch roles from Discord API using bot token
     const rolesResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
       },
     });
     
     if (!rolesResponse.ok) {
-      throw new Error(`Discord API error: ${rolesResponse.status}`);
+      if (rolesResponse.status === 403) {
+        throw new Error('Bot does not have permission to access this guild');
+      } else if (rolesResponse.status === 404) {
+        throw new Error('Guild not found or bot is not in this guild');
+      } else {
+        throw new Error(`Discord API error: ${rolesResponse.status}`);
+      }
     }
     
     const roles = await rolesResponse.json();
@@ -632,6 +642,52 @@ router.post('/notifications/:notificationId/read', requireAuth, async (req, res)
   } catch (error) {
     console.error('Error marking notification as read:', error);
     res.status(500).json({ success: false, error: 'Failed to mark notification as read' });
+  }
+});
+
+// Check if bot is in guild
+router.get('/:guildId/bot-status', requireAuth, async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Check if bot is in guild using Discord API
+    const guildResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}`, {
+      headers: {
+        Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
+      },
+    });
+    
+    if (guildResponse.status === 404) {
+      return res.json({ 
+        success: false, 
+        botInGuild: false,
+        error: 'Bot is not in this guild' 
+      });
+    }
+    
+    if (!guildResponse.ok) {
+      throw new Error(`Discord API error: ${guildResponse.status}`);
+    }
+    
+    const guild = await guildResponse.json();
+    
+    res.json({ 
+      success: true, 
+      botInGuild: true,
+      guild: {
+        id: guild.id,
+        name: guild.name,
+        memberCount: guild.member_count,
+        icon: guild.icon
+      }
+    });
+  } catch (error) {
+    console.error('Error checking bot status:', error);
+    res.status(500).json({ 
+      success: false, 
+      botInGuild: false,
+      error: error.message 
+    });
   }
 });
 

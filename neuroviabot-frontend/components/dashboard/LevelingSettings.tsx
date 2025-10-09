@@ -87,6 +87,7 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
+      showNotification('❌ Kanallar yüklenemedi. Bot sunucuda olmayabilir.', 'error');
       setChannels([]);
     }
   };
@@ -104,6 +105,7 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
       }
     } catch (error) {
       console.error('Error fetching roles:', error);
+      showNotification('❌ Roller yüklenemedi. Bot sunucuda olmayabilir.', 'error');
     }
   };
 

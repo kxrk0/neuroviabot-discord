@@ -85,7 +85,8 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
-      // No fallback data - show empty state
+      // Show error message to user
+      showNotification('❌ Kanallar yüklenemedi. Bot sunucuda olmayabilir.', 'error');
       setChannels([]);
     }
   };
