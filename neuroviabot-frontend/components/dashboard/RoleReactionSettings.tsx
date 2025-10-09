@@ -123,6 +123,30 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Önce bot'a ayarları gönder
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/settings/${guildId}/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer neuroviabot-secret',
+          },
+          body: JSON.stringify({
+            category: 'role-reactions',
+            settings: config
+          }),
+        });
+        
+        if (botResponse.ok) {
+          showNotification('✅ Tepki rol ayarları başarıyla kaydedildi!', 'success');
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/role-reactions`, {
         method: 'POST',
         headers: {

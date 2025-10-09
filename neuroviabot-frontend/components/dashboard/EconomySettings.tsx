@@ -96,6 +96,30 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Önce bot'a ayarları gönder
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/settings/${guildId}/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer neuroviabot-secret',
+          },
+          body: JSON.stringify({
+            category: 'economy',
+            settings: config
+          }),
+        });
+        
+        if (botResponse.ok) {
+          showNotification('✅ Ekonomi sistemi ayarları başarıyla kaydedildi!', 'success');
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/economy`, {
         method: 'POST',
         headers: {
@@ -196,7 +220,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
         </div>
 
         <div className="space-y-4">
-          {/* Enable Economy */}
+        {/* Enable Economy */}
           <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
             <div>
               <h4 className="text-white font-semibold">Ekonomi Sistemini Etkinleştir</h4>
@@ -214,7 +238,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
             </button>
           </div>
 
-          {/* Currency Name */}
+            {/* Currency Name */}
           {config.enabled && (
             <div>
               <label className="block text-white font-semibold mb-2">Para Birimi Adı</label>
@@ -229,7 +253,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
             </div>
           )}
 
-          {/* Currency Symbol */}
+            {/* Currency Symbol */}
           {config.enabled && (
             <div>
               <label className="block text-white font-semibold mb-2">Para Birimi Sembolü</label>
@@ -245,7 +269,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
             </div>
           )}
         </div>
-      </div>
+            </div>
 
       {/* Daily System */}
       {config.enabled && (
@@ -254,18 +278,18 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
             <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
               <BanknotesIcon className="w-5 h-5 text-white" />
             </div>
-            <div>
+                <div>
               <h3 className="text-white font-bold text-lg">Günlük Ödül Sistemi</h3>
               <p className="text-gray-400 text-sm">Üyeler günlük para kazanabilsin</p>
             </div>
-          </div>
+                </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+                <div>
                 <label className="block text-white font-semibold mb-2">Günlük Ödül Miktarı</label>
                 <input
-                  type="number"
+                    type="number"
                   value={config.dailyAmount}
                   onChange={(e) => updateConfig('dailyAmount', parseInt(e.target.value))}
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
@@ -273,12 +297,12 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
                   max="10000"
                 />
                 <p className="text-gray-400 text-xs mt-1">Günlük ödül miktarı</p>
-              </div>
+                </div>
 
-              <div>
+                <div>
                 <label className="block text-white font-semibold mb-2">Bekleme Süresi (saniye)</label>
                 <input
-                  type="number"
+                    type="number"
                   value={config.dailyCooldown}
                   onChange={(e) => updateConfig('dailyCooldown', parseInt(e.target.value))}
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
@@ -304,8 +328,8 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
               <p className="text-gray-400 text-sm">Üyeler çalışarak para kazanabilsin</p>
             </div>
           </div>
-
-          <div className="space-y-4">
+              
+              <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-white font-semibold mb-2">Çalışma Ödülü</label>
@@ -320,10 +344,10 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
                 <p className="text-gray-400 text-xs mt-1">Çalışma başına kazanılan para</p>
               </div>
 
-              <div>
+                    <div>
                 <label className="block text-white font-semibold mb-2">Çalışma Bekleme Süresi (saniye)</label>
                 <input
-                  type="number"
+                        type="number"
                   value={config.workCooldown}
                   onChange={(e) => updateConfig('workCooldown', parseInt(e.target.value))}
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
@@ -332,10 +356,10 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
                 />
                 <p className="text-gray-400 text-xs mt-1">Çalışma arasındaki süre</p>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+                    </div>
+                    </div>
+                  </div>
+                )}
 
       {/* Shop System */}
       {config.enabled && (
@@ -360,7 +384,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
             >
               {config.shopEnabled ? 'Aktif' : 'Devre Dışı'}
             </button>
-          </div>
+            </div>
 
           {config.shopEnabled && (
             <div className="space-y-4">
@@ -372,7 +396,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
                   <GiftIcon className="w-4 h-4" />
                   Ürün Ekle
                 </button>
-              </div>
+            </div>
 
               <div className="space-y-4">
                 {config.shopItems.map((item, index) => (
@@ -393,29 +417,29 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
+                <div>
                         <label className="block text-white font-semibold mb-2">Ürün Adı</label>
                         <input
                           type="text"
                           value={item.name}
                           onChange={(e) => updateShopItem(index, 'name', e.target.value)}
                           className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                        />
-                      </div>
+                  />
+                </div>
                       
-                      <div>
+                <div>
                         <label className="block text-white font-semibold mb-2">Fiyat</label>
                         <input
-                          type="number"
+                    type="number"
                           value={item.price}
                           onChange={(e) => updateShopItem(index, 'price', parseInt(e.target.value))}
                           className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
                           min="1"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
+                  />
+                </div>
+              </div>
+              
+              <div className="mt-4">
                       <label className="block text-white font-semibold mb-2">Açıklama</label>
                       <textarea
                         value={item.description}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import {
+import { 
   ShieldCheckIcon,
   ExclamationTriangleIcon,
   NoSymbolIcon,
@@ -94,6 +94,30 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Önce bot'a ayarları gönder
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/settings/${guildId}/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer neuroviabot-secret',
+          },
+          body: JSON.stringify({
+            category: 'moderation',
+            settings: config
+          }),
+        });
+        
+        if (botResponse.ok) {
+          showNotification('✅ Moderasyon ayarları başarıyla kaydedildi!', 'success');
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/moderation`, {
         method: 'POST',
         headers: {
@@ -183,12 +207,12 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-orange-500">
             <ShieldCheckIcon className="w-5 h-5 text-white" />
-          </div>
-          <div>
+                </div>
+                <div>
             <h3 className="text-white font-bold text-lg">Otomatik Moderasyon</h3>
             <p className="text-gray-400 text-sm">Spam, küfür ve zararlı içerikleri engelleyin</p>
-          </div>
-        </div>
+                </div>
+              </div>
 
         <div className="space-y-4">
           {/* Enable Auto Mod */}
@@ -232,7 +256,7 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
           {/* Bad Words Filter */}
           {config.autoModEnabled && (
             <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
-              <div>
+            <div>
                 <h4 className="text-white font-semibold">Küfür Filtresi</h4>
                 <p className="text-gray-400 text-sm">Küfürlü mesajları engelle</p>
               </div>
@@ -327,8 +351,8 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
                 <NoSymbolIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
+        </div>
+        <div>
                 <h3 className="text-white font-bold text-lg">Ceza Sistemi</h3>
                 <p className="text-gray-400 text-sm">Belirli uyarı sayısında otomatik ceza uygula</p>
               </div>

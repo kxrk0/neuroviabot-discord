@@ -537,7 +537,7 @@ router.post('/:guildId/settings/role-reactions', requireAuth, async (req, res) =
           'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
         },
         body: JSON.stringify({
-          type: 'role-reactions',
+          category: 'role-reactions',
           settings: settings
         }),
       });

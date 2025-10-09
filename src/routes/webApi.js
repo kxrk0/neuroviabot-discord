@@ -293,6 +293,12 @@ router.post('/settings/:guildId/update', authenticateBotApi, async (req, res) =>
             return res.status(503).json({ error: 'Bot henüz hazır değil' });
         }
         
+        // Category kontrolü
+        if (!category) {
+            logger.error('Category undefined in settings update request');
+            return res.status(400).json({ error: 'Category is required' });
+        }
+        
         logger.info(`🔄 Real-time settings update: ${category} - Guild: ${guildId}`);
         
         // Tepki rol sistemi için özel işlem
