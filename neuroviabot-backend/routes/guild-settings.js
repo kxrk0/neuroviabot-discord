@@ -609,41 +609,32 @@ router.get('/notifications', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Mock notifications for now - replace with actual database query
-    const notifications = [
-      {
-        id: '1',
-        type: 'info',
-        title: 'Bot Güncellendi',
-        message: 'NeuroViaBot v2.1.0 sürümü yayınlandı!',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-        read: false
-      },
-      {
-        id: '2',
-        type: 'success',
-        title: 'Ayarlar Kaydedildi',
-        message: 'Karşılama mesajı ayarları başarıyla kaydedildi.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-        read: false
-      },
-      {
-        id: '3',
-        type: 'warning',
-        title: 'Bot Yeniden Başlatıldı',
-        message: 'Bot bakım nedeniyle yeniden başlatıldı.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-        read: true
+    // Bot'tan gerçek bildirimleri al
+    try {
+      const botResponse = await fetch(`http://localhost:3002/api/bot/notifications/${req.query.guildId || 'default'}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
+        },
+      });
+      
+      if (botResponse.ok) {
+        const botData = await botResponse.json();
+        res.json({ 
+          success: true, 
+          notifications: botData.notifications || [],
+          unreadCount: botData.unreadCount || 0
+        });
+        return;
       }
-    ];
-
-    // Filter unread notifications
-    const unreadCount = notifications.filter(n => !n.read).length;
-
+    } catch (botError) {
+      console.error('Bot API hatası:', botError);
+    }
+    
+    // Fallback: Boş bildirimler
     res.json({ 
       success: true, 
-      notifications,
-      unreadCount 
+      notifications: [],
+      unreadCount: 0
     });
   } catch (error) {
     console.error('Error fetching notifications:', error);

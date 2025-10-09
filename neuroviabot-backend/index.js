@@ -96,6 +96,9 @@ app.use('/api/bot-commands', botCommandsRoutes);
 app.use('/api/guilds', guildRoutes);
 app.use('/api/guild-settings', require('./routes/guild-settings'));
 app.use('/api/notifications', require('./routes/guild-settings'));
+
+// Bot API proxy routes
+app.use('/api/bot', require('./routes/bot-proxy'));
 app.use('/api/contact', contactRoutes);
 app.use('/api/feedback', feedbackRoutes);
 

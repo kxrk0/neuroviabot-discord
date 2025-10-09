@@ -87,6 +87,29 @@ export default function AnalyticsSettings({ guildId, userId }: AnalyticsSettings
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Önce bot'tan gerçek analitik verilerini al
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/analytics/${guildId}`, {
+          headers: {
+            'Authorization': 'Bearer neuroviabot-secret',
+          },
+        });
+        
+        if (botResponse.ok) {
+          const botData = await botResponse.json();
+          setConfig({
+            ...defaultConfig,
+            analytics: botData.analytics || defaultConfig.analytics,
+            enabled: botData.enabled || false
+          });
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/analytics`, {
         credentials: 'include',
       });
