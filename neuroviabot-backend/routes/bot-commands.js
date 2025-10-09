@@ -74,19 +74,48 @@ router.get('/status/:guildId', async (req, res) => {
     try {
         const { guildId } = req.params;
         
-        // Bot durumunu kontrol et
+        // Bot'tan gerçek durumu al
+        try {
+            const botResponse = await fetch(`http://localhost:3002/api/bot/status`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
+                },
+            });
+            
+            if (botResponse.ok) {
+                const botData = await botResponse.json();
+                res.json({
+                    success: true,
+                    data: {
+                        online: botData.online,
+                        commands: {
+                            total: botData.commands,
+                            available: botData.commands,
+                            disabled: 0
+                        },
+                        features: botData.features,
+                        lastUpdate: Date.now()
+                    }
+                });
+                return;
+            }
+        } catch (botError) {
+            console.error('Bot API hatası:', botError);
+        }
+        
+        // Fallback: Mock response
         const status = {
-            online: true, // Bot'un online olup olmadığı
+            online: true,
             commands: {
-                total: 28, // Toplam komut sayısı
-                available: 25, // Kullanılabilir komut sayısı
-                disabled: 3 // Devre dışı komut sayısı
+                total: 29,
+                available: 29,
+                disabled: 0
             },
             features: {
-                economy: true,
-                moderation: true,
-                leveling: true,
-                tickets: true,
+                economy: false,
+                moderation: false,
+                leveling: false,
+                tickets: false,
                 giveaways: false
             },
             lastUpdate: Date.now()
