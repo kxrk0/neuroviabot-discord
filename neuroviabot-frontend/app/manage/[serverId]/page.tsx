@@ -559,7 +559,7 @@ export default function ServerDashboard() {
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
-          className="fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 overflow-y-auto shadow-2xl z-40"
+          className="fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 shadow-2xl z-40 flex flex-col"
         >
           {/* Server Info with gradient */}
           <motion.div 
@@ -684,8 +684,10 @@ export default function ServerDashboard() {
             </div>
           </motion.div>
 
-          {/* Categories with stagger animation */}
-          <div className="p-3">
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Categories with stagger animation */}
+            <div className="p-3">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Kategoriler</p>
             {categories.map((category, index) => {
               const Icon = category.icon;
@@ -726,10 +728,11 @@ export default function ServerDashboard() {
                 </motion.button>
               );
             })}
+            </div>
           </div>
 
           {/* Back Button */}
-          <div className="p-4 border-t border-white/10 mt-auto">
+          <div className="p-4 border-t border-white/10">
             <Link
               href="/servers"
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-all"
