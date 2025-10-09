@@ -258,11 +258,13 @@ client.once('clientReady', async () => {
 const loggingHandler = require('./src/handlers/loggingHandler');
 const LevelingHandler = require('./src/handlers/levelingHandler');
 const TicketHandler = require('./src/handlers/ticketHandler');
+const RoleReactionHandler = require('./src/handlers/roleReactionHandler');
 const WebCommandHandler = require('./src/utils/webCommandHandler');
 
 // Initialize handlers
 client.levelingHandler = new LevelingHandler(client);
 client.ticketHandler = new TicketHandler(client);
+client.roleReactionHandler = new RoleReactionHandler(client);
 client.webCommandHandler = new WebCommandHandler(client);
 
 client.on('messageDelete', async (message) => {

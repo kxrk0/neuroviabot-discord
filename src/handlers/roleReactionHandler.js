@@ -18,6 +18,51 @@ class RoleReactionHandler {
         });
     }
 
+    // Tepki rol ekleme metodu
+    async addReactionRole(guildId, channelId, messageId, emoji, roleId) {
+        try {
+            const guild = this.client.guilds.cache.get(guildId);
+            if (!guild) {
+                logger.error(`Guild bulunamadı: ${guildId}`);
+                return false;
+            }
+
+            const channel = guild.channels.cache.get(channelId);
+            if (!channel) {
+                logger.error(`Channel bulunamadı: ${channelId}`);
+                return false;
+            }
+
+            const message = await channel.messages.fetch(messageId);
+            if (!message) {
+                logger.error(`Message bulunamadı: ${messageId}`);
+                return false;
+            }
+
+            const role = guild.roles.cache.get(roleId);
+            if (!role) {
+                logger.error(`Role bulunamadı: ${roleId}`);
+                return false;
+            }
+
+            // Reaction role'u kaydet
+            if (!this.reactionRoles.has(messageId)) {
+                this.reactionRoles.set(messageId, {});
+            }
+            
+            this.reactionRoles.get(messageId)[emoji] = roleId;
+
+            // Mesaja emoji ekle
+            await message.react(emoji);
+
+            logger.info(`✅ Tepki rol eklendi: ${guildId} - ${messageId} - ${emoji} -> ${roleId}`);
+            return true;
+        } catch (error) {
+            logger.error('Tepki rol ekleme hatası:', error);
+            return false;
+        }
+    }
+
     async handleReactionAdd(reaction, user) {
         try {
             // Bot kontrolü

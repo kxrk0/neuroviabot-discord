@@ -60,6 +60,30 @@ export default function FeatureManager({ guildId, userId }: FeatureManagerProps)
   const fetchFeatures = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Önce bot API'den direkt özellik durumunu al
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/features`, {
+          headers: {
+            'Authorization': 'Bearer neuroviabot-secret'
+          }
+        });
+        
+        if (botResponse.ok) {
+          const botData = await botResponse.json();
+          const featureList = Object.entries(botData.features).map(([name, enabled]) => ({
+            name,
+            enabled: enabled as boolean,
+            description: featureDescriptions[name as keyof typeof featureDescriptions] || 'Açıklama yok'
+          }));
+          setFeatures(featureList);
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const response = await fetch(`${API_URL}/api/bot-commands/status/${guildId}`, {
         credentials: 'include',
       });

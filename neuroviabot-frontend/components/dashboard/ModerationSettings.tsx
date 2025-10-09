@@ -76,7 +76,7 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
   const fetchChannels = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/channels`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/channels`, {
         credentials: 'include',
       });
 
@@ -86,6 +86,7 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
+      showNotification('❌ Kanallar yüklenemedi. Bot sunucuda olmayabilir.', 'error');
     }
   };
 

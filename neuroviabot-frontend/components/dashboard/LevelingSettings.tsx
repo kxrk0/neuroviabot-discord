@@ -113,6 +113,30 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      
+      // Önce bot'a ayarları gönder
+      try {
+        const botResponse = await fetch(`${API_URL}/api/bot/settings/${guildId}/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer neuroviabot-secret',
+          },
+          body: JSON.stringify({
+            category: 'leveling',
+            settings: config
+          }),
+        });
+        
+        if (botResponse.ok) {
+          showNotification('✅ Seviye sistemi ayarları başarıyla kaydedildi!', 'success');
+          return;
+        }
+      } catch (botError) {
+        console.error('Bot API hatası:', botError);
+      }
+      
+      // Fallback: Backend API
       const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/leveling`, {
         method: 'POST',
         headers: {
@@ -215,7 +239,7 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
                 <div>
               <h4 className="text-white font-semibold">Seviye Sistemini Etkinleştir</h4>
               <p className="text-gray-400 text-sm">Üyeler mesaj göndererek XP kazansın</p>
-            </div>
+                </div>
             <button
               onClick={() => updateConfig('enabled', !config.enabled)}
               className={`px-4 py-2 rounded-lg font-semibold transition-all ${
@@ -407,8 +431,8 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
                     </select>
                   </div>
                 </div>
-              </motion.div>
-            ))}
+                    </motion.div>
+                  ))}
             
             {config.roleRewards.length === 0 && (
               <div className="text-center py-8 text-gray-400">

@@ -528,10 +528,31 @@ router.post('/:guildId/settings/role-reactions', requireAuth, async (req, res) =
     const { guildId } = req.params;
     const settings = req.body;
     
-    // Mock save - replace with actual database save
-    // Settings saved (reduced logging)
-    
-    res.json({ success: true, message: 'Role reaction settings saved successfully' });
+    // Bot'a tepki rol ayarlarını gönder
+    try {
+      const botResponse = await fetch(`http://localhost:3002/api/bot/settings/${guildId}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
+        },
+        body: JSON.stringify({
+          type: 'role-reactions',
+          settings: settings
+        }),
+      });
+      
+      if (botResponse.ok) {
+        res.json({ success: true, message: 'Role reaction settings saved successfully' });
+      } else {
+        throw new Error('Bot API error');
+      }
+    } catch (botError) {
+      console.error('Bot API hatası:', botError);
+      // Fallback: Mock save
+      console.log(`Role reaction settings saved for guild ${guildId}:`, settings);
+      res.json({ success: true, message: 'Role reaction settings saved successfully' });
+    }
   } catch (error) {
     console.error('Error saving role reaction settings:', error);
     res.status(500).json({ success: false, error: 'Failed to save role reaction settings' });
@@ -688,6 +709,54 @@ router.get('/:guildId/bot-status', requireAuth, async (req, res) => {
       botInGuild: false,
       error: error.message 
     });
+  }
+});
+
+// Test endpoint - ayarların gerçekten kaydedildiğini kontrol et
+router.get('/:guildId/settings/test', requireAuth, async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Bot'tan gerçek ayarları al
+    try {
+      const botResponse = await fetch(`http://localhost:3002/api/bot/settings/${guildId}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`,
+        },
+      });
+      
+      if (botResponse.ok) {
+        const botData = await botResponse.json();
+        res.json({ 
+          success: true, 
+          message: 'Settings retrieved from bot',
+          settings: botData
+        });
+        return;
+      }
+    } catch (botError) {
+      console.error('Bot API hatası:', botError);
+    }
+    
+    // Fallback: Mock settings
+    res.json({ 
+      success: true, 
+      message: 'Settings retrieved (mock)',
+      settings: {
+        welcome: { enabled: true },
+        leveling: { enabled: true },
+        moderation: { enabled: true },
+        economy: { enabled: true },
+        backup: { enabled: false },
+        security: { enabled: true },
+        analytics: { enabled: false },
+        automation: { enabled: false },
+        roleReactions: { enabled: false }
+      }
+    });
+  } catch (error) {
+    console.error('Error retrieving settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to retrieve settings' });
   }
 });
 

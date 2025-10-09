@@ -295,6 +295,19 @@ router.post('/settings/:guildId/update', authenticateBotApi, async (req, res) =>
         
         logger.info(`🔄 Real-time settings update: ${category} - Guild: ${guildId}`);
         
+        // Tepki rol sistemi için özel işlem
+        if (category === 'role-reactions' && client.roleReactionHandler) {
+            if (settings.enabled && settings.messageId && settings.channelId && settings.emoji && settings.roleId) {
+                await client.roleReactionHandler.addReactionRole(
+                    guildId,
+                    settings.channelId,
+                    settings.messageId,
+                    settings.emoji,
+                    settings.roleId
+                );
+            }
+        }
+        
         // Config'i güncelle
         const currentConfig = configSync.getConfig();
         const updatedConfig = {
@@ -325,6 +338,46 @@ router.post('/settings/:guildId/update', authenticateBotApi, async (req, res) =>
     } catch (error) {
         logger.error('Settings update hatası:', error);
         res.status(500).json({ error: 'Settings güncellenemedi' });
+    }
+});
+
+// Settings endpoint'i
+router.get('/settings/:guildId', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        
+        if (!client) {
+            return res.status(503).json({ error: 'Bot henüz hazır değil' });
+        }
+        
+        // Guild'i kontrol et
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Guild bulunamadı' });
+        }
+        
+        // Config'den ayarları al
+        const config = configSync.getConfig();
+        
+        res.json({
+            success: true,
+            guildId,
+            settings: {
+                welcome: config.welcome || { enabled: false },
+                leveling: config.leveling || { enabled: false },
+                moderation: config.moderation || { enabled: false },
+                economy: config.economy || { enabled: false },
+                backup: config.backup || { enabled: false },
+                security: config.security || { enabled: false },
+                analytics: config.analytics || { enabled: false },
+                automation: config.automation || { enabled: false },
+                roleReactions: config.roleReactions || { enabled: false }
+            },
+            timestamp: Date.now()
+        });
+    } catch (error) {
+        logger.error('Settings endpoint hatası:', error);
+        res.status(500).json({ error: 'Settings alınamadı' });
     }
 });
 
