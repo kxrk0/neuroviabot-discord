@@ -730,10 +730,10 @@ export default function ServerDashboard() {
                   </div>
                 </motion.div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-bold text-base truncate">{guild?.name || 'Server'}</h3>
+                  <h3 className="text-white font-bold text-sm leading-tight break-words">{guild?.name || 'Server'}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <p className="text-gray-400 text-sm">{guild?.memberCount || 0} üye</p>
+                    <p className="text-gray-400 text-xs">{guild?.memberCount || 0} üye</p>
                   </div>
                 </div>
                 
@@ -802,8 +802,8 @@ export default function ServerDashboard() {
                                       {guildItem.name.charAt(0)}
                                     </div>
                                   )}
-                                  <div className="flex-1">
-                                    <div className="text-white font-medium text-sm">{guildItem.name}</div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-white font-medium text-sm break-words leading-tight">{guildItem.name}</div>
                                     <div className="text-gray-400 text-xs">{guildItem.memberCount || 'N/A'} üye</div>
                                   </div>
                                   {guildItem.id === guild.id && (
