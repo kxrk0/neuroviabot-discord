@@ -739,13 +739,13 @@ export default function ServerDashboard() {
                 
                 {/* Server Switcher Button */}
                 {guilds.length > 1 && (
-                  <div className="relative">
+                  <div className="relative flex items-center">
                     <button
                       onClick={() => setGuildMenuOpen(!guildMenuOpen)}
-                      className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-150 flex items-center justify-center"
                       title="Sunucu değiştir"
                     >
-                      <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                      <ChevronDownIcon className="w-4 h-4 text-gray-400" />
                     </button>
 
                     <AnimatePresence>
@@ -760,15 +760,12 @@ export default function ServerDashboard() {
                             onClick={() => setGuildMenuOpen(false)}
                           />
                           <motion.div
-                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                            initial={{ opacity: 0, y: -10, scale: 0.98 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.98 }}
                             transition={{ 
-                              duration: 0.2, 
-                              ease: "easeOut",
-                              type: "spring",
-                              stiffness: 300,
-                              damping: 30
+                              duration: 0.1, 
+                              ease: "easeOut"
                             }}
                             className="absolute left-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
                           >
