@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   SparklesIcon,
   CurrencyDollarIcon,
-  DiceIcon,
+  CubeIcon,
   TrophyIcon,
   GiftIcon,
   ShoppingBagIcon,
@@ -42,7 +42,7 @@ const gameCommands: GameCommand[] = [
   {
     name: 'dice',
     description: 'Zar atma oyunu',
-    icon: DiceIcon,
+    icon: CubeIcon,
     color: 'from-blue-500 to-cyan-500',
     category: 'casino'
   },
@@ -82,7 +82,7 @@ export default function GamesSettings({ guildId, userId }: GamesSettingsProps) {
   const [inventory, setInventory] = useState<any[]>([]);
 
   const categories = [
-    { id: 'casino', name: 'Kumar Oyunları', icon: DiceIcon },
+    { id: 'casino', name: 'Kumar Oyunları', icon: CubeIcon },
     { id: 'economy', name: 'Ekonomi', icon: CurrencyDollarIcon },
   ];
 
