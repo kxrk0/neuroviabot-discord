@@ -80,21 +80,13 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
         const textChannels = (data.channels || []).filter((channel: any) => channel.type === 'text' || channel.type === 0);
         setChannels(textChannels);
       } else {
-        // Fallback mock data if API fails
-        setChannels([
-          { id: '1', name: 'genel', type: 'text' },
-          { id: '2', name: 'duyurular', type: 'text' },
-          { id: '3', name: 'hoşgeldin', type: 'text' },
-        ]);
+        // No channels available
+        setChannels([]);
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
-      // Fallback mock data on error
-      setChannels([
-        { id: '1', name: 'genel', type: 'text' },
-        { id: '2', name: 'duyurular', type: 'text' },
-        { id: '3', name: 'hoşgeldin', type: 'text' },
-      ]);
+      // No fallback data - show empty state
+      setChannels([]);
     }
   };
 

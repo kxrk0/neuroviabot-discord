@@ -258,11 +258,13 @@ export default function ServerDashboard() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [guildMenuOpen, setGuildMenuOpen] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
-  const [notifications] = useState(3); // Mock notifications
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetchUser();
     fetchUserGuilds();
+    fetchNotifications();
     if (serverId) {
       fetchGuildData();
       fetchGuildSettings();
@@ -315,6 +317,23 @@ export default function ServerDashboard() {
       }
     } catch (error) {
       console.error('Failed to fetch guilds:', error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/notifications/notifications`, {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
     }
   };
 
@@ -548,9 +567,9 @@ export default function ServerDashboard() {
           {/* Notifications */}
           <button className="relative p-2 rounded-lg hover:bg-white/5 transition-colors">
             <BellIcon className="w-6 h-6 text-gray-300" />
-            {notifications > 0 && (
+            {unreadCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center">
-                {notifications}
+                {unreadCount}
               </span>
             )}
           </button>

@@ -83,19 +83,11 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
         const textChannels = (data.channels || []).filter((channel: any) => channel.type === 'text' || channel.type === 0);
         setChannels(textChannels);
       } else {
-        setChannels([
-          { id: '1', name: 'genel', type: 'text' },
-          { id: '2', name: 'duyurular', type: 'text' },
-          { id: '3', name: 'seviye', type: 'text' },
-        ]);
+        setChannels([]);
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
-      setChannels([
-        { id: '1', name: 'genel', type: 'text' },
-        { id: '2', name: 'duyurular', type: 'text' },
-        { id: '3', name: 'seviye', type: 'text' },
-      ]);
+      setChannels([]);
     }
   };
 

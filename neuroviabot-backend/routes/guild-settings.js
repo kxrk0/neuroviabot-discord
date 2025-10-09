@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fetch = globalThis.fetch || require('node-fetch');
 
 // Auth middleware
 const requireAuth = (req, res, next) => {
@@ -174,20 +175,34 @@ router.post('/:guildId/settings/moderation', requireAuth, async (req, res) => {
 router.get('/:guildId/channels', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
+    const accessToken = req.user.accessToken;
     
-    // Mock data for now - replace with actual Discord API call
-    const channels = [
-      { id: '1', name: 'genel', type: 'text' },
-      { id: '2', name: 'duyurular', type: 'text' },
-      { id: '3', name: 'log', type: 'text' },
-      { id: '4', name: 'hoşgeldin', type: 'text' },
-      { id: '5', name: 'seviye', type: 'text' },
-      { id: '6', name: 'moderasyon', type: 'text' },
-      { id: '7', name: 'Genel', type: 'voice' },
-      { id: '8', name: 'Müzik', type: 'voice' },
-    ];
+    // Fetch channels from Discord API
+    const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    
+    if (!channelsResponse.ok) {
+      throw new Error(`Discord API error: ${channelsResponse.status}`);
+    }
+    
+    const channels = await channelsResponse.json();
+    
+    // Filter and format channels
+    const formattedChannels = channels
+      .filter(channel => channel.type === 0 || channel.type === 2) // Text and voice channels
+      .map(channel => ({
+        id: channel.id,
+        name: channel.name,
+        type: channel.type === 0 ? 'text' : 'voice',
+        position: channel.position,
+        parent_id: channel.parent_id
+      }))
+      .sort((a, b) => a.position - b.position);
 
-    res.json({ success: true, channels });
+    res.json({ success: true, channels: formattedChannels });
   } catch (error) {
     console.error('Error fetching channels:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch channels' });
@@ -522,20 +537,101 @@ router.post('/:guildId/settings/role-reactions', requireAuth, async (req, res) =
 router.get('/:guildId/roles', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
+    const accessToken = req.user.accessToken;
     
-    // Mock data for now - replace with actual Discord API call
-    const roles = [
-      { id: '1', name: 'Admin', color: '#ff0000' },
-      { id: '2', name: 'Moderator', color: '#00ff00' },
-      { id: '3', name: 'Member', color: '#0000ff' },
-      { id: '4', name: 'VIP', color: '#ffff00' },
-      { id: '5', name: 'Otomatik Rol', color: '#00ffff' },
-    ];
+    // Fetch roles from Discord API
+    const rolesResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    
+    if (!rolesResponse.ok) {
+      throw new Error(`Discord API error: ${rolesResponse.status}`);
+    }
+    
+    const roles = await rolesResponse.json();
+    
+    // Filter and format roles (exclude @everyone and bot roles)
+    const formattedRoles = roles
+      .filter(role => role.id !== guildId && !role.managed) // Exclude @everyone and bot roles
+      .map(role => ({
+        id: role.id,
+        name: role.name,
+        color: `#${role.color.toString(16).padStart(6, '0')}`,
+        position: role.position,
+        permissions: role.permissions,
+        mentionable: role.mentionable,
+        hoist: role.hoist
+      }))
+      .sort((a, b) => b.position - a.position); // Sort by position (highest first)
 
-    res.json({ success: true, roles });
+    res.json({ success: true, roles: formattedRoles });
   } catch (error) {
     console.error('Error fetching roles:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch roles' });
+  }
+});
+
+// Get notifications for a user
+router.get('/notifications', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Mock notifications for now - replace with actual database query
+    const notifications = [
+      {
+        id: '1',
+        type: 'info',
+        title: 'Bot Güncellendi',
+        message: 'NeuroViaBot v2.1.0 sürümü yayınlandı!',
+        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+        read: false
+      },
+      {
+        id: '2',
+        type: 'success',
+        title: 'Ayarlar Kaydedildi',
+        message: 'Karşılama mesajı ayarları başarıyla kaydedildi.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+        read: false
+      },
+      {
+        id: '3',
+        type: 'warning',
+        title: 'Bot Yeniden Başlatıldı',
+        message: 'Bot bakım nedeniyle yeniden başlatıldı.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+        read: true
+      }
+    ];
+
+    // Filter unread notifications
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    res.json({ 
+      success: true, 
+      notifications,
+      unreadCount 
+    });
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch notifications' });
+  }
+});
+
+// Mark notification as read
+router.post('/notifications/:notificationId/read', requireAuth, async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    
+    // Mock mark as read - replace with actual database update
+    console.log(`Marking notification ${notificationId} as read`);
+    
+    res.json({ success: true, message: 'Notification marked as read' });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ success: false, error: 'Failed to mark notification as read' });
   }
 });
 
