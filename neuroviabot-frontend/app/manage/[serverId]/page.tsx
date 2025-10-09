@@ -29,6 +29,8 @@ import EconomySettings from '../../../components/dashboard/EconomySettings';
 import BackupSettings from '../../../components/dashboard/BackupSettings';
 import SecuritySettings from '../../../components/dashboard/SecuritySettings';
 import AnalyticsSettings from '../../../components/dashboard/AnalyticsSettings';
+import AutomationSettings from '../../../components/dashboard/AutomationSettings';
+import RoleReactionSettings from '../../../components/dashboard/RoleReactionSettings';
 
 // Feature Categories (MEE6 style)
 const categories = [
@@ -912,9 +914,25 @@ export default function ServerDashboard() {
                     userId={user?.id || 'unknown'} 
                   />
                 )}
+
+                {/* Automation Settings Component */}
+                {activeCategory === 'automation' && (
+                  <AutomationSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* Role Reaction Settings Component */}
+                {activeCategory === 'roles' && (
+                  <RoleReactionSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
                 
                 {/* Other Features */}
-                {activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features.map((feature) => {
+                {activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',

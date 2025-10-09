@@ -224,6 +224,75 @@ router.post('/:guildId/settings/backup', async (req, res) => {
   }
 });
 
+// Create manual backup
+router.post('/:guildId/backup/create', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Mock backup creation - replace with actual backup logic
+    const backupId = Date.now().toString();
+    const backup = {
+      id: backupId,
+      name: `Backup ${new Date().toLocaleDateString()}`,
+      date: new Date().toISOString(),
+      size: '2.5 MB',
+      type: 'manual',
+    };
+    
+    console.log('Creating manual backup for guild:', guildId, backup);
+    
+    res.json({ success: true, backup });
+  } catch (error) {
+    console.error('Error creating backup:', error);
+    res.status(500).json({ success: false, error: 'Failed to create backup' });
+  }
+});
+
+// Download backup
+router.get('/:guildId/backup/:backupId/download', async (req, res) => {
+  try {
+    const { guildId, backupId } = req.params;
+    
+    // Mock backup download - replace with actual file serving
+    console.log('Downloading backup for guild:', guildId, 'backup:', backupId);
+    
+    // Create mock backup data
+    const backupData = {
+      guildId,
+      backupId,
+      timestamp: new Date().toISOString(),
+      data: {
+        channels: [],
+        roles: [],
+        settings: {},
+        messages: []
+      }
+    };
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="backup-${backupId}.json"`);
+    res.json(backupData);
+  } catch (error) {
+    console.error('Error downloading backup:', error);
+    res.status(500).json({ success: false, error: 'Failed to download backup' });
+  }
+});
+
+// Delete backup
+router.delete('/:guildId/backup/:backupId', async (req, res) => {
+  try {
+    const { guildId, backupId } = req.params;
+    
+    // Mock backup deletion - replace with actual file deletion
+    console.log('Deleting backup for guild:', guildId, 'backup:', backupId);
+    
+    res.json({ success: true, message: 'Backup deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting backup:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete backup' });
+  }
+});
+
 // Security settings
 router.get('/:guildId/settings/security', async (req, res) => {
   try {
@@ -331,6 +400,74 @@ router.post('/:guildId/settings/analytics', async (req, res) => {
   }
 });
 
+// Automation settings
+router.get('/:guildId/settings/automation', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Mock data for now - replace with actual database query
+    const settings = {
+      autoRoleEnabled: false,
+      autoRole: '',
+      scheduledMessagesEnabled: false,
+      scheduledMessages: [],
+    };
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Error fetching automation settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch automation settings' });
+  }
+});
+
+router.post('/:guildId/settings/automation', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    const settings = req.body;
+    
+    // Mock save - replace with actual database save
+    console.log('Saving automation settings for guild:', guildId, settings);
+    
+    res.json({ success: true, message: 'Automation settings saved successfully' });
+  } catch (error) {
+    console.error('Error saving automation settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to save automation settings' });
+  }
+});
+
+// Role reaction settings
+router.get('/:guildId/settings/role-reactions', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Mock data for now - replace with actual database query
+    const settings = {
+      enabled: false,
+      reactions: [],
+    };
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Error fetching role reaction settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch role reaction settings' });
+  }
+});
+
+router.post('/:guildId/settings/role-reactions', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    const settings = req.body;
+    
+    // Mock save - replace with actual database save
+    console.log('Saving role reaction settings for guild:', guildId, settings);
+    
+    res.json({ success: true, message: 'Role reaction settings saved successfully' });
+  } catch (error) {
+    console.error('Error saving role reaction settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to save role reaction settings' });
+  }
+});
+
 // Get roles for a guild
 router.get('/:guildId/roles', async (req, res) => {
   try {
@@ -342,6 +479,7 @@ router.get('/:guildId/roles', async (req, res) => {
       { id: '2', name: 'Moderator', color: '#00ff00' },
       { id: '3', name: 'Member', color: '#0000ff' },
       { id: '4', name: 'VIP', color: '#ffff00' },
+      { id: '5', name: 'Otomatik Rol', color: '#00ffff' },
     ];
 
     res.json({ success: true, roles });

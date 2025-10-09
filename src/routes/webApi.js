@@ -283,4 +283,49 @@ router.post('/toggle-feature', authenticateBotApi, async (req, res) => {
     }
 });
 
+// Real-time settings update endpoint
+router.post('/settings/:guildId/update', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { category, settings } = req.body;
+        
+        if (!client) {
+            return res.status(503).json({ error: 'Bot henüz hazır değil' });
+        }
+        
+        logger.info(`🔄 Real-time settings update: ${category} - Guild: ${guildId}`);
+        
+        // Config'i güncelle
+        const currentConfig = configSync.getConfig();
+        const updatedConfig = {
+            ...currentConfig,
+            [category]: {
+                ...currentConfig[category],
+                ...settings
+            }
+        };
+        
+        // Config'i kaydet
+        configSync.updateConfig(updatedConfig);
+        
+        // Bot'a bildir
+        configSync.emit('configUpdated', {
+            guildId,
+            category,
+            settings,
+            timestamp: Date.now()
+        });
+        
+        res.json({
+            success: true,
+            message: 'Settings updated successfully',
+            timestamp: Date.now()
+        });
+        
+    } catch (error) {
+        logger.error('Settings update hatası:', error);
+        res.status(500).json({ error: 'Settings güncellenemedi' });
+    }
+});
+
 module.exports = { router, setClient };

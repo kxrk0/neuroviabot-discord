@@ -344,7 +344,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className={`p-4 rounded-lg border ${
+          className={`fixed top-4 right-4 p-4 rounded-lg border z-50 ${
             notification.type === 'success'
               ? 'bg-green-900/20 border-green-500/30 text-green-300'
               : 'bg-red-900/20 border-red-500/30 text-red-300'
