@@ -733,7 +733,7 @@ export default function ServerDashboard() {
                         </>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </div>
