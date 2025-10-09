@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import {
+import { 
   UserPlusIcon,
   UserMinusIcon,
   ChatBubbleLeftRightIcon,
@@ -76,10 +76,25 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
 
       if (response.ok) {
         const data = await response.json();
-        setChannels(data.channels || []);
+        // Filter only text channels for welcome messages
+        const textChannels = (data.channels || []).filter((channel: any) => channel.type === 'text' || channel.type === 0);
+        setChannels(textChannels);
+      } else {
+        // Fallback mock data if API fails
+        setChannels([
+          { id: '1', name: 'genel', type: 'text' },
+          { id: '2', name: 'duyurular', type: 'text' },
+          { id: '3', name: 'hoşgeldin', type: 'text' },
+        ]);
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
+      // Fallback mock data on error
+      setChannels([
+        { id: '1', name: 'genel', type: 'text' },
+        { id: '2', name: 'duyurular', type: 'text' },
+        { id: '3', name: 'hoşgeldin', type: 'text' },
+      ]);
     }
   };
 
@@ -156,7 +171,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
         </div>
 
         <div className="space-y-4">
-          {/* Enable Welcome */}
+        {/* Enable Welcome */}
           <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
             <div>
               <h4 className="text-white font-semibold">Karşılama Mesajlarını Etkinleştir</h4>
@@ -193,7 +208,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
             </div>
           )}
 
-          {/* Welcome Message */}
+            {/* Welcome Message */}
           {config.enabled && (
             <div>
               <label className="block text-white font-semibold mb-2">Karşılama Mesajı</label>
@@ -230,19 +245,19 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
             </div>
           )}
         </div>
-      </div>
+            </div>
 
       {/* Leave Settings */}
       <div className="bg-gray-800/50 border border-white/10 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-orange-500">
             <UserMinusIcon className="w-5 h-5 text-white" />
-          </div>
-          <div>
+                  </div>
+                  <div>
             <h3 className="text-white font-bold text-lg">Veda Mesajları</h3>
             <p className="text-gray-400 text-sm">Ayrılan üyeler için mesajlar</p>
-          </div>
-        </div>
+                  </div>
+                </div>
 
         <div className="space-y-4">
           {/* Enable Leave */}
@@ -261,7 +276,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
             >
               {config.leaveEnabled ? 'Aktif' : 'Devre Dışı'}
             </button>
-          </div>
+            </div>
 
           {/* Leave Channel Selection */}
           {config.leaveEnabled && (
@@ -297,7 +312,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
                 Kullanılabilir değişkenler: {'{user}'}, {'{server}'}, {'{memberCount}'}
               </p>
             </div>
-          )}
+        )}
         </div>
       </div>
 

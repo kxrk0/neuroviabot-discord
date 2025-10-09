@@ -80,10 +80,22 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
 
       if (response.ok) {
         const data = await response.json();
-        setChannels(data.channels || []);
+        const textChannels = (data.channels || []).filter((channel: any) => channel.type === 'text' || channel.type === 0);
+        setChannels(textChannels);
+      } else {
+        setChannels([
+          { id: '1', name: 'genel', type: 'text' },
+          { id: '2', name: 'duyurular', type: 'text' },
+          { id: '3', name: 'seviye', type: 'text' },
+        ]);
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
+      setChannels([
+        { id: '1', name: 'genel', type: 'text' },
+        { id: '2', name: 'duyurular', type: 'text' },
+        { id: '3', name: 'seviye', type: 'text' },
+      ]);
     }
   };
 
@@ -196,17 +208,17 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
             <Cog6ToothIcon className="w-5 h-5 text-white" />
-          </div>
-          <div>
+                  </div>
+                  <div>
             <h3 className="text-white font-bold text-lg">Temel Ayarlar</h3>
             <p className="text-gray-400 text-sm">Seviye sistemi genel ayarları</p>
-          </div>
-        </div>
+                  </div>
+                </div>
 
         <div className="space-y-4">
           {/* Enable Leveling */}
           <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
-            <div>
+                <div>
               <h4 className="text-white font-semibold">Seviye Sistemini Etkinleştir</h4>
               <p className="text-gray-400 text-sm">Üyeler mesaj göndererek XP kazansın</p>
             </div>
@@ -220,13 +232,13 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
             >
               {config.enabled ? 'Aktif' : 'Devre Dışı'}
             </button>
-          </div>
+            </div>
 
           {/* XP Per Message */}
           {config.enabled && (
             <div>
               <label className="block text-white font-semibold mb-2">Mesaj Başına XP</label>
-              <input
+                <input
                 type="number"
                 value={config.xpPerMessage}
                 onChange={(e) => updateConfig('xpPerMessage', parseInt(e.target.value))}
@@ -271,8 +283,8 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
                 ))}
               </select>
               <p className="text-gray-400 text-xs mt-1">Seviye atlama mesajlarının gönderileceği kanal</p>
-            </div>
-          )}
+                </div>
+              )}
         </div>
       </div>
 
@@ -348,12 +360,12 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
               <GiftIcon className="w-4 h-4" />
               Ödül Ekle
             </button>
-          </div>
+                </div>
 
           <div className="space-y-4">
             {config.roleRewards.map((reward, index) => (
-              <motion.div
-                key={index}
+                    <motion.div
+                      key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="p-4 bg-gray-700/50 rounded-lg border border-gray-600"
@@ -372,14 +384,14 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
                   <div>
                     <label className="block text-white font-semibold mb-2">Seviye</label>
                     <input
-                      type="number"
+                          type="number"
                       value={reward.level}
                       onChange={(e) => updateRoleReward(index, 'level', parseInt(e.target.value))}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
                       min="1"
                       max="1000"
-                    />
-                  </div>
+                        />
+                      </div>
                   
                   <div>
                     <label className="block text-white font-semibold mb-2">Rol</label>
@@ -409,9 +421,9 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
                 <TrophyIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Henüz seviye ödülü eklenmemiş</p>
                 <p className="text-sm">Yukarıdaki "Ödül Ekle" butonuna tıklayarak başlayın</p>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
         </div>
       )}
 
@@ -431,8 +443,8 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
             <>
               <Cog6ToothIcon className="w-4 h-4" />
               Ayarları Kaydet
-            </>
-          )}
+          </>
+        )}
         </button>
       </div>
 

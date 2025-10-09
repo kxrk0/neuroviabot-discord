@@ -130,7 +130,11 @@ router.get('/:guildId/channels', async (req, res) => {
       { id: '1', name: 'genel', type: 'text' },
       { id: '2', name: 'duyurular', type: 'text' },
       { id: '3', name: 'log', type: 'text' },
-      { id: '4', name: 'Genel', type: 'voice' },
+      { id: '4', name: 'hoşgeldin', type: 'text' },
+      { id: '5', name: 'seviye', type: 'text' },
+      { id: '6', name: 'moderasyon', type: 'text' },
+      { id: '7', name: 'Genel', type: 'voice' },
+      { id: '8', name: 'Müzik', type: 'voice' },
     ];
 
     res.json({ success: true, channels });
@@ -177,6 +181,153 @@ router.post('/:guildId/settings/economy', async (req, res) => {
   } catch (error) {
     console.error('Error saving economy settings:', error);
     res.status(500).json({ success: false, error: 'Failed to save economy settings' });
+  }
+});
+
+// Backup settings
+router.get('/:guildId/settings/backup', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Mock data for now - replace with actual database query
+    const settings = {
+      enabled: false,
+      autoBackup: false,
+      backupInterval: 24,
+      maxBackups: 10,
+      includeChannels: true,
+      includeRoles: true,
+      includeSettings: true,
+      includeMessages: false,
+      backups: [],
+    };
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Error fetching backup settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch backup settings' });
+  }
+});
+
+router.post('/:guildId/settings/backup', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    const settings = req.body;
+    
+    // Mock save - replace with actual database save
+    console.log('Saving backup settings for guild:', guildId, settings);
+    
+    res.json({ success: true, message: 'Backup settings saved successfully' });
+  } catch (error) {
+    console.error('Error saving backup settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to save backup settings' });
+  }
+});
+
+// Security settings
+router.get('/:guildId/settings/security', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Mock data for now - replace with actual database query
+    const settings = {
+      enabled: false,
+      antiRaid: false,
+      antiSpam: false,
+      antiNuke: false,
+      verificationSystem: false,
+      verificationLevel: 'medium',
+      verificationChannel: '',
+      verificationRole: '',
+      verificationMessage: 'Sunucumuza hoş geldin! Lütfen aşağıdaki mesaja tepki vererek doğrulan.',
+      autoModeration: false,
+      autoBan: false,
+      autoKick: false,
+      maxWarnings: 3,
+      muteRole: '',
+      logChannel: '',
+      trustedRoles: [],
+    };
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Error fetching security settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch security settings' });
+  }
+});
+
+router.post('/:guildId/settings/security', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    const settings = req.body;
+    
+    // Mock save - replace with actual database save
+    console.log('Saving security settings for guild:', guildId, settings);
+    
+    res.json({ success: true, message: 'Security settings saved successfully' });
+  } catch (error) {
+    console.error('Error saving security settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to save security settings' });
+  }
+});
+
+// Analytics settings
+router.get('/:guildId/settings/analytics', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Mock data for now - replace with actual database query
+    const settings = {
+      enabled: false,
+      trackMessages: true,
+      trackJoins: true,
+      trackLeaves: true,
+      trackCommands: true,
+      trackVoice: false,
+      logChannel: '',
+      dailyReports: false,
+      weeklyReports: false,
+      monthlyReports: false,
+      reportChannel: '',
+      analytics: {
+        totalMessages: 1250,
+        totalJoins: 45,
+        totalLeaves: 12,
+        totalCommands: 89,
+        totalVoiceTime: 3600,
+        activeUsers: 23,
+        topChannels: [
+          { id: '1', name: 'genel', messages: 450 },
+          { id: '2', name: 'sohbet', messages: 320 },
+          { id: '3', name: 'duyurular', messages: 180 },
+        ],
+        topUsers: [
+          { id: '1', name: 'User1', messages: 120 },
+          { id: '2', name: 'User2', messages: 95 },
+          { id: '3', name: 'User3', messages: 78 },
+        ],
+      },
+    };
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Error fetching analytics settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch analytics settings' });
+  }
+});
+
+router.post('/:guildId/settings/analytics', async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    const settings = req.body;
+    
+    // Mock save - replace with actual database save
+    console.log('Saving analytics settings for guild:', guildId, settings);
+    
+    res.json({ success: true, message: 'Analytics settings saved successfully' });
+  } catch (error) {
+    console.error('Error saving analytics settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to save analytics settings' });
   }
 });
 

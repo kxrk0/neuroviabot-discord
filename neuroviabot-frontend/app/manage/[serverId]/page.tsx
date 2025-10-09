@@ -26,6 +26,9 @@ import WelcomeSettings from '../../../components/dashboard/WelcomeSettings';
 import ModerationSettings from '../../../components/dashboard/ModerationSettings';
 import LevelingSettings from '../../../components/dashboard/LevelingSettings';
 import EconomySettings from '../../../components/dashboard/EconomySettings';
+import BackupSettings from '../../../components/dashboard/BackupSettings';
+import SecuritySettings from '../../../components/dashboard/SecuritySettings';
+import AnalyticsSettings from '../../../components/dashboard/AnalyticsSettings';
 
 // Feature Categories (MEE6 style)
 const categories = [
@@ -687,13 +690,13 @@ export default function ServerDashboard() {
                               duration: 0.1, 
                               ease: "easeOut"
                             }}
-                            className="absolute left-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
+                            className="absolute right-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
                           >
                             <div className="p-3 border-b border-gray-700">
                               <h3 className="text-white font-semibold text-sm">Sunucularınız</h3>
                               <p className="text-gray-400 text-xs">Yönetmek için bir sunucu seçin</p>
                             </div>
-                            <div className="max-h-64 overflow-y-auto">
+                            <div className="max-h-64 overflow-y-auto scrollbar-hide">
                               {guilds.map((guildItem, index) => (
                                 <motion.div
                                   key={guildItem.id}
@@ -881,6 +884,30 @@ export default function ServerDashboard() {
                 {/* Economy Settings Component */}
                 {activeCategory === 'economy' && (
                   <EconomySettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* Backup Settings Component */}
+                {activeCategory === 'backup' && (
+                  <BackupSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* Security Settings Component */}
+                {activeCategory === 'security' && (
+                  <SecuritySettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* Analytics Settings Component */}
+                {activeCategory === 'analytics' && (
+                  <AnalyticsSettings 
                     guildId={serverId} 
                     userId={user?.id || 'unknown'} 
                   />
