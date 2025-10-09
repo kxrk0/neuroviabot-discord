@@ -11,7 +11,6 @@ import {
   SpeakerWaveIcon,
   QueueListIcon,
   ArrowPathIcon,
-  ShuffleIcon,
 } from '@heroicons/react/24/outline';
 
 interface MusicSettingsProps {
