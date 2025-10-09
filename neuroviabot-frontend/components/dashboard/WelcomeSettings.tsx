@@ -102,8 +102,8 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer neuroviabot-secret',
           },
+          credentials: 'include',
           body: JSON.stringify({
             category: 'welcome',
             settings: config

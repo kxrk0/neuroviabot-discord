@@ -91,9 +91,7 @@ export default function AnalyticsSettings({ guildId, userId }: AnalyticsSettings
       // Önce bot'tan gerçek analitik verilerini al
       try {
         const botResponse = await fetch(`${API_URL}/api/bot/analytics/${guildId}`, {
-          headers: {
-            'Authorization': 'Bearer neuroviabot-secret',
-          },
+          credentials: 'include',
         });
         
         if (botResponse.ok) {

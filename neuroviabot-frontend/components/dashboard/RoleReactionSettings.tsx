@@ -130,8 +130,8 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer neuroviabot-secret',
           },
+          credentials: 'include',
           body: JSON.stringify({
             category: 'role-reactions',
             settings: config

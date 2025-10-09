@@ -101,8 +101,8 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer neuroviabot-secret',
           },
+          credentials: 'include',
           body: JSON.stringify({
             category: 'moderation',
             settings: config

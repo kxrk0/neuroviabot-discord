@@ -103,8 +103,8 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer neuroviabot-secret',
           },
+          credentials: 'include',
           body: JSON.stringify({
             category: 'economy',
             settings: config

@@ -120,8 +120,8 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer neuroviabot-secret',
           },
+          credentials: 'include',
           body: JSON.stringify({
             category: 'leveling',
             settings: config

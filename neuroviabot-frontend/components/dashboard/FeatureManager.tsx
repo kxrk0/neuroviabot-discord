@@ -64,9 +64,7 @@ export default function FeatureManager({ guildId, userId }: FeatureManagerProps)
       // Önce bot API'den direkt özellik durumunu al
       try {
         const botResponse = await fetch(`${API_URL}/api/bot/features`, {
-          headers: {
-            'Authorization': 'Bearer neuroviabot-secret'
-          }
+          credentials: 'include'
         });
         
         if (botResponse.ok) {
