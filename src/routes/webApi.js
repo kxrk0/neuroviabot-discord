@@ -283,6 +283,16 @@ router.post('/toggle-feature', authenticateBotApi, async (req, res) => {
     }
 });
 
+// Test endpoint
+router.get('/test', authenticateBotApi, async (req, res) => {
+    res.json({
+        success: true,
+        message: 'Bot API is working',
+        timestamp: Date.now(),
+        clientReady: !!client
+    });
+});
+
 // Real-time settings update endpoint
 router.post('/settings/:guildId/update', authenticateBotApi, async (req, res) => {
     try {
@@ -314,18 +324,8 @@ router.post('/settings/:guildId/update', authenticateBotApi, async (req, res) =>
             }
         }
         
-        // Config'i güncelle
-        const currentConfig = configSync.getConfig();
-        const updatedConfig = {
-            ...currentConfig,
-            [category]: {
-                ...currentConfig[category],
-                ...settings
-            }
-        };
-        
-        // Config'i kaydet
-        configSync.updateConfig(updatedConfig);
+        // Config'i güncelle (sadece reload yap)
+        configSync.reloadConfig();
         
         // Bot'a bildir
         configSync.emit('configUpdated', {

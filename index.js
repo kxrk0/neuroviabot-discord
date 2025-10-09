@@ -518,6 +518,8 @@ apiApp.use('/api/bot', webApiRouter);
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
     log(`🌐 Bot HTTP API server started on port ${apiPort}`, 'SUCCESS');
+}).on('error', (err) => {
+    log(`❌ Bot API server error: ${err.message}`, 'ERROR');
 });
 
 // Client'ı bot hazır olduktan sonra set et
