@@ -52,7 +52,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/welcome`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/welcome`, {
         credentials: 'include',
       });
 
@@ -70,7 +70,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
   const fetchChannels = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/channels`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/channels`, {
         credentials: 'include',
       });
 
@@ -102,7 +102,7 @@ export default function WelcomeSettings({ guildId, userId }: WelcomeSettingsProp
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/welcome`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/welcome`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

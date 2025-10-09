@@ -60,7 +60,7 @@ export default function BackupSettings({ guildId, userId }: BackupSettingsProps)
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/backup`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/backup`, {
         credentials: 'include',
       });
 
@@ -79,7 +79,7 @@ export default function BackupSettings({ guildId, userId }: BackupSettingsProps)
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/backup`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/backup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export default function BackupSettings({ guildId, userId }: BackupSettingsProps)
     setCreatingBackup(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/backup/create`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/backup/create`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -127,7 +127,7 @@ export default function BackupSettings({ guildId, userId }: BackupSettingsProps)
   const deleteBackup = async (backupId: string) => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/backup/${backupId}`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/backup/${backupId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -147,7 +147,7 @@ export default function BackupSettings({ guildId, userId }: BackupSettingsProps)
   const downloadBackup = async (backupId: string) => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/backup/${backupId}/download`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/backup/${backupId}/download`, {
         credentials: 'include',
       });
 

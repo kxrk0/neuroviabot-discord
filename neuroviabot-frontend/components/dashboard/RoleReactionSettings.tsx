@@ -49,7 +49,7 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/role-reactions`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/role-reactions`, {
         credentials: 'include',
       });
 
@@ -67,7 +67,7 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
   const fetchChannels = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/channels`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/channels`, {
         credentials: 'include',
       });
 
@@ -95,7 +95,7 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
   const fetchRoles = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/roles`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/roles`, {
         credentials: 'include',
       });
 
@@ -123,7 +123,7 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/role-reactions`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/role-reactions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

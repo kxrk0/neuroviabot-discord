@@ -61,7 +61,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/economy`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/economy`, {
         credentials: 'include',
       });
 
@@ -96,7 +96,7 @@ export default function EconomySettings({ guildId, userId }: EconomySettingsProp
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/economy`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/economy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

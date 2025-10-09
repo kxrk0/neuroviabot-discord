@@ -3,9 +3,22 @@ const router = express.Router();
 
 // Auth middleware
 const requireAuth = (req, res, next) => {
+  // Passport.js session kontrolü
   if (!req.isAuthenticated || !req.isAuthenticated()) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Unauthorized - Please log in' 
+    });
   }
+  
+  // User bilgisi kontrolü
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'User session invalid' 
+    });
+  }
+  
   next();
 };
 

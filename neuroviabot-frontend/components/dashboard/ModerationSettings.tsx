@@ -58,7 +58,7 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/moderation`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/moderation`, {
         credentials: 'include',
       });
 
@@ -93,7 +93,7 @@ export default function ModerationSettings({ guildId, userId }: ModerationSettin
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/moderation`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/moderation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

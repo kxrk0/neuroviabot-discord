@@ -338,7 +338,7 @@ export default function ServerDashboard() {
     try {
       setLoading(true);
       const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${serverId}/settings`, {
         credentials: 'include',
       });
       
@@ -369,7 +369,7 @@ export default function ServerDashboard() {
       
       const backendCategory = categoryMap[category] || category;
       
-      const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings/${backendCategory}`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${serverId}/settings/${backendCategory}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -404,7 +404,7 @@ export default function ServerDashboard() {
       
       const backendCategory = categoryMap[category] || category;
       
-      const response = await fetch(`${API_URL}/api/guilds/${serverId}/settings/${backendCategory}`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${serverId}/settings/${backendCategory}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

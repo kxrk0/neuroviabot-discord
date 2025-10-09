@@ -54,7 +54,7 @@ export default function AutomationSettings({ guildId, userId }: AutomationSettin
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/automation`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/automation`, {
         credentials: 'include',
       });
 
@@ -72,7 +72,7 @@ export default function AutomationSettings({ guildId, userId }: AutomationSettin
   const fetchChannels = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/channels`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/channels`, {
         credentials: 'include',
       });
 
@@ -100,7 +100,7 @@ export default function AutomationSettings({ guildId, userId }: AutomationSettin
   const fetchRoles = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/roles`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/roles`, {
         credentials: 'include',
       });
 
@@ -128,7 +128,7 @@ export default function AutomationSettings({ guildId, userId }: AutomationSettin
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/automation`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/automation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

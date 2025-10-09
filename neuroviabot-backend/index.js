@@ -94,7 +94,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
 app.use('/api/bot-commands', botCommandsRoutes);
 app.use('/api/guilds', guildRoutes);
-app.use('/api/guilds', require('./routes/guild-settings'));
+app.use('/api/guild-settings', require('./routes/guild-settings'));
 app.use('/api/contact', contactRoutes);
 app.use('/api/feedback', feedbackRoutes);
 

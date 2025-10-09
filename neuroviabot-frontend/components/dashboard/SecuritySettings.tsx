@@ -71,7 +71,7 @@ export default function SecuritySettings({ guildId, userId }: SecuritySettingsPr
   const fetchSettings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/security`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/security`, {
         credentials: 'include',
       });
 
@@ -122,7 +122,7 @@ export default function SecuritySettings({ guildId, userId }: SecuritySettingsPr
     setSaving(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}/settings/security`, {
+      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/settings/security`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
