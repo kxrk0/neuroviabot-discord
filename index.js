@@ -514,7 +514,7 @@ apiApp.listen(apiPort, () => {
 });
 
 // Client'ı bot hazır olduktan sonra set et
-client.once('ready', () => {
+client.once('clientReady', () => {
     setClient(client);
     log(`🌐 Client web API'ye bağlandı`, 'SUCCESS');
 });
