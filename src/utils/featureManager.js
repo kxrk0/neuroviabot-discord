@@ -9,7 +9,7 @@ const configSync = require('./configSync');
 
 class FeatureManager {
     constructor() {
-        this.configPath = path.join(__dirname, 'config.js');
+        this.configPath = path.join(__dirname, '..', 'config.js');
         this.configBackup = null;
     }
 
