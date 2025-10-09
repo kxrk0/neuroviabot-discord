@@ -192,15 +192,18 @@ export default function ServerDashboard() {
   
   const [activeCategory, setActiveCategory] = useState('welcome');
   const [guild, setGuild] = useState<any>(null);
+  const [guilds, setGuilds] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [guildMenuOpen, setGuildMenuOpen] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const [notifications] = useState(3); // Mock notifications
 
   useEffect(() => {
     fetchUser();
+    fetchUserGuilds();
     if (serverId) {
       fetchGuildData();
       fetchGuildSettings();
@@ -219,6 +222,23 @@ export default function ServerDashboard() {
       }
     } catch (error) {
       console.error('Failed to fetch user:', error);
+    }
+  };
+
+  const fetchUserGuilds = async () => {
+    try {
+      const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/guilds/user`, {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const withBot = data.filter((g: any) => g.botPresent);
+        setGuilds(withBot);
+      }
+    } catch (error) {
+      console.error('Failed to fetch guilds:', error);
     }
   };
 
@@ -439,14 +459,96 @@ export default function ServerDashboard() {
         transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
         className="fixed top-0 left-0 right-0 h-16 bg-gray-900/80 backdrop-blur-xl border-b border-white/10 z-50 flex items-center justify-between px-6 shadow-xl"
       >
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-            </svg>
-          </div>
-          <span className="text-xl font-black text-white">NeuroViaBot</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+            </div>
+            <span className="text-xl font-black text-white">NeuroViaBot</span>
+          </Link>
+
+          {/* Server Selector */}
+          {guild && (
+            <div className="relative">
+              <button
+                onClick={() => setGuildMenuOpen(!guildMenuOpen)}
+                className="flex items-center gap-3 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg hover:border-purple-500 transition-all"
+              >
+                {guild.icon ? (
+                  <img
+                    src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=32`}
+                    alt={guild.name}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white">
+                    {guild.name.charAt(0)}
+                  </div>
+                )}
+                <div className="text-left">
+                  <div className="text-white font-medium text-sm">{guild.name}</div>
+                  <div className="text-gray-400 text-xs">{guild.memberCount || 'N/A'} üye</div>
+                </div>
+                <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+              </button>
+
+              <AnimatePresence>
+                {guildMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setGuildMenuOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute left-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50"
+                    >
+                    <div className="p-3 border-b border-gray-700">
+                      <h3 className="text-white font-semibold text-sm">Sunucularınız</h3>
+                      <p className="text-gray-400 text-xs">Yönetmek için bir sunucu seçin</p>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {guilds.map(guildItem => (
+                        <Link
+                          key={guildItem.id}
+                          href={`/manage/${guildItem.id}`}
+                          className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-700 transition-colors ${
+                            guildItem.id === guild.id ? 'bg-gray-700/50' : ''
+                          }`}
+                          onClick={() => setGuildMenuOpen(false)}
+                        >
+                          {guildItem.icon ? (
+                            <img
+                              src={`https://cdn.discordapp.com/icons/${guildItem.id}/${guildItem.icon}.png?size=32`}
+                              alt={guildItem.name}
+                              className="w-10 h-10 rounded-full"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white">
+                              {guildItem.name.charAt(0)}
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm">{guildItem.name}</div>
+                            <div className="text-gray-400 text-xs">{guildItem.memberCount || 'N/A'} üye</div>
+                          </div>
+                          {guildItem.id === guild.id && (
+                            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-4">
           {/* Notifications */}
