@@ -56,6 +56,9 @@ const client = new Client({
     ]
 });
 
+// EventEmitter listener limitini artır
+client.setMaxListeners(20);
+
 // Discord.js v14 doesn't need raw voice adapter anymore
 
 // Collections for commands and events

@@ -1,8 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
+// Auth middleware
+const requireAuth = (req, res, next) => {
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+};
+
 // Welcome settings
-router.get('/:guildId/settings/welcome', async (req, res) => {
+router.get('/:guildId/settings/welcome', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -25,7 +33,7 @@ router.get('/:guildId/settings/welcome', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/welcome', async (req, res) => {
+router.post('/:guildId/settings/welcome', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -41,7 +49,7 @@ router.post('/:guildId/settings/welcome', async (req, res) => {
 });
 
 // Leveling settings
-router.get('/:guildId/settings/leveling', async (req, res) => {
+router.get('/:guildId/settings/leveling', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -63,7 +71,7 @@ router.get('/:guildId/settings/leveling', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/leveling', async (req, res) => {
+router.post('/:guildId/settings/leveling', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -79,7 +87,7 @@ router.post('/:guildId/settings/leveling', async (req, res) => {
 });
 
 // Moderation settings
-router.get('/:guildId/settings/moderation', async (req, res) => {
+router.get('/:guildId/settings/moderation', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -105,7 +113,7 @@ router.get('/:guildId/settings/moderation', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/moderation', async (req, res) => {
+router.post('/:guildId/settings/moderation', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -121,7 +129,7 @@ router.post('/:guildId/settings/moderation', async (req, res) => {
 });
 
 // Get channels for a guild
-router.get('/:guildId/channels', async (req, res) => {
+router.get('/:guildId/channels', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -145,7 +153,7 @@ router.get('/:guildId/channels', async (req, res) => {
 });
 
 // Economy settings
-router.get('/:guildId/settings/economy', async (req, res) => {
+router.get('/:guildId/settings/economy', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -169,7 +177,7 @@ router.get('/:guildId/settings/economy', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/economy', async (req, res) => {
+router.post('/:guildId/settings/economy', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -185,7 +193,7 @@ router.post('/:guildId/settings/economy', async (req, res) => {
 });
 
 // Backup settings
-router.get('/:guildId/settings/backup', async (req, res) => {
+router.get('/:guildId/settings/backup', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -209,7 +217,7 @@ router.get('/:guildId/settings/backup', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/backup', async (req, res) => {
+router.post('/:guildId/settings/backup', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -225,7 +233,7 @@ router.post('/:guildId/settings/backup', async (req, res) => {
 });
 
 // Create manual backup
-router.post('/:guildId/backup/create', async (req, res) => {
+router.post('/:guildId/backup/create', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -249,7 +257,7 @@ router.post('/:guildId/backup/create', async (req, res) => {
 });
 
 // Download backup
-router.get('/:guildId/backup/:backupId/download', async (req, res) => {
+router.get('/:guildId/backup/:backupId/download', requireAuth, async (req, res) => {
   try {
     const { guildId, backupId } = req.params;
     
@@ -279,7 +287,7 @@ router.get('/:guildId/backup/:backupId/download', async (req, res) => {
 });
 
 // Delete backup
-router.delete('/:guildId/backup/:backupId', async (req, res) => {
+router.delete('/:guildId/backup/:backupId', requireAuth, async (req, res) => {
   try {
     const { guildId, backupId } = req.params;
     
@@ -294,7 +302,7 @@ router.delete('/:guildId/backup/:backupId', async (req, res) => {
 });
 
 // Security settings
-router.get('/:guildId/settings/security', async (req, res) => {
+router.get('/:guildId/settings/security', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -325,7 +333,7 @@ router.get('/:guildId/settings/security', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/security', async (req, res) => {
+router.post('/:guildId/settings/security', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -341,7 +349,7 @@ router.post('/:guildId/settings/security', async (req, res) => {
 });
 
 // Analytics settings
-router.get('/:guildId/settings/analytics', async (req, res) => {
+router.get('/:guildId/settings/analytics', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -385,7 +393,7 @@ router.get('/:guildId/settings/analytics', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/analytics', async (req, res) => {
+router.post('/:guildId/settings/analytics', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -401,7 +409,7 @@ router.post('/:guildId/settings/analytics', async (req, res) => {
 });
 
 // Automation settings
-router.get('/:guildId/settings/automation', async (req, res) => {
+router.get('/:guildId/settings/automation', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -420,7 +428,7 @@ router.get('/:guildId/settings/automation', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/automation', async (req, res) => {
+router.post('/:guildId/settings/automation', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -436,7 +444,7 @@ router.post('/:guildId/settings/automation', async (req, res) => {
 });
 
 // Role reaction settings
-router.get('/:guildId/settings/role-reactions', async (req, res) => {
+router.get('/:guildId/settings/role-reactions', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
@@ -453,7 +461,7 @@ router.get('/:guildId/settings/role-reactions', async (req, res) => {
   }
 });
 
-router.post('/:guildId/settings/role-reactions', async (req, res) => {
+router.post('/:guildId/settings/role-reactions', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     const settings = req.body;
@@ -469,7 +477,7 @@ router.post('/:guildId/settings/role-reactions', async (req, res) => {
 });
 
 // Get roles for a guild
-router.get('/:guildId/roles', async (req, res) => {
+router.get('/:guildId/roles', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     

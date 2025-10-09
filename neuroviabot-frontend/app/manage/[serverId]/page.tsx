@@ -692,7 +692,7 @@ export default function ServerDashboard() {
                               duration: 0.1, 
                               ease: "easeOut"
                             }}
-                            className="absolute right-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
+                            className="absolute left-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
                           >
                             <div className="p-3 border-b border-gray-700">
                               <h3 className="text-white font-semibold text-sm">Sunucularınız</h3>
