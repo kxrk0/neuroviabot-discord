@@ -3,7 +3,7 @@
 /**
  * NeuroViaBot Webhook Deployment Server
  * VPS'te çalışır, GitHub'dan webhook alır ve otomatik deploy yapar
- * Updated: 2025-10-12 - Nginx reverse proxy support added
+ * Updated: 2025-10-12 - Caddy reverse proxy configured
  */
 
 // .env dosyasını yükle
