@@ -463,6 +463,18 @@ async function setupSocketIO(client) {
             log(`✅ Guild ${guildId} ayarları senkronize edildi`, 'SUCCESS');
         });
 
+        // Guild broadcast handler - Management actions
+        socket.on('broadcast_to_guild', (data) => {
+            const { guildId, event, data: eventData } = data;
+            log(`📢 Broadcasting to guild ${guildId}: ${event}`, 'DEBUG');
+            
+            // Broadcast event back to all connected frontend clients for this guild
+            socket.emit(event, {
+                guildId,
+                ...eventData,
+            });
+        });
+
         client.socket = socket;
         
     } catch (error) {
@@ -580,11 +592,13 @@ startBot();
 
 // HTTP API Server for web interface
 const express = require('express');
-const { router: webApiRouter, setClient } = require('./src/routes/webApi');
+const { router: webApiRouter, setClient: setWebApiClient } = require('./src/routes/webApi');
+const { router: guildManagementRouter, setClient: setGuildManagementClient } = require('./src/routes/guild-management');
 
 const apiApp = express();
 apiApp.use(express.json());
 apiApp.use('/api/bot', webApiRouter);
+apiApp.use('/api/bot/guilds', guildManagementRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
@@ -595,7 +609,8 @@ apiApp.listen(apiPort, () => {
 
 // Client'ı bot hazır olduktan sonra set et
 client.once('clientReady', () => {
-    setClient(client);
+    setWebApiClient(client);
+    setGuildManagementClient(client);
     log(`🌐 Client web API'ye bağlandı`, 'SUCCESS');
 });
 
