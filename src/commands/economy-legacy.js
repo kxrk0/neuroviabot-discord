@@ -163,7 +163,7 @@ module.exports = {
 
         if (targetUser.bot) {
             const errorEmbed = new EmbedBuilder()
-                .setColor('#8B5CF6')
+                .setColor('#ff0000')
                 .setTitle('❌ Bot Kullanıcısı')
                 .setDescription('Bot kullanıcılarının ekonomi verisi yoktur!')
                 .setTimestamp();
@@ -172,20 +172,27 @@ module.exports = {
         }
 
         const db = getDatabase();
-        const balance = db.getNeuroCoinBalance(targetUser.id);
+        const economy = db.getUserEconomy(targetUser.id);
+        const settings = db.getGuildSettings(interaction.guild.id);
+
+        const balance = parseInt(economy.balance) || 0;
+        const bank = parseInt(economy.bank) || 0;
+        const total = balance + bank;
+
+        const currencySymbol = settings.economy?.currencySymbol || '💰';
+        const currencyName = settings.economy?.currencyName || 'Coin';
 
         const balanceEmbed = new EmbedBuilder()
-            .setColor('#8B5CF6')
-            .setTitle(`🪙 ${targetUser.username} - NeuroCoin Bakiyesi`)
-            .setDescription('**The Neural Currency of Discord**')
+            .setColor('#00ff00')
+            .setTitle(`💰 ${targetUser.username} - Bakiye`)
             .setThumbnail(targetUser.displayAvatarURL())
             .addFields(
-                { name: `💵 Cüzdan`, value: `**${balance.wallet.toLocaleString()}** NRC`, inline: true },
-                { name: `🏦 Banka`, value: `**${balance.bank.toLocaleString()}** NRC`, inline: true },
-                { name: `📊 Toplam`, value: `**${balance.total.toLocaleString()}** NRC`, inline: true }
+                { name: `💵 Cüzdan`, value: `${balance.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: `🏦 Banka`, value: `${bank.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: `📊 Toplam`, value: `${total.toLocaleString()} ${currencySymbol}`, inline: true }
             )
             .setFooter({
-                text: `NeuroCoin (NRC) • ${interaction.guild.name}`,
+                text: `${currencyName} • ${interaction.guild.name}`,
                 iconURL: interaction.guild.iconURL()
             })
             .setTimestamp();
