@@ -12,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import EmptyState from '../EmptyState';
 import LoadingSkeleton from '../LoadingSkeleton';
+import ColorPicker from './shared/ColorPicker';
+import ConfirmDialog from './shared/ConfirmDialog';
 
 interface Role {
   id: string;
@@ -37,6 +39,11 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [creatingRole, setCreatingRole] = useState(false);
   const [newRole, setNewRole] = useState({ name: '', color: '#99AAB5', hoist: false, mentionable: false });
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; roleId: string | null; roleName: string }>({
+    open: false,
+    roleId: null,
+    roleName: ''
+  });
 
   useEffect(() => {
     fetchRoles();
@@ -98,16 +105,16 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
     }
   };
 
-  const handleDeleteRole = async (roleId: string) => {
-    if (!confirm('Bu rolü silmek istediğinizden emin misiniz?')) {
-      return;
-    }
+  const handleDeleteRole = async () => {
+    if (!deleteConfirm.roleId) return;
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/roles/${roleId}`, {
+      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/roles/${deleteConfirm.roleId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ executor: userId }),
       });
 
       if (!response.ok) {
@@ -115,10 +122,19 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
       }
 
       await fetchRoles();
+      setDeleteConfirm({ open: false, roleId: null, roleName: '' });
     } catch (err: any) {
       console.error('Error deleting role:', err);
       alert('Rol silinemedi: ' + err.message);
     }
+  };
+
+  const openDeleteConfirm = (role: Role) => {
+    setDeleteConfirm({
+      open: true,
+      roleId: role.id,
+      roleName: role.name
+    });
   };
 
   if (loading) {
@@ -269,7 +285,7 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
                       <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => handleDeleteRole(role.id)}
+                      onClick={() => openDeleteConfirm(role)}
                       className="p-2 hover:bg-red-500/10 rounded-lg transition text-gray-400 hover:text-red-400"
                       title="Sil"
                     >
@@ -282,6 +298,18 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
           </div>
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Rolü Sil"
+        message={`"${deleteConfirm.roleName}" rolünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+        confirmText="Sil"
+        cancelText="İptal"
+        onConfirm={handleDeleteRole}
+        onCancel={() => setDeleteConfirm({ open: false, roleId: null, roleName: '' })}
+        variant="danger"
+      />
     </div>
   );
 }
