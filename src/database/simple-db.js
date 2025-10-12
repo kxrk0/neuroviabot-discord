@@ -16,7 +16,16 @@ class SimpleDatabase {
             users: new Map(),
             guilds: new Map(),
             guildMembers: new Map(),
-            userEconomy: new Map(),
+            userEconomy: new Map(), // Legacy economy (to be migrated)
+            neuroCoinBalances: new Map(), // New: userId -> { wallet, bank, total, lastDaily, lastWork }
+            neuroCoinTransactions: new Map(), // New: txId -> transaction details
+            marketplaceListings: new Map(), // New: listingId -> item details
+            userInventory: new Map(), // New: userId -> [items]
+            achievements: new Map(), // New: userId -> [achievements]
+            dailyStreaks: new Map(), // New: userId -> streak data
+            questProgress: new Map(), // New: userId -> quest data
+            serverMarketConfig: new Map(), // New: guildId -> market settings
+            activityRewards: new Map(), // New: userId -> last reward timestamp
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),
@@ -276,6 +285,198 @@ class SimpleDatabase {
         return false;
     }
 
+    // ==========================================
+    // NeuroCoin Economy Methods
+    // ==========================================
+
+    getNeuroCoinBalance(userId) {
+        if (!this.data.neuroCoinBalances.has(userId)) {
+            this.data.neuroCoinBalances.set(userId, {
+                wallet: 0,
+                bank: 0,
+                total: 0,
+                lastDaily: null,
+                lastWork: null
+            });
+        }
+        return this.data.neuroCoinBalances.get(userId);
+    }
+
+    updateNeuroCoinBalance(userId, amount, type = 'wallet') {
+        const balance = this.getNeuroCoinBalance(userId);
+        
+        if (type === 'wallet') {
+            balance.wallet += amount;
+        } else if (type === 'bank') {
+            balance.bank += amount;
+        }
+        
+        balance.total = balance.wallet + balance.bank;
+        this.data.neuroCoinBalances.set(userId, balance);
+        this.saveData();
+        
+        return balance;
+    }
+
+    transferNeuroCoin(fromUserId, toUserId, amount) {
+        const fromBalance = this.getNeuroCoinBalance(fromUserId);
+        const toBalance = this.getNeuroCoinBalance(toUserId);
+        
+        if (fromBalance.wallet < amount) {
+            return { success: false, error: 'Yetersiz bakiye' };
+        }
+        
+        fromBalance.wallet -= amount;
+        fromBalance.total = fromBalance.wallet + fromBalance.bank;
+        
+        toBalance.wallet += amount;
+        toBalance.total = toBalance.wallet + toBalance.bank;
+        
+        this.data.neuroCoinBalances.set(fromUserId, fromBalance);
+        this.data.neuroCoinBalances.set(toUserId, toBalance);
+        
+        // Record transaction
+        const txId = `tx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        this.recordTransaction(fromUserId, toUserId, amount, 'transfer', { txId });
+        
+        this.saveData();
+        return { success: true, txId };
+    }
+
+    recordTransaction(from, to, amount, type, metadata = {}) {
+        const txId = metadata.txId || `tx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const transaction = {
+            id: txId,
+            from,
+            to,
+            amount,
+            type, // 'transfer', 'activity', 'daily', 'work', 'game', 'marketplace'
+            metadata,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.data.neuroCoinTransactions.set(txId, transaction);
+        this.saveData();
+        
+        return transaction;
+    }
+
+    getUserTransactions(userId, limit = 50) {
+        const transactions = [];
+        for (const [id, tx] of this.data.neuroCoinTransactions) {
+            if (tx.from === userId || tx.to === userId) {
+                transactions.push(tx);
+            }
+        }
+        
+        // Sort by timestamp descending
+        transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        return transactions.slice(0, limit);
+    }
+
+    // ==========================================
+    // Marketplace Methods
+    // ==========================================
+
+    createListing(userId, item, price, guildId = 'global') {
+        const listingId = `listing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const listing = {
+            id: listingId,
+            seller: userId,
+            item,
+            price,
+            guildId,
+            listed: new Date().toISOString(),
+            active: true
+        };
+        
+        this.data.marketplaceListings.set(listingId, listing);
+        this.saveData();
+        
+        return listing;
+    }
+
+    purchaseListing(listingId, buyerId) {
+        const listing = this.data.marketplaceListings.get(listingId);
+        if (!listing || !listing.active) {
+            return { success: false, error: 'Liste bulunamadı veya aktif değil' };
+        }
+        
+        const buyerBalance = this.getNeuroCoinBalance(buyerId);
+        if (buyerBalance.wallet < listing.price) {
+            return { success: false, error: 'Yetersiz bakiye' };
+        }
+        
+        // Transfer NRC
+        const transfer = this.transferNeuroCoin(buyerId, listing.seller, listing.price);
+        if (!transfer.success) {
+            return transfer;
+        }
+        
+        // Add item to buyer inventory
+        const inventory = this.data.userInventory.get(buyerId) || [];
+        inventory.push({
+            ...listing.item,
+            purchasedAt: new Date().toISOString(),
+            purchasedFrom: listing.seller
+        });
+        this.data.userInventory.set(buyerId, inventory);
+        
+        // Mark listing as sold
+        listing.active = false;
+        listing.soldTo = buyerId;
+        listing.soldAt = new Date().toISOString();
+        this.data.marketplaceListings.set(listingId, listing);
+        
+        this.saveData();
+        return { success: true, listing };
+    }
+
+    getMarketplaceListings(guildId, filters = {}) {
+        const listings = [];
+        for (const [id, listing] of this.data.marketplaceListings) {
+            if (listing.active && (guildId === 'global' || listing.guildId === guildId || listing.guildId === 'global')) {
+                listings.push(listing);
+            }
+        }
+        return listings;
+    }
+
+    getServerMarketConfig(guildId) {
+        if (!this.data.serverMarketConfig.has(guildId)) {
+            this.data.serverMarketConfig.set(guildId, {
+                enabled: true,
+                tax: 0,
+                allowGlobal: true,
+                customItems: [],
+                featured: [],
+                blacklist: []
+            });
+        }
+        return this.data.serverMarketConfig.get(guildId);
+    }
+
+    updateServerMarketConfig(guildId, config) {
+        const currentConfig = this.getServerMarketConfig(guildId);
+        const newConfig = { ...currentConfig, ...config };
+        this.data.serverMarketConfig.set(guildId, newConfig);
+        this.saveData();
+        return newConfig;
+    }
+
+    // ==========================================
+    // Activity Rewards
+    // ==========================================
+
+    getLastActivityReward(userId) {
+        return this.data.activityRewards.get(userId) || 0;
+    }
+
+    setLastActivityReward(userId, timestamp = Date.now()) {
+        this.data.activityRewards.set(userId, timestamp);
+        this.saveData();
+    }
+
     // Statistics
     getStats() {
         return {
@@ -283,6 +484,9 @@ class SimpleDatabase {
             guilds: this.data.guilds.size,
             guildMembers: this.data.guildMembers.size,
             userEconomy: this.data.userEconomy.size,
+            neuroCoinBalances: this.data.neuroCoinBalances.size,
+            neuroCoinTransactions: this.data.neuroCoinTransactions.size,
+            marketplaceListings: this.data.marketplaceListings.size,
             warnings: this.data.warnings.size,
             tickets: this.data.tickets.size,
             giveaways: this.data.giveaways.size,
