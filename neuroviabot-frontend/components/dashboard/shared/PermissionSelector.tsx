@@ -43,7 +43,7 @@ interface PermissionSelectorProps {
 export default function PermissionSelector({ selectedPermissions, onChange }: PermissionSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const categories = [...new Set(DISCORD_PERMISSIONS.map(p => p.category))];
+  const categories = Array.from(new Set(DISCORD_PERMISSIONS.map(p => p.category)));
 
   const filteredPermissions = DISCORD_PERMISSIONS.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
