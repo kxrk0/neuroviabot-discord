@@ -12,17 +12,24 @@ router.get('/stats', async (req, res) => {
     
     // Bot sunucusundan direkt stats çek
     const response = await axios.get(`${BOT_API_URL}/api/bot/stats`, {
-      timeout: 3000,
+      timeout: 5000, // 5 saniye timeout
       headers: {
         'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`
-      }
+      },
+      validateStatus: (status) => status === 200 // Sadece 200 OK kabul et
     });
     
-    console.log('[Backend API] Stats received from bot server:', response.data);
-    res.json(response.data);
+    // Veri kontrolü
+    if (response.data && response.data.guilds && response.data.users) {
+      console.log('[Backend API] ✅ Valid stats from bot server:', response.data);
+      res.json(response.data);
+    } else {
+      console.log('[Backend API] ⚠️ Invalid stats from bot server, using fallback');
+      throw new Error('Invalid stats data');
+    }
     
   } catch (error) {
-    console.error('[Backend API] Error fetching from bot server:', error.message);
+    console.error('[Backend API] ❌ Error fetching from bot server:', error.message);
     
     // Fallback: Database'den stats al
     try {
@@ -36,20 +43,32 @@ router.get('/stats', async (req, res) => {
         }
       }); 
       
-      console.log('[Backend API] Using database fallback - Guilds:', guilds.length, 'Users:', totalUsers);
-      
-      res.json({
-        guilds: guilds.length,
-        users: totalUsers,
-        commands: 29,
-        uptime: process.uptime() * 1000,
-        ping: 0,
-        memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024,
-        source: 'database'
-      });
+      // Sadece geçerli veri varsa gönder
+      if (guilds.length > 0 && totalUsers > 0) {
+        console.log('[Backend API] 📊 Using database fallback - Guilds:', guilds.length, 'Users:', totalUsers);
+        
+        res.json({
+          guilds: guilds.length,
+          users: totalUsers,
+          commands: 29,
+          uptime: 0,
+          ping: 0,
+          memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024,
+          source: 'database'
+        });
+      } else {
+        // Hiç veri yoksa error döndür, frontend kendi fallback'ini kullanır
+        res.status(503).json({ 
+          error: 'Bot stats unavailable',
+          message: 'Bot server unreachable and no database cache available'
+        });
+      }
     } catch (dbError) {
-      console.error('[Backend API] Database fallback failed:', dbError);
-      res.status(500).json({ error: 'Failed to fetch bot stats' });
+      console.error('[Backend API] ❌ Database fallback failed:', dbError);
+      res.status(503).json({ 
+        error: 'Service temporarily unavailable',
+        message: 'Unable to fetch bot statistics'
+      });
     }
   }
 });

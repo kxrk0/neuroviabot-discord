@@ -44,17 +44,22 @@ export default function Home() {
         const data = await fetchBotStats();
         console.log('✅ Bot stats received:', data);
         
-        const finalStats = {
-          guilds: data.guilds || 66,
-          users: (data.users && data.users > 0) ? data.users : 59032,
-          commands: data.commands || 43
-        };
-        
-        console.log('💾 Setting stats to:', finalStats);
-        setStats(finalStats);
+        // Sadece gerçek veri varsa güncelle
+        if (data && data.source === 'bot-server') {
+          const finalStats = {
+            guilds: data.guilds || stats.guilds,
+            users: (data.users && data.users > 0) ? data.users : stats.users,
+            commands: data.commands || stats.commands
+          };
+          
+          console.log('💾 Setting stats to:', finalStats);
+          setStats(finalStats);
+        } else {
+          console.log('⚠️ Waiting for real-time stats via Socket.IO...');
+        }
       } catch (error) {
-        console.error('❌ Failed to fetch bot stats:', error);
-        setStats({ guilds: 66, users: 59032, commands: 43 });
+        console.error('❌ Failed to fetch bot stats, keeping current values:', error);
+        // Error durumunda mevcut stats'ı koru, fallback kullanma
       }
     };
     
@@ -84,9 +89,8 @@ export default function Home() {
     loadStats();
     loadUser();
     
-    // Her 30 saniyede bir güncelle (fallback)
-    const interval = setInterval(loadStats, 30000);
-    return () => clearInterval(interval);
+    // HTTP fallback'i kaldır - Socket.IO yeterli
+    // Sadece ilk yüklemede bir kez çağır
   }, []);
 
   // Socket.IO ile real-time stats güncellemeleri
@@ -97,26 +101,38 @@ export default function Home() {
       const handleStatsUpdate = (data: any) => {
         console.log('📊 Real-time stats update received:', data);
         
+        // Geçersiz veya boş veri kontrolü
+        if (!data || !data.guilds || !data.users) {
+          console.log('⚠️ Invalid stats data, ignoring update');
+          return;
+        }
+        
         const newStats = {
-          guilds: data.guilds || stats.guilds,
-          users: data.users || stats.users,
+          guilds: data.guilds,
+          users: data.users,
           commands: data.commands || stats.commands
         };
         
-        // Hangi stats değişti kontrol et
+        // Sadece değer değiştiyse güncelle
         const updated = {
           guilds: newStats.guilds !== stats.guilds,
           users: newStats.users !== stats.users,
           commands: newStats.commands !== stats.commands
         };
         
-        setStatsUpdating(updated);
-        setStats(newStats);
-        
-        // Animasyonu 1 saniye sonra kaldır
-        setTimeout(() => {
-          setStatsUpdating({ guilds: false, users: false, commands: false });
-        }, 1000);
+        // En az bir değer değiştiyse güncelle
+        if (updated.guilds || updated.users || updated.commands) {
+          console.log('✅ Stats updated:', { old: stats, new: newStats });
+          setStatsUpdating(updated);
+          setStats(newStats);
+          
+          // Animasyonu 1 saniye sonra kaldır
+          setTimeout(() => {
+            setStatsUpdating({ guilds: false, users: false, commands: false });
+          }, 1000);
+        } else {
+          console.log('ℹ️ Stats unchanged, skipping update');
+        }
       };
       
       on('bot_stats_update', handleStatsUpdate);
