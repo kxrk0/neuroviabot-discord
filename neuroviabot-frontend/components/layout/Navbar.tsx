@@ -59,11 +59,17 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           <Link href="/servers" className="navbar-link">
             Servers
           </Link>
-          <Link href="/komutlar" className="navbar-link">
-            Commands
+          <Link href="/marketplace" className="navbar-link">
+            Marketplace
           </Link>
-          <Link href="/ozellikler" className="navbar-link">
-            Features
+          <Link href="/quests" className="navbar-link">
+            Quests
+          </Link>
+          <Link href="/leaderboards" className="navbar-link">
+            Leaderboards
+          </Link>
+          <Link href="/premium" className="navbar-link">
+            Premium
           </Link>
         </div>
         
