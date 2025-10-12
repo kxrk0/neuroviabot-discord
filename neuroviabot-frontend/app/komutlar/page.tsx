@@ -71,15 +71,74 @@ const commandCategories: Category[] = [
     ]
   },
   {
-    id: 'economy',
-    name: 'Ekonomi Komutları',
+    id: 'neurocoin',
+    name: '🪙 NeuroCoin (NRC)',
+    icon: <CurrencyDollarIcon className="w-6 h-6" />,
+    color: 'purple',
+    commands: [
+      { name: '/economy balance', description: 'NeuroCoin bakiyeni görüntüle', usage: '/economy balance [kullanıcı]' },
+      { name: '/economy daily', description: 'Günlük NRC ödülünü al (500-1000 NRC)', usage: '/economy daily' },
+      { name: '/economy work', description: 'Çalış ve NRC kazan (200-500 NRC)', usage: '/economy work' },
+      { name: '/economy transfer', description: 'Başka kullanıcıya NRC gönder', usage: '/economy transfer <kullanıcı> <miktar>' },
+      { name: '/economy deposit', description: 'Bankaya NRC yatır', usage: '/economy deposit <miktar>' },
+      { name: '/economy withdraw', description: 'Bankadan NRC çek', usage: '/economy withdraw <miktar>' },
+      { name: '/economy leaderboard', description: 'NRC zenginlik sıralaması', usage: '/economy leaderboard [tür]' },
+      { name: '/economy stats', description: 'NRC istatistikleri', usage: '/economy stats [kullanıcı]' },
+      { name: '/economy convert', description: 'Eski coinleri NRC\'ye çevir', usage: '/economy convert' },
+      { name: '/economy portfolio', description: 'NRC portföyünü görüntüle', usage: '/economy portfolio' }
+    ]
+  },
+  {
+    id: 'quest',
+    name: '🗺️ Görevler & Başarılar',
+    icon: <SparklesIcon className="w-6 h-6" />,
+    color: 'blue',
+    commands: [
+      { name: '/quest list', description: 'Mevcut görevleri görüntüle', usage: '/quest list [tür]' },
+      { name: '/quest progress', description: 'Görev ilerlemeni kontrol et', usage: '/quest progress' },
+      { name: '/quest claim', description: 'Tamamlanan görev ödülünü al', usage: '/quest claim <görev-id>' },
+      { name: '/quest daily', description: 'Günlük görevleri görüntüle', usage: '/quest daily' }
+    ]
+  },
+  {
+    id: 'profile',
+    name: '👤 Profil & Sosyal',
+    icon: <SparklesIcon className="w-6 h-6" />,
+    color: 'pink',
+    commands: [
+      { name: '/profile view', description: 'Profil görüntüle', usage: '/profile view [kullanıcı]' },
+      { name: '/profile bio', description: 'Bio ayarla', usage: '/profile bio <metin>' },
+      { name: '/profile color', description: 'Profil rengi ayarla', usage: '/profile color <renk>' },
+      { name: '/profile badge', description: 'Rozet yönetimi', usage: '/profile badge <işlem> [rozet]' },
+      { name: '/leaderboard neurocoin', description: 'NRC sıralaması', usage: '/leaderboard neurocoin [kapsam]' },
+      { name: '/leaderboard activity', description: 'Aktivite sıralaması', usage: '/leaderboard activity <tür>' },
+      { name: '/leaderboard trading', description: 'Ticaret hacmi sıralaması', usage: '/leaderboard trading' },
+      { name: '/leaderboard quests', description: 'Görev tamamlama sıralaması', usage: '/leaderboard quests' },
+      { name: '/leaderboard streak', description: 'En uzun streak sıralaması', usage: '/leaderboard streak' }
+    ]
+  },
+  {
+    id: 'marketplace',
+    name: '🛒 Pazar Yeri',
     icon: <CurrencyDollarIcon className="w-6 h-6" />,
     color: 'yellow',
     commands: [
-      { name: '/economy', description: 'Ekonomi sistemini yönetir', usage: '/economy', permissions: 'Yönetici' },
-      { name: '/buy', description: 'Marketten ürün satın alır', usage: '/buy <ürün>' },
-      { name: '/shop', description: 'Sunucu marketini gösterir', usage: '/shop' },
-      { name: '/inventory', description: 'Envanterini görüntüler', usage: '/inventory' },
+      { name: '/market-config enable', description: 'Sunucu pazar yerini aç/kapat', usage: '/market-config enable <durum>', permissions: 'Yönetici' },
+      { name: '/market-config tax', description: 'İşlem vergisi ayarla', usage: '/market-config tax <oran>', permissions: 'Yönetici' },
+      { name: '/market-config allow-global', description: 'Global pazar erişimi', usage: '/market-config allow-global <durum>', permissions: 'Yönetici' },
+      { name: '/market-config min-price', description: 'Minimum ilan fiyatı', usage: '/market-config min-price <fiyat>', permissions: 'Yönetici' },
+      { name: '/market-config max-price', description: 'Maximum ilan fiyatı', usage: '/market-config max-price <fiyat>', permissions: 'Yönetici' },
+      { name: '/market-config blacklist', description: 'Eşya türlerini yasakla', usage: '/market-config blacklist <tür> <yasakla>', permissions: 'Yönetici' },
+      { name: '/market-config view', description: 'Mevcut ayarları görüntüle', usage: '/market-config view', permissions: 'Yönetici' },
+      { name: '/market-config reset', description: 'Ayarları sıfırla', usage: '/market-config reset', permissions: 'Yönetici' }
+    ]
+  },
+  {
+    id: 'games',
+    name: '🎮 Oyunlar',
+    icon: <SparklesIcon className="w-6 h-6" />,
+    color: 'red',
+    commands: [
       { name: '/blackjack', description: 'Blackjack oyunu oynar', usage: '/blackjack <miktar>' },
       { name: '/coinflip', description: 'Yazı-tura atar', usage: '/coinflip <miktar> <seçim>' },
       { name: '/dice', description: 'Zar atar', usage: '/dice <miktar>' },
