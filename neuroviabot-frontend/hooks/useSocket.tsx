@@ -10,9 +10,22 @@ interface UseSocketOptions {
   onSettingsChanged?: (data: any) => void;
   onLevelUpdate?: (data: any) => void;
   onMilestoneLevelUp?: (data: any) => void;
+  onSettingsUpdated?: (data: any) => void;
+  onMemberAction?: (data: any) => void;
+  onChannelUpdate?: (data: any) => void;
+  onRoleUpdate?: (data: any) => void;
 }
 
-export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilestoneLevelUp }: UseSocketOptions = {}) {
+export function useSocket({ 
+  guildId, 
+  onSettingsChanged, 
+  onLevelUpdate, 
+  onMilestoneLevelUp,
+  onSettingsUpdated,
+  onMemberAction,
+  onChannelUpdate,
+  onRoleUpdate,
+}: UseSocketOptions = {}) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
@@ -101,6 +114,62 @@ export function useSocket({ guildId, onSettingsChanged, onLevelUpdate, onMilesto
       };
     }
   }, [socket, onMilestoneLevelUp]);
+
+  // Listen for settings updates
+  useEffect(() => {
+    if (socket && onSettingsUpdated) {
+      socket.on('settings_updated', (data) => {
+        console.log('[Socket.IO] Received settings_updated event:', data);
+        onSettingsUpdated(data);
+      });
+
+      return () => {
+        socket.off('settings_updated', onSettingsUpdated);
+      };
+    }
+  }, [socket, onSettingsUpdated]);
+
+  // Listen for member actions
+  useEffect(() => {
+    if (socket && onMemberAction) {
+      socket.on('member_action', (data) => {
+        console.log('[Socket.IO] Received member_action event:', data);
+        onMemberAction(data);
+      });
+
+      return () => {
+        socket.off('member_action', onMemberAction);
+      };
+    }
+  }, [socket, onMemberAction]);
+
+  // Listen for channel updates
+  useEffect(() => {
+    if (socket && onChannelUpdate) {
+      socket.on('channel_update', (data) => {
+        console.log('[Socket.IO] Received channel_update event:', data);
+        onChannelUpdate(data);
+      });
+
+      return () => {
+        socket.off('channel_update', onChannelUpdate);
+      };
+    }
+  }, [socket, onChannelUpdate]);
+
+  // Listen for role updates
+  useEffect(() => {
+    if (socket && onRoleUpdate) {
+      socket.on('role_update', (data) => {
+        console.log('[Socket.IO] Received role_update event:', data);
+        onRoleUpdate(data);
+      });
+
+      return () => {
+        socket.off('role_update', onRoleUpdate);
+      };
+    }
+  }, [socket, onRoleUpdate]);
 
   // Emit settings update
   const emitSettingsUpdate = useCallback((guildId: string, settings: any) => {
