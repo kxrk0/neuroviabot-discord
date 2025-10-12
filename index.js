@@ -257,6 +257,29 @@ client.once('clientReady', async () => {
     // Slash komutları kaydet - Rate limit nedeniyle devre dışı
     // await registerSlashCommandsWithQueue();
     
+    // Her 2 dakikada bir frontend'e stats broadcast et
+    setInterval(() => {
+        if (client.socket && client.socket.connected && client.statsCache) {
+            const currentStats = client.statsCache.getStats();
+            log(`📊 Broadcasting stats update: ${currentStats.users.toLocaleString()} users, ${currentStats.guilds} guilds`, 'INFO');
+            
+            // Global broadcast - tüm frontend client'lara gönder
+            client.socket.emit('broadcast_global', {
+                event: 'bot_stats_update',
+                data: {
+                    guilds: currentStats.guilds,
+                    users: currentStats.users,
+                    commands: currentStats.commands,
+                    uptime: currentStats.uptime,
+                    ping: currentStats.ping,
+                    timestamp: new Date().toISOString()
+                }
+            });
+            
+            log(`✅ Stats broadcast sent to all clients`, 'DEBUG');
+        }
+    }, 2 * 60 * 1000); // 2 dakika (120,000 ms)
+    
     log('Bot is ready and operational!', 'SUCCESS');
 });
 

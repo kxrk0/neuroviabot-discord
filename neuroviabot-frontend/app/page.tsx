@@ -3,8 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { fetchBotStats } from '@/lib/api';
+import { useSocket } from '@/hooks/useSocket';
 import {
   MusicalNoteIcon,
   ShieldCheckIcon,
@@ -29,6 +30,10 @@ export default function Home() {
   const [languageOpen, setLanguageOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [statsUpdating, setStatsUpdating] = useState({ guilds: false, users: false, commands: false });
+
+  // Socket bağlantısı
+  const { connected, on, off } = useSocket();
 
   useEffect(() => {
     setMounted(true);
@@ -38,9 +43,7 @@ export default function Home() {
         console.log('🔄 Starting to fetch bot stats...');
         const data = await fetchBotStats();
         console.log('✅ Bot stats received:', data);
-        console.log('📊 Users value:', data.users, 'Type:', typeof data.users);
         
-        // Eğer users 0 veya geçersizse, fallback kullan
         const finalStats = {
           guilds: data.guilds || 66,
           users: (data.users && data.users > 0) ? data.users : 59032,
@@ -58,9 +61,6 @@ export default function Home() {
     const loadUser = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-        console.log('👤 Fetching user from:', `${API_URL}/api/auth/user`);
-        console.log('👤 Cookies:', document.cookie);
-        
         const response = await fetch(`${API_URL}/api/auth/user`, {
           credentials: 'include',
           headers: {
@@ -68,16 +68,11 @@ export default function Home() {
           },
         });
         
-        console.log('👤 Response status:', response.status);
-        console.log('👤 Response headers:', Object.fromEntries(response.headers.entries()));
-        
         if (response.ok) {
           const userData = await response.json();
           console.log('👤 User logged in:', userData);
           setUser(userData);
         } else {
-          const errorData = await response.text();
-          console.log('👤 No user logged in, error:', errorData);
           setUser(null);
         }
       } catch (error) {
@@ -89,10 +84,48 @@ export default function Home() {
     loadStats();
     loadUser();
     
-    // Her 30 saniyede bir güncelle
+    // Her 30 saniyede bir güncelle (fallback)
     const interval = setInterval(loadStats, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Socket.IO ile real-time stats güncellemeleri
+  useEffect(() => {
+    if (connected) {
+      console.log('🔌 Socket connected! Listening for bot_stats_update...');
+      
+      const handleStatsUpdate = (data: any) => {
+        console.log('📊 Real-time stats update received:', data);
+        
+        const newStats = {
+          guilds: data.guilds || stats.guilds,
+          users: data.users || stats.users,
+          commands: data.commands || stats.commands
+        };
+        
+        // Hangi stats değişti kontrol et
+        const updated = {
+          guilds: newStats.guilds !== stats.guilds,
+          users: newStats.users !== stats.users,
+          commands: newStats.commands !== stats.commands
+        };
+        
+        setStatsUpdating(updated);
+        setStats(newStats);
+        
+        // Animasyonu 1 saniye sonra kaldır
+        setTimeout(() => {
+          setStatsUpdating({ guilds: false, users: false, commands: false });
+        }, 1000);
+      };
+      
+      on('bot_stats_update', handleStatsUpdate);
+      
+      return () => {
+        off('bot_stats_update', handleStatsUpdate);
+      };
+    }
+  }, [connected, on, off, stats]);
 
   const handleLogout = async () => {
     try {
@@ -778,29 +811,80 @@ export default function Home() {
             style={{ willChange: 'transform, opacity' }}
           >
             {[
-              { icon: '🎵', value: `${stats.commands || 29}+`, label: 'Komut', gradient: 'from-purple-500/10 to-pink-500/10', border: 'border-purple-500/20' },
-              { icon: '🏆', value: stats.guilds || '72', label: 'Sunucu', gradient: 'from-amber-500/10 to-orange-500/10', border: 'border-amber-500/20' },
-              { icon: '👥', value: stats.users.toLocaleString(), label: 'Kullanıcı', gradient: 'from-blue-500/10 to-cyan-500/10', border: 'border-blue-500/20' }
+              { icon: '🎵', value: `${stats.commands || 29}+`, label: 'Komut', gradient: 'from-purple-500/10 to-pink-500/10', border: 'border-purple-500/20', key: 'commands' },
+              { icon: '🏆', value: stats.guilds || '72', label: 'Sunucu', gradient: 'from-amber-500/10 to-orange-500/10', border: 'border-amber-500/20', key: 'guilds' },
+              { icon: '👥', value: stats.users.toLocaleString(), label: 'Kullanıcı', gradient: 'from-blue-500/10 to-cyan-500/10', border: 'border-blue-500/20', key: 'users' }
             ].map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                animate={{ 
+                  scale: 1, 
+                  opacity: 1,
+                  // Real-time güncelleme animasyonu
+                  ...(statsUpdating[stat.key as keyof typeof statsUpdating] && {
+                    scale: [1, 1.15, 1],
+                    boxShadow: [
+                      '0 4px 6px rgba(0, 0, 0, 0.1)',
+                      '0 20px 40px rgba(88, 101, 242, 0.4)',
+                      '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    ]
+                  })
+                }}
                 whileHover={{ 
                   y: -2,
                   transition: { duration: 0.2, ease: "easeOut" }
                 }}
                 transition={{ 
-                  duration: 0.6, 
-                  delay: 0.45 + index * 0.1,
+                  duration: statsUpdating[stat.key as keyof typeof statsUpdating] ? 0.6 : 0.6, 
+                  delay: statsUpdating[stat.key as keyof typeof statsUpdating] ? 0 : 0.45 + index * 0.1,
                   ease: [0.16, 1, 0.3, 1]
                 }}
                 style={{ willChange: 'transform, opacity' }}
-                className={`flex items-center gap-3 px-5 py-3 bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl border ${stat.border} transition-all duration-300 shadow-lg hover:shadow-xl`}
+                className={`relative flex items-center gap-3 px-5 py-3 bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl border ${stat.border} transition-all duration-300 shadow-lg hover:shadow-xl`}
               >
-                <span className="text-2xl filter drop-shadow-sm">{stat.icon}</span>
-                <div>
-                  <div className="text-xl font-bold text-white leading-none mb-0.5">{stat.value}</div>
+                {/* Pulse ring animasyonu - sadece güncelleme olduğunda */}
+                <AnimatePresence>
+                  {statsUpdating[stat.key as keyof typeof statsUpdating] && (
+                    <>
+                      <motion.div
+                        initial={{ scale: 1, opacity: 0.5 }}
+                        animate={{ scale: 1.8, opacity: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="absolute inset-0 rounded-xl border-2 border-blue-400"
+                      />
+                      <motion.div
+                        initial={{ scale: 1, opacity: 0.5 }}
+                        animate={{ scale: 1.5, opacity: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+                        className="absolute inset-0 rounded-xl border-2 border-purple-400"
+                      />
+                      {/* Glow efekti */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 0.3, 0] }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                        className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl"
+                      />
+                    </>
+                  )}
+                </AnimatePresence>
+                
+                <span className="text-2xl filter drop-shadow-sm relative z-10">{stat.icon}</span>
+                <div className="relative z-10">
+                  <motion.div 
+                    className="text-xl font-bold text-white leading-none mb-0.5"
+                    animate={statsUpdating[stat.key as keyof typeof statsUpdating] ? {
+                      scale: [1, 1.1, 1],
+                      color: ['#fff', '#60a5fa', '#fff']
+                    } : {}}
+                    transition={{ duration: 0.6 }}
+                  >
+                    {stat.value}
+                  </motion.div>
                   <div className="text-xs font-medium text-gray-300 opacity-80 leading-none">{stat.label}</div>
                 </div>
               </motion.div>

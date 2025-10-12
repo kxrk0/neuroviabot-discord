@@ -24,12 +24,12 @@ class StatsCache {
         // İlk hesaplama
         this.updateStats();
         
-        // Her 5 dakikada bir güncelle
+        // Her 2 dakikada bir güncelle
         this.updateInterval = setInterval(() => {
             this.updateStats();
-        }, 5 * 60 * 1000); // 5 dakika
+        }, 2 * 60 * 1000); // 2 dakika
 
-        console.log('📊 StatsCache başlatıldı - otomatik güncelleme aktif');
+        console.log('📊 StatsCache başlatıldı - 2 dakikada bir otomatik güncelleme');
     }
 
     // İstatistikleri güncelle
