@@ -11,9 +11,24 @@ import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
+  CheckCircleIcon,
+  TrashIcon,
+  PencilSquareIcon,
+  PlusCircleIcon,
+  ArrowPathIcon,
+  ChevronDownIcon,
+  ArrowRightOnRectangleIcon,
+  Cog6ToothIcon,
+  CommandLineIcon,
+  ClockIcon,
+  TagIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSkeleton from '../LoadingSkeleton';
 import EmptyState from '../EmptyState';
+import ErrorBoundary from '../ErrorBoundary';
+import { useNotification } from '@/contexts/NotificationContext';
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 interface AuditLogProps {
   guildId: string;
@@ -156,7 +171,7 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
       {/* Logs List */}
       {filteredLogs.length === 0 ? (
         <EmptyState
-          icon={DocumentTextIcon}
+          type="audit"
           title="Denetim Kaydı Yok"
           description="Henüz bu sunucuda kayıtlı bir işlem yok."
         />

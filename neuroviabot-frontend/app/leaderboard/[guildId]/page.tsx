@@ -155,7 +155,7 @@ export default function LeaderboardPage() {
         {/* Leaderboard */}
         {filteredLeaderboard.length === 0 ? (
           <EmptyState
-            icon={ChartBarIcon}
+            type="default"
             title="Sıralama Yok"
             description="Henüz bu sunucuda seviye kazanan kullanıcı yok."
           />

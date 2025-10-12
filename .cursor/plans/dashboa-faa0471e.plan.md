@@ -1,406 +1,64 @@
-<!-- faa0471e-4c8d-4c0c-a983-40090512c438 a44e3349-504a-4da3-b02a-329374fac401 -->
-# Frontend Feature Completion & NeuroCoin Integration
+<!-- faa0471e-4c8d-4c0c-a983-40090512c438 c7461cf4-eb95-4be6-a201-01b91c1507e1 -->
+# Fix Frontend Build & Complete Remaining TODOs
 
-## Phase 1: NeuroCoin Header Integration
+## Issue Analysis
 
-### 1.1 Backend - User NeuroCoin Balance API
+The VPS shows `neuroviabot-frontend` in **errored** state with Next.js build error: "Could not find a production build in the '.next' directory"
 
-**File**: `neuroviabot-backend/routes/neurocoin.js`
+## Root Causes
 
-- Add `GET /api/neurocoin/balance/:userId` endpoint
-- Fetch user's NeuroCoin balance from bot database
-- Return: `{ total, available, locked, lastUpdated }`
-- Add caching with 30-second TTL
+1. **Missing React Icons Import**: Marketplace page uses icons but might be missing imports
+2. **Build Process**: Frontend may need rebuild after recent changes
+3. **Remaining TODOs**: Some plan items still marked as incomplete
 
-### 1.2 Frontend - Navbar NeuroCoin Display
+## Implementation Steps
 
-**File**: `neuroviabot-frontend/components/layout/Navbar.tsx`
+### Step 1: Fix Marketplace Page Imports
 
-- Add NeuroCoin balance display next to notifications
-- Format: "🪙 1,250 NRC" with animated counter
-- Click opens dropdown with:
-- Total balance
-- Available / Locked breakdown
-- Quick link to NeuroCoin dashboard
-- Quick link to Marketplace
-- Real-time updates via Socket.IO
+- Add missing icon imports (ArrowRightOnRectangleIcon, Cog6ToothIcon, CommandLineIcon, ChevronDownIcon)
+- Fix AuditLog component imports
+- Ensure all dependencies are properly imported
 
-### 1.3 Frontend - User Dropdown Enhancement
+### Step 2: Fix AuditLog Component
 
-**File**: `neuroviabot-frontend/components/auth/UserDropdown.tsx`
+- Complete missing icon imports
+- Fix TypeScript types
+- Ensure date-fns is installed
 
-- Add detailed NeuroCoin section in dropdown
-- Show: Balance, daily earnings, rank
-- Add "Manage NeuroCoin" button → `/neurocoin`
-- Add "View Profile" button → `/profile/[userId]`
+### Step 3: Rebuild Frontend
 
-### 1.4 Context - NeuroCoin Global State
+- Run `npm install` in frontend directory
+- Run `npm run build` to create production build
+- Verify `.next` directory is created
+- Test locally before deploying
 
-**File**: `neuroviabot-frontend/contexts/NeuroCoinContext.tsx` (NEW)
+### Step 4: Complete Remaining TODOs
 
-- Create React Context for NeuroCoin balance
-- Auto-fetch on user login
-- Subscribe to Socket.IO `neurocoin_update` events
-- Provide: `{ balance, loading, refresh }`
+- Verify all dashboard routes are updated
+- Ensure all navigation links point to correct routes
+- Confirm all components are properly integrated
 
----
+### Step 5: Deploy & Verify
 
-## Phase 2: Leveling System Page Fix
+- Commit fixes
+- Push to GitHub
+- Verify GitHub Actions deployment
+- Check PM2 status on VPS
+- Test live site
 
-### 2.1 Backend - Leveling Data API
+## Files to Modify
 
-**File**: `neuroviabot-backend/routes/leveling.js` (NEW)
+1. `neuroviabot-frontend/components/dashboard/AuditLog.tsx` - Fix imports
+2. `neuroviabot-frontend/package.json` - Verify dependencies
+3. Rebuild and redeploy
 
-- `GET /api/leveling/:guildId/users` - Get all user levels in guild
-- `GET /api/leveling/:guildId/user/:userId` - Get specific user level
-- `GET /api/leveling/:guildId/leaderboard` - Top 100 users
-- `POST /api/leveling/:guildId/user/:userId/reset` - Reset user XP (admin)
-- Proxy to bot server's database
+## Success Criteria
 
-### 2.2 Bot Server - Leveling API Routes
-
-**File**: `src/routes/leveling.js` (NEW)
-
-- Implement actual leveling data endpoints
-- Use `simple-db` to fetch user XP/levels
-- Calculate rank, progress to next level
-- Return formatted data
-
-### 2.3 Frontend - Fix LevelingSettings Component
-
-**File**: `neuroviabot-frontend/components/dashboard/LevelingSettings.tsx`
-
-- Fix API endpoint URLs (use `/api/guilds/:guildId/settings/leveling`)
-- Add error boundary and loading states
-- Fix channel/role fetching (use guild-management API)
-- Add leaderboard preview in settings
-- Add "Test Level Up" button for admins
-
-### 2.4 Frontend - Create Leaderboard Page
-
-**File**: `neuroviabot-frontend/app/leaderboard/[guildId]/page.tsx` (NEW)
-
-- Public leaderboard page for each guild
-- Show top 100 users with XP, level, rank
-- Animated rank cards with gradients
-- Filter by time period (all-time, monthly, weekly)
-- Search functionality
-
----
-
-## Phase 3: Premium System
-
-### 3.1 Backend - Premium Plans API
-
-**File**: `neuroviabot-backend/routes/premium.js` (NEW)
-
-- `GET /api/premium/plans` - List all premium plans
-- `GET /api/premium/user/:userId` - Get user's premium status
-- `GET /api/premium/guild/:guildId` - Get guild's premium status
-- `POST /api/premium/purchase` - Purchase premium (mock for now)
-- `POST /api/premium/cancel` - Cancel subscription
-
-### 3.2 Database - Premium Schema
-
-**File**: `src/database/simple-db.js`
-
-- Add `userPremium` Map: `{ userId, plan, expiresAt, features }`
-- Add `guildPremium` Map: `{ guildId, plan, expiresAt, features }`
-- Add methods: `getUserPremium`, `setUserPremium`, `isUserPremium`
-
-### 3.3 Frontend - Premium Plans Page
-
-**File**: `neuroviabot-frontend/app/premium/page.tsx` (NEW)
-
-- Beautiful pricing cards (Free, Pro, Enterprise)
-- Feature comparison table
-- Benefits showcase with icons
-- "Upgrade" buttons (mock payment for now)
-- Current plan indicator if logged in
-
-### 3.4 Frontend - Premium Dashboard Section
-
-**File**: `neuroviabot-frontend/components/dashboard/PremiumSettings.tsx` (NEW)
-
-- Replace placeholder in `/manage/[serverId]`
-- Show current premium status
-- List active features
-- Usage statistics
-- Upgrade/downgrade options
-- Billing history (mock)
-
----
-
-## Phase 4: Reaction Roles System
-
-### 4.1 Backend - Reaction Roles API
-
-**File**: `neuroviabot-backend/routes/reaction-roles.js` (NEW)
-
-- `GET /api/reaction-roles/:guildId` - Get all reaction role configs
-- `POST /api/reaction-roles/:guildId` - Create new reaction role
-- `PUT /api/reaction-roles/:guildId/:configId` - Update config
-- `DELETE /api/reaction-roles/:guildId/:configId` - Delete config
-- `POST /api/reaction-roles/:guildId/:configId/test` - Test reaction
-
-### 4.2 Bot Server - Reaction Roles Handler
-
-**File**: `src/handlers/reactionRoleHandler.js` (NEW)
-
-- Listen to `messageReactionAdd` and `messageReactionRemove`
-- Check if message has reaction role config
-- Add/remove role from user
-- Log actions to audit log
-
-### 4.3 Frontend - Fix RoleReactionSettings
-
-**File**: `neuroviabot-frontend/components/dashboard/RoleReactionSettings.tsx`
-
-- Connect to new API endpoints
-- Add message picker (paste message link or ID)
-- Emoji picker for reactions
-- Role selector dropdown
-- Live preview of reaction roles
-- Bulk import/export feature
-
----
-
-## Phase 5: Audit Log System
-
-### 5.1 Backend - Audit Log API
-
-**File**: `neuroviabot-backend/routes/audit-log.js` (NEW)
-
-- `GET /api/audit/:guildId` - Get audit logs (paginated)
-- `GET /api/audit/:guildId/filter` - Filter by type, user, date
-- `GET /api/audit/:guildId/export` - Export logs as JSON/CSV
-- Query params: `page`, `limit`, `type`, `userId`, `startDate`, `endDate`
-
-### 5.2 Bot Server - Audit Logging System
-
-**File**: `src/utils/auditLogger.js` (NEW)
-
-- Centralized audit logging utility
-- Log types: `MEMBER_JOIN`, `MEMBER_LEAVE`, `MEMBER_BAN`, `MEMBER_KICK`, `ROLE_CREATE`, `ROLE_UPDATE`, `ROLE_DELETE`, `CHANNEL_CREATE`, `CHANNEL_UPDATE`, `CHANNEL_DELETE`, `MESSAGE_DELETE`, `SETTINGS_CHANGE`, `COMMAND_USE`
-- Store in database with: `{ guildId, type, userId, targetId, action, details, timestamp }`
-- Auto-cleanup logs older than 90 days
-
-### 5.3 Database - Audit Log Schema
-
-**File**: `src/database/simple-db.js`
-
-- Add `auditLogs` Map: `guildId → Array<AuditEntry>`
-- Add methods: `addAuditLog`, `getAuditLogs`, `filterAuditLogs`, `cleanupOldLogs`
-- Implement pagination
-
-### 5.4 Frontend - Audit Log Component
-
-**File**: `neuroviabot-frontend/components/dashboard/AuditLog.tsx`
-
-- Replace placeholder with full audit log viewer
-- Timeline view with icons for each action type
-- Filters: type, user, date range
-- Search functionality
-- Export button
-- Real-time updates via Socket.IO
-- Color-coded by severity (info, warning, danger)
-
----
-
-## Phase 6: Economy System Frontend
-
-### 6.1 Frontend - Economy Dashboard in Server Settings
-
-**File**: `neuroviabot-frontend/components/dashboard/EconomySettings.tsx`
-
-- Connect to existing backend API
-- Show guild economy stats
-- Configure: daily rewards, work cooldowns, shop items
-- Manage custom shop items for guild
-- View top earners in guild
-
-### 6.2 Frontend - Global Economy Pages
-
-#### 6.2.1 NeuroCoin Dashboard Enhancement
-
-**File**: `neuroviabot-frontend/app/neurocoin/page.tsx`
-
-- Add transaction history table
-- Add earning sources breakdown chart
-- Add spending categories chart
-- Add recent activity feed
-- Add quick actions: transfer, marketplace
-
-#### 6.2.2 Marketplace Page Enhancement
-
-**File**: `neuroviabot-frontend/app/marketplace/page.tsx`
-
-- Connect to real backend API (already exists)
-- Implement filters: type, rarity, price, guild
-- Implement search
-- Add "My Listings" tab
-- Add "Create Listing" button → modal
-
-#### 6.2.3 Create Listing Modal
-
-**File**: `neuroviabot-frontend/components/marketplace/CreateListingModal.tsx` (NEW)
-
-- Form: item type, name, description, price, quantity
-- Image/icon upload
-- Guild selection (global or specific guild)
-- Preview before posting
-- Submit to backend API
-
-#### 6.2.4 Quest System Page
-
-**File**: `neuroviabot-frontend/app/quests/page.tsx` (NEW)
-
-- List all available quests
-- Show active quests with progress bars
-- Show completed quests
-- Quest categories: daily, weekly, special
-- Claim rewards button
-- Quest details modal
-
-#### 6.2.5 Global Leaderboards Page
-
-**File**: `neuroviabot-frontend/app/leaderboards/page.tsx` (NEW)
-
-- Multiple leaderboard tabs:
-- NeuroCoin Balance
-- Total Earnings
-- Quest Completions
-- Marketplace Sales
-- Activity Score
-- Global and per-guild views
-- Animated rank cards
-- User search
-
----
-
-## Phase 7: Server Overview Data Fix
-
-### 7.1 Backend - Guild Stats API Enhancement
-
-**File**: `neuroviabot-backend/routes/guilds.js`
-
-- Fix `GET /api/guilds/:guildId` endpoint
-- Return complete guild data:
-- `memberCount` (total members)
-- `onlineCount` (online members)
-- `channelCount` (total channels)
-- `roleCount` (total roles)
-- `boostLevel`, `boostCount`
-- `createdAt`
-- Fetch from bot server, not just Discord API
-
-### 7.2 Bot Server - Guild Stats Endpoint
-
-**File**: `src/routes/guild-management.js`
-
-- Add `/guilds/:guildId/stats` endpoint
-- Calculate real-time stats from Discord.js client
-- Return all required data for ServerOverview
-
-### 7.3 Frontend - ServerOverview Component Fix
-
-**File**: `neuroviabot-frontend/components/dashboard/ServerOverview.tsx`
-
-- Already implemented, just needs correct API data
-- Add refresh button
-- Add last updated timestamp
-- Add animated stat changes
-
----
-
-## Phase 8: Additional Features & Polish
-
-### 8.1 Frontend - Profile Page Enhancement
-
-**File**: `neuroviabot-frontend/app/profile/[userId]/page.tsx`
-
-- Add NeuroCoin balance section
-- Add quest progress section
-- Add achievements showcase
-- Add marketplace activity
-- Add recent transactions
-- Add activity graph (last 30 days)
-
-### 8.2 Frontend - Global Navigation Enhancement
-
-**File**: `neuroviabot-frontend/components/layout/Navbar.tsx`
-
-- Add navigation items:
-- NeuroCoin (with balance)
-- Marketplace
-- Quests
-- Leaderboards
-- Premium
-- Add active state indicators
-- Add notification badges (new quests, marketplace sales)
-
-### 8.3 Frontend - Footer Enhancement
-
-**File**: `neuroviabot-frontend/components/layout/Footer.tsx`
-
-- Add NeuroCoin stats (total in circulation)
-- Add bot stats (servers, users)
-- Add links to new pages
-
-### 8.4 Real-time Notifications
-
-**File**: `neuroviabot-frontend/hooks/useSocket.tsx`
-
-- Add event listeners:
-- `neurocoin_earned` → Toast notification
-- `quest_completed` → Toast + confetti
-- `marketplace_sale` → Toast notification
-- `level_up` → Toast notification
-- `achievement_unlocked` → Toast + modal
-
-### 8.5 Error Boundaries & Loading States
-
-- Add ErrorBoundary to all new pages
-- Add LoadingSkeleton to all data-fetching components
-- Add EmptyState to all list components
-- Consistent error handling across all API calls
-
----
-
-## Phase 9: Testing & Bug Fixes
-
-### 9.1 Fix Existing Bugs
-
-- LevelingSettings API connection error
-- ServerOverview missing data (0 values)
-- RoleReactionSettings placeholder state
-- Premium page empty state
-- AuditLog placeholder state
-
-### 9.2 Cross-page Testing
-
-- Test all navigation flows
-- Test Socket.IO real-time updates
-- Test authentication across all pages
-- Test responsive design on mobile
-- Test error states and edge cases
-
-### 9.3 Performance Optimization
-
-- Implement data caching where appropriate
-- Lazy load heavy components
-- Optimize image loading
-- Minimize API calls with smart caching
-- Add service worker for offline support (optional)
-
----
-
-## Implementation Priority
-
-**Critical (Phase 1-3)**: NeuroCoin header, Leveling fix, Premium system
-**High (Phase 4-5)**: Reaction Roles, Audit Log
-**Medium (Phase 6-7)**: Economy frontend, Server stats fix
-**Polish (Phase 8-9)**: Additional features, testing, optimization
+- ✅ Frontend builds successfully without errors
+- ✅ PM2 shows all services as "online"
+- ✅ Website loads without errors
+- ✅ All navigation links work
+- ✅ All components render properly
 
 ### To-dos
 
