@@ -308,6 +308,139 @@ router.get('/:guildId/roles', authenticateBotApi, async (req, res) => {
     }
 });
 
+// === ROLE MANAGEMENT CRUD ===
+
+// Create role
+router.post('/:guildId/roles', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { name, color, permissions, hoist, mentionable, executor } = req.body;
+
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const role = await guild.roles.create({
+            name: name || 'new role',
+            color: color || 0,
+            permissions: permissions || [],
+            hoist: hoist || false,
+            mentionable: mentionable || false,
+        });
+
+        // Broadcast to frontend
+        if (client.socket && client.socket.connected) {
+            client.socket.emit('broadcast_to_guild', {
+                guildId: guildId,
+                event: 'role_update',
+                data: {
+                    action: 'created',
+                    roleName: role.name,
+                    roleId: role.id,
+                    executor: executor,
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        logger.info(`[Bot API] Created role ${role.name} in guild ${guildId}`);
+        res.json({ success: true, role: { id: role.id, name: role.name, color: role.color } });
+    } catch (error) {
+        logger.error('[Bot API] Error creating role:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update role
+router.patch('/:guildId/roles/:roleId', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId, roleId } = req.params;
+        const { name, color, permissions, hoist, mentionable, executor } = req.body;
+
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const role = guild.roles.cache.get(roleId);
+        if (!role) {
+            return res.status(404).json({ error: 'Role not found' });
+        }
+
+        await role.edit({
+            name: name || role.name,
+            color: color !== undefined ? color : role.color,
+            permissions: permissions || role.permissions,
+            hoist: hoist !== undefined ? hoist : role.hoist,
+            mentionable: mentionable !== undefined ? mentionable : role.mentionable,
+        });
+
+        // Broadcast to frontend
+        if (client.socket && client.socket.connected) {
+            client.socket.emit('broadcast_to_guild', {
+                guildId: guildId,
+                event: 'role_update',
+                data: {
+                    action: 'updated',
+                    roleName: role.name,
+                    roleId: role.id,
+                    executor: executor,
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        logger.info(`[Bot API] Updated role ${role.name} in guild ${guildId}`);
+        res.json({ success: true, role: { id: role.id, name: role.name, color: role.color } });
+    } catch (error) {
+        logger.error('[Bot API] Error updating role:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete role
+router.delete('/:guildId/roles/:roleId', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId, roleId } = req.params;
+        const { executor } = req.body;
+
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const role = guild.roles.cache.get(roleId);
+        if (!role) {
+            return res.status(404).json({ error: 'Role not found' });
+        }
+
+        const roleName = role.name;
+        await role.delete();
+
+        // Broadcast to frontend
+        if (client.socket && client.socket.connected) {
+            client.socket.emit('broadcast_to_guild', {
+                guildId: guildId,
+                event: 'role_update',
+                data: {
+                    action: 'deleted',
+                    roleName: roleName,
+                    roleId: roleId,
+                    executor: executor,
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        logger.info(`[Bot API] Deleted role ${roleName} from guild ${guildId}`);
+        res.json({ success: true, message: 'Role deleted successfully' });
+    } catch (error) {
+        logger.error('[Bot API] Error deleting role:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // === CHANNEL MANAGEMENT ===
 
 // Get all channels
@@ -334,6 +467,135 @@ router.get('/:guildId/channels', authenticateBotApi, async (req, res) => {
         logger.debug(`[Bot API] Fetched ${channels.length} channels for guild ${guildId}`);
     } catch (error) {
         logger.error('[Bot API] Error fetching channels:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Create channel
+router.post('/:guildId/channels', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { name, type, topic, nsfw, parent, executor } = req.body;
+
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const channel = await guild.channels.create({
+            name: name || 'new-channel',
+            type: type || 0, // 0 = text, 2 = voice, 4 = category
+            topic: topic || null,
+            nsfw: nsfw || false,
+            parent: parent || null,
+        });
+
+        // Broadcast to frontend
+        if (client.socket && client.socket.connected) {
+            client.socket.emit('broadcast_to_guild', {
+                guildId: guildId,
+                event: 'channel_update',
+                data: {
+                    action: 'created',
+                    channelName: channel.name,
+                    channelId: channel.id,
+                    executor: executor,
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        logger.info(`[Bot API] Created channel ${channel.name} in guild ${guildId}`);
+        res.json({ success: true, channel: { id: channel.id, name: channel.name, type: channel.type } });
+    } catch (error) {
+        logger.error('[Bot API] Error creating channel:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update channel
+router.patch('/:guildId/channels/:channelId', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId, channelId } = req.params;
+        const { name, topic, nsfw, executor } = req.body;
+
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel) {
+            return res.status(404).json({ error: 'Channel not found' });
+        }
+
+        await channel.edit({
+            name: name || channel.name,
+            topic: topic !== undefined ? topic : channel.topic,
+            nsfw: nsfw !== undefined ? nsfw : channel.nsfw,
+        });
+
+        // Broadcast to frontend
+        if (client.socket && client.socket.connected) {
+            client.socket.emit('broadcast_to_guild', {
+                guildId: guildId,
+                event: 'channel_update',
+                data: {
+                    action: 'updated',
+                    channelName: channel.name,
+                    channelId: channel.id,
+                    executor: executor,
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        logger.info(`[Bot API] Updated channel ${channel.name} in guild ${guildId}`);
+        res.json({ success: true, channel: { id: channel.id, name: channel.name, type: channel.type } });
+    } catch (error) {
+        logger.error('[Bot API] Error updating channel:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete channel
+router.delete('/:guildId/channels/:channelId', authenticateBotApi, async (req, res) => {
+    try {
+        const { guildId, channelId } = req.params;
+        const { executor } = req.body;
+
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel) {
+            return res.status(404).json({ error: 'Channel not found' });
+        }
+
+        const channelName = channel.name;
+        await channel.delete();
+
+        // Broadcast to frontend
+        if (client.socket && client.socket.connected) {
+            client.socket.emit('broadcast_to_guild', {
+                guildId: guildId,
+                event: 'channel_update',
+                data: {
+                    action: 'deleted',
+                    channelName: channelName,
+                    channelId: channelId,
+                    executor: executor,
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        logger.info(`[Bot API] Deleted channel ${channelName} from guild ${guildId}`);
+        res.json({ success: true, message: 'Channel deleted successfully' });
+    } catch (error) {
+        logger.error('[Bot API] Error deleting channel:', error);
         res.status(500).json({ error: error.message });
     }
 });
