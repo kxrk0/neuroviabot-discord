@@ -28,6 +28,8 @@ class SimpleDatabase {
             activityRewards: new Map(), // New: userId -> last reward timestamp
             userProfiles: new Map(), // New: userId -> profile data (bio, color, badges)
             userStats: new Map(), // New: userId -> stats (messages, voiceTime, gameWins, winStreak)
+            userPremium: new Map(), // New: userId -> { plan, expiresAt, features }
+            guildPremium: new Map(), // New: guildId -> { plan, expiresAt, features }
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),
@@ -530,6 +532,50 @@ class SimpleDatabase {
         } catch (error) {
             logger.error('Backup temizleme hatası', error);
         }
+    }
+
+    // ==========================================
+    // Premium
+    // ==========================================
+
+    getUserPremium(userId) {
+        return this.data.userPremium.get(userId) || {
+            plan: 'free',
+            expiresAt: null,
+            features: []
+        };
+    }
+
+    setUserPremium(userId, premiumData) {
+        this.data.userPremium.set(userId, premiumData);
+        this.saveData();
+    }
+
+    isUserPremium(userId) {
+        const premium = this.getUserPremium(userId);
+        if (premium.plan === 'free') return false;
+        if (!premium.expiresAt) return true;
+        return new Date(premium.expiresAt) > new Date();
+    }
+
+    getGuildPremium(guildId) {
+        return this.data.guildPremium.get(guildId) || {
+            plan: 'free',
+            expiresAt: null,
+            features: []
+        };
+    }
+
+    setGuildPremium(guildId, premiumData) {
+        this.data.guildPremium.set(guildId, premiumData);
+        this.saveData();
+    }
+
+    isGuildPremium(guildId) {
+        const premium = this.getGuildPremium(guildId);
+        if (premium.plan === 'free') return false;
+        if (!premium.expiresAt) return true;
+        return new Date(premium.expiresAt) > new Date();
     }
 }
 
