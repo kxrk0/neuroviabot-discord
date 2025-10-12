@@ -213,8 +213,8 @@ app.listen(PORT, () => {
     log(`Webhook server listening on port ${PORT}`, 'START');
     log(`Webhook secret: ${SECRET ? 'configured ✓' : 'NOT CONFIGURED ✗'}`, 'START');
     log(`Repository path: ${REPO_PATH}`, 'START');
-    log('.env file loaded', 'START');
-    log('Ready to receive webhooks!', 'START');
+    log('.env file loaded successfully', 'START');
+    log('Ready to receive webhooks from GitHub!', 'START');
 });
 
 // Handle errors
