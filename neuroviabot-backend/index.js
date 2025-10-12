@@ -97,6 +97,8 @@ const contactRoutes = require('./routes/contact');
 const feedbackRoutes = require('./routes/feedback');
 const guildManagementRoutes = require('./routes/guild-management');
 const marketplaceRoutes = require('./routes/marketplace');
+const neuroCoinRoutes = require('./routes/neurocoin');
+const questsRoutes = require('./routes/quests');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
@@ -106,6 +108,8 @@ app.use('/api/guild-settings', require('./routes/guild-settings'));
 app.use('/api/notifications', require('./routes/guild-settings'));
 app.use('/api/guild-management', guildManagementRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/neurocoin', neuroCoinRoutes);
+app.use('/api/quests', questsRoutes);
 
 // Bot API proxy routes
 app.use('/api/bot', require('./routes/bot-proxy'));
