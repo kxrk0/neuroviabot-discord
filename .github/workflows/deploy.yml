@@ -1,0 +1,64 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Manuel deployment için
+
+jobs:
+  deploy:
+    name: Deploy to Production VPS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚀 Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "🎯 Starting deployment..."
+            cd /root/neuroviabot/bot
+            
+            # Git operations
+            echo "📥 Pulling latest changes..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Install dependencies
+            echo "📦 Installing bot dependencies..."
+            npm install --production
+            
+            echo "📦 Installing backend dependencies..."
+            cd neuroviabot-backend
+            npm install --production
+            cd ..
+            
+            echo "📦 Installing frontend dependencies..."
+            cd neuroviabot-frontend
+            npm install
+            npm run build
+            cd ..
+            
+            # Restart PM2 services
+            echo "🔄 Restarting services..."
+            pm2 restart neuroviabot --update-env
+            pm2 restart neuroviabot-backend --update-env
+            pm2 restart neuroviabot-frontend --update-env
+            pm2 save
+            
+            echo "✅ Deployment completed successfully!"
+            pm2 status
+
+      - name: 📊 Deployment Summary
+        run: |
+          echo "### 🎉 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** main" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+
