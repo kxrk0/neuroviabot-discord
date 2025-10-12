@@ -67,35 +67,28 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
   const fetchChannels = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/channels`, {
+      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/channels`, {
         credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
-        const textChannels = (data.channels || []).filter((channel: any) => channel.type === 'text' || channel.type === 0);
+        const textChannels = (data.channels || []).filter((channel: any) => channel.type === 0 || channel.type === 'GUILD_TEXT');
         setChannels(textChannels);
       } else {
-        setChannels([
-          { id: '1', name: 'genel', type: 'text' },
-          { id: '2', name: 'duyurular', type: 'text' },
-          { id: '3', name: 'roller', type: 'text' },
-        ]);
+        console.error('Failed to fetch channels:', response.status);
+        setChannels([]);
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
-      setChannels([
-        { id: '1', name: 'genel', type: 'text' },
-        { id: '2', name: 'duyurular', type: 'text' },
-        { id: '3', name: 'roller', type: 'text' },
-      ]);
+      setChannels([]);
     }
   };
 
   const fetchRoles = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/roles`, {
+      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/roles`, {
         credentials: 'include',
       });
 
@@ -103,19 +96,12 @@ export default function RoleReactionSettings({ guildId, userId }: RoleReactionSe
         const data = await response.json();
         setRoles(data.roles || []);
       } else {
-        setRoles([
-          { id: '1', name: 'Admin', color: '#ff0000' },
-          { id: '2', name: 'Moderator', color: '#00ff00' },
-          { id: '3', name: 'Member', color: '#0000ff' },
-        ]);
+        console.error('Failed to fetch roles:', response.status);
+        setRoles([]);
       }
     } catch (error) {
       console.error('Error fetching roles:', error);
-      setRoles([
-        { id: '1', name: 'Admin', color: '#ff0000' },
-        { id: '2', name: 'Moderator', color: '#00ff00' },
-        { id: '3', name: 'Member', color: '#0000ff' },
-      ]);
+      setRoles([]);
     }
   };
 
