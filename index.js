@@ -602,6 +602,10 @@ let questProgressHandler = null;
 const AchievementHandler = require('./src/handlers/achievementHandler');
 let achievementHandler = null;
 
+// Monitoring Service
+const { getMonitoringService } = require('./src/utils/monitoring');
+let monitoring = null;
+
 // HTTP API Server for web interface
 const express = require('express');
 const { router: webApiRouter, setClient: setWebApiClient } = require('./src/routes/webApi');
@@ -637,6 +641,10 @@ client.once('clientReady', () => {
     // Achievement Handler'ı başlat
     achievementHandler = new AchievementHandler(client);
     log('🏆 Achievement Handler initialized', 'SUCCESS');
+    
+    // Monitoring Service'i başlat
+    monitoring = getMonitoringService();
+    log('📊 Monitoring Service initialized', 'SUCCESS');
     
     log(`🌐 Client web API'ye bağlandı`, 'SUCCESS');
 });
