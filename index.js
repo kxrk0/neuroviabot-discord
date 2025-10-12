@@ -594,6 +594,10 @@ startBot();
 const ActivityRewardHandler = require('./src/handlers/activityRewardHandler');
 let activityRewardHandler = null;
 
+// Quest Progress Handler
+const QuestProgressHandler = require('./src/handlers/questProgressHandler');
+let questProgressHandler = null;
+
 // HTTP API Server for web interface
 const express = require('express');
 const { router: webApiRouter, setClient: setWebApiClient } = require('./src/routes/webApi');
@@ -621,6 +625,11 @@ client.once('clientReady', () => {
     // Activity Reward Handler'ı başlat
     activityRewardHandler = new ActivityRewardHandler(client);
     log('🎯 Activity Reward Handler initialized', 'SUCCESS');
+    
+    // Quest Progress Handler'ı başlat
+    questProgressHandler = new QuestProgressHandler(client);
+    log('🗺️ Quest Progress Handler initialized', 'SUCCESS');
+    
     log(`🌐 Client web API'ye bağlandı`, 'SUCCESS');
 });
 
