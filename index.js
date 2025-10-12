@@ -611,12 +611,14 @@ const express = require('express');
 const { router: webApiRouter, setClient: setWebApiClient } = require('./src/routes/webApi');
 const { router: guildManagementRouter, setClient: setGuildManagementClient } = require('./src/routes/guild-management');
 const { router: marketplaceRouter } = require('./src/routes/marketplace');
+const { router: levelingRouter, setClient: setLevelingClient } = require('./src/routes/leveling');
 
 const apiApp = express();
 apiApp.use(express.json());
 apiApp.use('/api/bot', webApiRouter);
 apiApp.use('/api/bot/guilds', guildManagementRouter);
 apiApp.use('/api/bot/marketplace', marketplaceRouter);
+apiApp.use('/api/bot/leveling', levelingRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
@@ -629,6 +631,7 @@ apiApp.listen(apiPort, () => {
 client.once('clientReady', () => {
     setWebApiClient(client);
     setGuildManagementClient(client);
+    setLevelingClient(client);
     
     // Activity Reward Handler'ı başlat
     activityRewardHandler = new ActivityRewardHandler(client);
