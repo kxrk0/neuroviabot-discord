@@ -1,203 +1,158 @@
 const { getDatabase } = require('../database/simple-db');
 const { logger } = require('./logger');
 
-// Audit log types
-const AuditLogType = {
-  MEMBER_JOIN: 'MEMBER_JOIN',
-  MEMBER_LEAVE: 'MEMBER_LEAVE',
-  MEMBER_BAN: 'MEMBER_BAN',
-  MEMBER_KICK: 'MEMBER_KICK',
-  MEMBER_TIMEOUT: 'MEMBER_TIMEOUT',
-  ROLE_CREATE: 'ROLE_CREATE',
-  ROLE_UPDATE: 'ROLE_UPDATE',
-  ROLE_DELETE: 'ROLE_DELETE',
-  CHANNEL_CREATE: 'CHANNEL_CREATE',
-  CHANNEL_UPDATE: 'CHANNEL_UPDATE',
-  CHANNEL_DELETE: 'CHANNEL_DELETE',
-  MESSAGE_DELETE: 'MESSAGE_DELETE',
-  MESSAGE_BULK_DELETE: 'MESSAGE_BULK_DELETE',
-  SETTINGS_CHANGE: 'SETTINGS_CHANGE',
-  COMMAND_USE: 'COMMAND_USE',
-  WARNING_ADD: 'WARNING_ADD',
-  WARNING_REMOVE: 'WARNING_REMOVE',
-};
-
-// Severity levels
-const Severity = {
-  INFO: 'info',
-  WARNING: 'warning',
-  DANGER: 'danger',
-};
-
 class AuditLogger {
-  constructor() {
-    this.db = getDatabase();
-  }
-
-  /**
-   * Log an audit event
-   * @param {string} guildId - Guild ID
-   * @param {string} type - Audit log type
-   * @param {string} userId - User who performed the action
-   * @param {string} targetId - Target of the action (user, role, channel, etc.)
-   * @param {string} action - Description of the action
-   * @param {object} details - Additional details
-   * @param {string} severity - Severity level
-   */
-  log(guildId, type, userId, targetId, action, details = {}, severity = Severity.INFO) {
-    try {
-      const entry = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        guildId,
-        type,
-        userId,
-        targetId,
-        action,
-        details,
-        severity,
-        timestamp: new Date().toISOString(),
-      };
-
-      this.db.addAuditLog(guildId, entry);
-      
-      logger.info(`[Audit] ${guildId} - ${type}: ${action}`);
-    } catch (error) {
-      logger.error('Audit logging error:', error);
+    constructor() {
+        this.db = getDatabase();
     }
-  }
 
-  // Convenience methods
-  logMemberJoin(guildId, userId) {
-    this.log(guildId, AuditLogType.MEMBER_JOIN, userId, userId, 'Member joined the server', {}, Severity.INFO);
-  }
+    /**
+     * Log an audit event
+     * @param {Object} options - Audit log options
+     * @param {string} options.guildId - Guild ID
+     * @param {string} options.action - Action type (e.g., 'ROLE_CREATE', 'CHANNEL_DELETE')
+     * @param {Object} options.executor - User who performed the action
+     * @param {Object} options.target - Target of the action
+     * @param {Object} options.changes - Changes made
+     * @param {string} options.reason - Reason for the action
+     */
+    log(options) {
+        try {
+            const { guildId, action, executor, target, changes, reason } = options;
 
-  logMemberLeave(guildId, userId) {
-    this.log(guildId, AuditLogType.MEMBER_LEAVE, userId, userId, 'Member left the server', {}, Severity.INFO);
-  }
+            if (!guildId || !action) {
+                logger.warn('[AuditLogger] Missing required fields: guildId or action');
+                return null;
+            }
 
-  logMemberBan(guildId, moderatorId, targetId, reason) {
-    this.log(
-      guildId,
-      AuditLogType.MEMBER_BAN,
-      moderatorId,
-      targetId,
-      `Member banned: ${reason || 'No reason provided'}`,
-      { reason },
-      Severity.DANGER
-    );
-  }
+            const auditEntry = {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                guildId,
+                action,
+                executor: executor ? {
+                    id: executor.id || executor,
+                    username: executor.username || 'Unknown',
+                    avatar: executor.avatar || null,
+                } : null,
+                target: target ? {
+                    id: target.id || target,
+                    name: target.name || target.username || 'Unknown',
+                    type: target.type || 'unknown',
+                } : null,
+                changes: changes || {},
+                reason: reason || null,
+                timestamp: new Date().toISOString(),
+            };
 
-  logMemberKick(guildId, moderatorId, targetId, reason) {
-    this.log(
-      guildId,
-      AuditLogType.MEMBER_KICK,
-      moderatorId,
-      targetId,
-      `Member kicked: ${reason || 'No reason provided'}`,
-      { reason },
-      Severity.WARNING
-    );
-  }
+            // Save to database
+            const settings = this.db.getGuildSettings(guildId) || {};
+            if (!settings.auditLogs) {
+                settings.auditLogs = [];
+            }
 
-  logMemberTimeout(guildId, moderatorId, targetId, duration, reason) {
-    this.log(
-      guildId,
-      AuditLogType.MEMBER_TIMEOUT,
-      moderatorId,
-      targetId,
-      `Member timed out for ${duration}`,
-      { duration, reason },
-      Severity.WARNING
-    );
-  }
+            settings.auditLogs.unshift(auditEntry); // Add to beginning
 
-  logRoleCreate(guildId, userId, roleId, roleName) {
-    this.log(guildId, AuditLogType.ROLE_CREATE, userId, roleId, `Role created: ${roleName}`, { roleName }, Severity.INFO);
-  }
+            // Keep only last 1000 entries per guild
+            if (settings.auditLogs.length > 1000) {
+                settings.auditLogs = settings.auditLogs.slice(0, 1000);
+            }
 
-  logRoleUpdate(guildId, userId, roleId, changes) {
-    this.log(guildId, AuditLogType.ROLE_UPDATE, userId, roleId, 'Role updated', { changes }, Severity.INFO);
-  }
+            this.db.setGuildSettings(guildId, settings);
 
-  logRoleDelete(guildId, userId, roleId, roleName) {
-    this.log(guildId, AuditLogType.ROLE_DELETE, userId, roleId, `Role deleted: ${roleName}`, { roleName }, Severity.WARNING);
-  }
-
-  logChannelCreate(guildId, userId, channelId, channelName) {
-    this.log(guildId, AuditLogType.CHANNEL_CREATE, userId, channelId, `Channel created: ${channelName}`, { channelName }, Severity.INFO);
-  }
-
-  logChannelUpdate(guildId, userId, channelId, changes) {
-    this.log(guildId, AuditLogType.CHANNEL_UPDATE, userId, channelId, 'Channel updated', { changes }, Severity.INFO);
-  }
-
-  logChannelDelete(guildId, userId, channelId, channelName) {
-    this.log(guildId, AuditLogType.CHANNEL_DELETE, userId, channelId, `Channel deleted: ${channelName}`, { channelName }, Severity.WARNING);
-  }
-
-  logMessageDelete(guildId, userId, messageId, channelId) {
-    this.log(guildId, AuditLogType.MESSAGE_DELETE, userId, messageId, 'Message deleted', { channelId }, Severity.INFO);
-  }
-
-  logSettingsChange(guildId, userId, setting, oldValue, newValue) {
-    this.log(
-      guildId,
-      AuditLogType.SETTINGS_CHANGE,
-      userId,
-      setting,
-      `Settings changed: ${setting}`,
-      { setting, oldValue, newValue },
-      Severity.INFO
-    );
-  }
-
-  logCommandUse(guildId, userId, commandName, success) {
-    this.log(
-      guildId,
-      AuditLogType.COMMAND_USE,
-      userId,
-      commandName,
-      `Command used: /${commandName}`,
-      { commandName, success },
-      Severity.INFO
-    );
-  }
-
-  /**
-   * Get audit logs for a guild
-   * @param {string} guildId
-   * @param {object} filters
-   * @returns {Array}
-   */
-  getLogs(guildId, filters = {}) {
-    return this.db.getAuditLogs(guildId, filters);
-  }
-
-  /**
-   * Clean up old logs (older than 90 days)
-   */
-  cleanupOldLogs() {
-    try {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - 90);
-      
-      this.db.cleanupOldAuditLogs(cutoffDate);
-      logger.info('[Audit] Cleaned up old audit logs');
-    } catch (error) {
-      logger.error('Audit cleanup error:', error);
+            logger.debug(`[AuditLogger] Logged action: ${action} in guild ${guildId}`);
+            return auditEntry;
+        } catch (error) {
+            logger.error('[AuditLogger] Error logging audit:', error);
+            return null;
+        }
     }
-  }
+
+    /**
+     * Get audit logs for a guild
+     * @param {string} guildId - Guild ID
+     * @param {Object} filters - Filter options
+     * @returns {Array} Audit log entries
+     */
+    getLogs(guildId, filters = {}) {
+        try {
+            const settings = this.db.getGuildSettings(guildId) || {};
+            let logs = settings.auditLogs || [];
+
+            // Apply filters
+            if (filters.action) {
+                logs = logs.filter(log => log.action === filters.action);
+            }
+
+            if (filters.userId) {
+                logs = logs.filter(log => 
+                    log.executor?.id === filters.userId || 
+                    log.target?.id === filters.userId
+                );
+            }
+
+            if (filters.startDate) {
+                const startDate = new Date(filters.startDate);
+                logs = logs.filter(log => new Date(log.timestamp) >= startDate);
+            }
+
+            if (filters.endDate) {
+                const endDate = new Date(filters.endDate);
+                logs = logs.filter(log => new Date(log.timestamp) <= endDate);
+            }
+
+            // Pagination
+            const page = parseInt(filters.page) || 1;
+            const limit = parseInt(filters.limit) || 25;
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+
+            const paginatedLogs = logs.slice(startIndex, endIndex);
+
+            return {
+                logs: paginatedLogs,
+                total: logs.length,
+                page,
+                totalPages: Math.ceil(logs.length / limit),
+            };
+        } catch (error) {
+            logger.error('[AuditLogger] Error getting logs:', error);
+            return { logs: [], total: 0, page: 1, totalPages: 0 };
+        }
+    }
+
+    /**
+     * Clear old audit logs (older than specified days)
+     * @param {string} guildId - Guild ID
+     * @param {number} days - Days to keep
+     */
+    clearOldLogs(guildId, days = 90) {
+        try {
+            const settings = this.db.getGuildSettings(guildId) || {};
+            if (!settings.auditLogs) return;
+
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+
+            settings.auditLogs = settings.auditLogs.filter(log => 
+                new Date(log.timestamp) >= cutoffDate
+            );
+
+            this.db.setGuildSettings(guildId, settings);
+            logger.info(`[AuditLogger] Cleared old logs for guild ${guildId}`);
+        } catch (error) {
+            logger.error('[AuditLogger] Error clearing old logs:', error);
+        }
+    }
 }
 
 // Singleton instance
-let auditLogger = null;
+let auditLoggerInstance = null;
 
 function getAuditLogger() {
-  if (!auditLogger) {
-    auditLogger = new AuditLogger();
-  }
-  return auditLogger;
+    if (!auditLoggerInstance) {
+        auditLoggerInstance = new AuditLogger();
+    }
+    return auditLoggerInstance;
 }
 
-module.exports = { getAuditLogger, AuditLogType, Severity };
-
+module.exports = { getAuditLogger, AuditLogger };
