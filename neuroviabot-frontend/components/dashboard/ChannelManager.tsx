@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import EmptyState from '../EmptyState';
 import LoadingSkeleton from '../LoadingSkeleton';
+import ConfirmDialog from './shared/ConfirmDialog';
 
 interface Channel {
   id: string;
@@ -46,6 +47,11 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
     topic: '', 
     nsfw: false, 
     parent: '' 
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; channelId: string | null; channelName: string }>({
+    open: false,
+    channelId: null,
+    channelName: ''
   });
 
   useEffect(() => {
@@ -109,16 +115,16 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
     }
   };
 
-  const handleDeleteChannel = async (channelId: string) => {
-    if (!confirm('Bu kanalı silmek istediğinizden emin misiniz?')) {
-      return;
-    }
+  const handleDeleteChannel = async () => {
+    if (!deleteConfirm.channelId) return;
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/channels/${channelId}`, {
+      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/channels/${deleteConfirm.channelId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ executor: userId }),
       });
 
       if (!response.ok) {
@@ -126,10 +132,19 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
       }
 
       await fetchChannels();
+      setDeleteConfirm({ open: false, channelId: null, channelName: '' });
     } catch (err: any) {
       console.error('Error deleting channel:', err);
       alert('Kanal silinemedi: ' + err.message);
     }
+  };
+
+  const openDeleteConfirm = (channel: Channel) => {
+    setDeleteConfirm({
+      open: true,
+      channelId: channel.id,
+      channelName: channel.name
+    });
   };
 
   if (loading) {
@@ -295,11 +310,23 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Kanalı Sil"
+        message={`"${deleteConfirm.channelName}" kanalını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+        confirmText="Sil"
+        cancelText="İptal"
+        onConfirm={handleDeleteChannel}
+        onCancel={() => setDeleteConfirm({ open: false, channelId: null, channelName: '' })}
+        variant="danger"
+      />
     </div>
   );
 }
 
-function ChannelItem({ channel, onDelete }: { channel: Channel; onDelete: (id: string) => void }) {
+function ChannelItem({ channel, onDelete }: { channel: Channel; onDelete: (channel: Channel) => void }) {
   const typeInfo = CHANNEL_TYPES[channel.type as keyof typeof CHANNEL_TYPES] || CHANNEL_TYPES[0];
   const Icon = typeInfo.icon;
 
@@ -319,7 +346,7 @@ function ChannelItem({ channel, onDelete }: { channel: Channel; onDelete: (id: s
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => onDelete(channel.id)}
+            onClick={() => onDelete(channel)}
             className="p-2 hover:bg-red-500/10 rounded-lg transition text-gray-400 hover:text-red-400"
             title="Sil"
           >
