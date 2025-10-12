@@ -590,6 +590,10 @@ async function registerSlashCommandsWithQueue() {
 // Bot'u başlat
 startBot();
 
+// Activity Reward Handler
+const ActivityRewardHandler = require('./src/handlers/activityRewardHandler');
+let activityRewardHandler = null;
+
 // HTTP API Server for web interface
 const express = require('express');
 const { router: webApiRouter, setClient: setWebApiClient } = require('./src/routes/webApi');
@@ -611,7 +615,40 @@ apiApp.listen(apiPort, () => {
 client.once('clientReady', () => {
     setWebApiClient(client);
     setGuildManagementClient(client);
+    
+    // Activity Reward Handler'ı başlat
+    activityRewardHandler = new ActivityRewardHandler(client);
+    log('🎯 Activity Reward Handler initialized', 'SUCCESS');
     log(`🌐 Client web API'ye bağlandı`, 'SUCCESS');
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    log('🛑 Shutting down gracefully...', 'WARNING');
+    
+    // Cleanup activity rewards
+    if (activityRewardHandler) {
+        await activityRewardHandler.cleanup();
+    }
+    
+    // Destroy client
+    client.destroy();
+    log('👋 Bot shutdown complete', 'SUCCESS');
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    log('🛑 Shutting down gracefully...', 'WARNING');
+    
+    // Cleanup activity rewards
+    if (activityRewardHandler) {
+        await activityRewardHandler.cleanup();
+    }
+    
+    // Destroy client
+    client.destroy();
+    log('👋 Bot shutdown complete', 'SUCCESS');
+    process.exit(0);
 });
 
 // Export client for other modules
