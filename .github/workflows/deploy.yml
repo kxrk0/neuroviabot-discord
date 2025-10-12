@@ -1,10 +1,14 @@
-name: 🚀 Deploy to VPS
+name: 🚀 Deploy All Services to VPS
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Manuel deployment için
+    paths:
+      - '.github/workflows/deploy.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch: # Manuel full deployment için
 
 jobs:
   deploy:
