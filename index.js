@@ -622,6 +622,7 @@ const { router: marketplaceRouter } = require('./src/routes/marketplace');
 const { router: levelingRouter, setClient: setLevelingClient } = require('./src/routes/leveling');
 const { router: botStatsRouter, setClient: setBotStatsClient } = require('./src/routes/bot-stats');
 const { router: reactionRolesRouter, setClient: setReactionRolesClient } = require('./src/routes/reactionRoles');
+const { router: premiumRouter } = require('./src/routes/premium');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -631,6 +632,7 @@ apiApp.use('/api/bot/marketplace', marketplaceRouter);
 apiApp.use('/api/bot/leveling', levelingRouter);
 apiApp.use('/api/bot/stats', botStatsRouter);
 apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
+apiApp.use('/api/bot/premium', premiumRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
