@@ -15,128 +15,63 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 📥 Pull Latest Frontend Code
+      - name: 🚀 Deploy Frontend (All Steps)
         uses: appleboy/ssh-action@v1.0.3
-        continue-on-error: true
-        id: pull_code_attempt1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          timeout: 60s
+          command_timeout: 20m
           script: |
+            set -e
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📥 FRONTEND: Pulling Latest Changes"
+            echo "🚀 Starting Frontend Deployment"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            
+            # Pull latest code
+            echo "📥 Pulling latest code..."
             cd /root/neuroviabot/bot
             git fetch origin main
             git reset --hard origin/main
-            echo "✅ Frontend code updated"
-            echo ""
-
-      - name: 📥 Pull Latest Frontend Code (Retry)
-        if: steps.pull_code_attempt1.outcome == 'failure'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔄 FRONTEND: Retrying Pull (Attempt 2)"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            cd /root/neuroviabot/bot
-            git fetch origin main
-            git reset --hard origin/main
-            echo "✅ Frontend code updated (retry successful)"
-            echo ""
-
-      - name: 🗑️ Clean Frontend Build
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🗑️ FRONTEND: Cleaning Build"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "✅ Code updated"
+            
+            # Navigate to frontend
             cd /root/neuroviabot/bot/neuroviabot-frontend
-            rm -rf node_modules package-lock.json .next out
-            echo "✅ Build cleaned"
-            echo ""
-
-      - name: 📦 Install Frontend Dependencies
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📦 FRONTEND: Installing Dependencies"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            cd /root/neuroviabot/bot/neuroviabot-frontend
-            npm install
+            
+            # Install dependencies (no clean, faster)
+            echo "📦 Installing dependencies..."
+            npm install --prefer-offline --no-audit
             echo "✅ Dependencies installed"
-            echo ""
-
-      - name: 🏗️ Build Frontend
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🏗️ FRONTEND: Building Application"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            cd /root/neuroviabot/bot/neuroviabot-frontend
+            
+            # Build
+            echo "🏗️ Building application..."
             npm run build
             echo "✅ Build completed"
-            echo ""
-
-      - name: 🔄 Restart Frontend Service
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔄 PM2: Restarting Frontend"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            pm2 restart neuroviabot-frontend --update-env
+            
+            # Stop frontend to free port
+            echo "🛑 Stopping frontend..."
+            pm2 stop neuroviabot-frontend || true
+            sleep 2
+            
+            # Kill any process on port 3001
+            echo "🧹 Cleaning port 3001..."
+            lsof -ti:3001 | xargs kill -9 2>/dev/null || true
+            sleep 1
+            
+            # Start frontend
+            echo "🚀 Starting frontend..."
+            pm2 start neuroviabot-frontend
+            pm2 save
             sleep 3
-            echo "✅ Frontend restarted"
-            echo ""
-
-      - name: ✅ Verify Frontend Status
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
+            
+            # Verify
+            echo "✅ Verifying status..."
+            pm2 status neuroviabot-frontend
+            
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "✅ FRONTEND DEPLOYMENT COMPLETED!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            pm2 status neuroviabot-frontend
-            pm2 logs neuroviabot-frontend --lines 10 --nostream
 
       - name: 📊 Deployment Summary
         if: always()
