@@ -30,6 +30,7 @@ class SimpleDatabase {
             userStats: new Map(), // New: userId -> stats (messages, voiceTime, gameWins, winStreak)
             userPremium: new Map(), // New: userId -> { plan, expiresAt, features }
             guildPremium: new Map(), // New: guildId -> { plan, expiresAt, features }
+            auditLogs: new Map(), // New: guildId -> Array<AuditEntry>
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),
@@ -576,6 +577,67 @@ class SimpleDatabase {
         if (premium.plan === 'free') return false;
         if (!premium.expiresAt) return true;
         return new Date(premium.expiresAt) > new Date();
+    }
+
+    // ==========================================
+    // Audit Logs
+    // ==========================================
+
+    addAuditLog(guildId, entry) {
+        if (!this.data.auditLogs.has(guildId)) {
+            this.data.auditLogs.set(guildId, []);
+        }
+        const logs = this.data.auditLogs.get(guildId);
+        logs.unshift(entry); // Add to beginning
+        
+        // Keep only last 1000 entries per guild
+        if (logs.length > 1000) {
+            logs.splice(1000);
+        }
+        
+        this.data.auditLogs.set(guildId, logs);
+        this.saveData();
+    }
+
+    getAuditLogs(guildId, filters = {}) {
+        const logs = this.data.auditLogs.get(guildId) || [];
+        let filtered = [...logs];
+
+        // Apply filters
+        if (filters.type) {
+            filtered = filtered.filter(log => log.type === filters.type);
+        }
+        if (filters.userId) {
+            filtered = filtered.filter(log => log.userId === filters.userId);
+        }
+        if (filters.startDate) {
+            filtered = filtered.filter(log => new Date(log.timestamp) >= new Date(filters.startDate));
+        }
+        if (filters.endDate) {
+            filtered = filtered.filter(log => new Date(log.timestamp) <= new Date(filters.endDate));
+        }
+
+        // Pagination
+        const page = parseInt(filters.page) || 1;
+        const limit = parseInt(filters.limit) || 50;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+
+        return {
+            logs: filtered.slice(startIndex, endIndex),
+            total: filtered.length,
+            page,
+            limit,
+            totalPages: Math.ceil(filtered.length / limit)
+        };
+    }
+
+    cleanupOldAuditLogs(cutoffDate) {
+        for (const [guildId, logs] of this.data.auditLogs) {
+            const filtered = logs.filter(log => new Date(log.timestamp) > cutoffDate);
+            this.data.auditLogs.set(guildId, filtered);
+        }
+        this.saveData();
     }
 }
 
