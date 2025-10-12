@@ -62,10 +62,18 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
 
       if (response.ok) {
         const data = await response.json();
-        setConfig(data.settings || defaultConfig);
+        const settings = data.settings || defaultConfig;
+        // Ensure roleRewards is always an array
+        setConfig({
+          ...settings,
+          roleRewards: Array.isArray(settings.roleRewards) ? settings.roleRewards : []
+        });
+      } else {
+        setConfig(defaultConfig);
       }
     } catch (error) {
       console.error('Error fetching leveling settings:', error);
+      setConfig(defaultConfig);
     } finally {
       setLoading(false);
     }
@@ -195,7 +203,7 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
   const updateRoleReward = (index: number, key: string, value: any) => {
     setConfig(prev => ({
       ...prev,
-      roleRewards: prev.roleRewards.map((reward, i) => 
+      roleRewards: (prev.roleRewards || []).map((reward, i) => 
         i === index ? { ...reward, [key]: value } : reward
       )
     }));
@@ -383,7 +391,7 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
                 </div>
 
           <div className="space-y-4">
-            {config.roleRewards.map((reward, index) => (
+            {(config.roleRewards || []).map((reward, index) => (
                     <motion.div
                       key={index}
                 initial={{ opacity: 0, y: 20 }}

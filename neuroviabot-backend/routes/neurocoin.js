@@ -34,6 +34,7 @@ router.get('/balance/:userId', async (req, res) => {
     res.json({ ...response.data, cached: false });
   } catch (error) {
     console.error('[NeuroCoin] Error fetching balance:', error.message);
+    console.error('[NeuroCoin] Full error:', error);
     
     // Return cached data if available, even if expired
     const cached = balanceCache.get(req.params.userId);
@@ -41,7 +42,15 @@ router.get('/balance/:userId', async (req, res) => {
       return res.json({ ...cached.data, cached: true, stale: true });
     }
     
-    res.status(500).json({ success: false, error: 'Failed to fetch balance' });
+    // Return default balance instead of error
+    res.json({
+      success: true,
+      total: 0,
+      available: 0,
+      locked: 0,
+      lastUpdated: new Date().toISOString(),
+      error: 'Could not fetch from bot server'
+    });
   }
 });
 
