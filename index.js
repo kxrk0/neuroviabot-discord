@@ -241,8 +241,16 @@ async function registerSlashCommands() {
 client.once('clientReady', async () => {
     log(`Bot logged in as ${client.user.tag}`, 'SUCCESS');
     log(`Bot ID: ${client.user.id}`, 'INFO');
-    log(`Guilds: ${client.guilds.cache.size}`, 'INFO');
-    log(`Users: ${client.users.cache.size}`, 'INFO');
+    
+    // Stats cache'i başlat
+    statsCache.initialize(client);
+    client.statsCache = statsCache;
+    
+    // Gerçek stats'ı logla
+    const stats = statsCache.getStats();
+    log(`Guilds: ${stats.guilds}`, 'INFO');
+    log(`Users: ${stats.users.toLocaleString()}`, 'INFO');
+    log(`Commands: ${stats.commands}`, 'INFO');
     
     // Activity ready.js event handler'ında ayarlanıyor (website + stats rotation)
     
@@ -265,6 +273,7 @@ const GiveawayHandler = require('./src/handlers/giveawayHandler');
 const GuardHandler = require('./src/handlers/guardHandler');
 const VerificationHandler = require('./src/handlers/verificationHandler');
 const WelcomeHandler = require('./src/handlers/welcomeHandler');
+const { statsCache } = require('./src/utils/statsCache');
 
 // Initialize handlers
 client.loggingHandler = new LoggingHandler(client);
@@ -385,22 +394,8 @@ async function setupSocketIO(client) {
         // Real-time stats request from backend
         socket.on('get_bot_stats', async (data, callback) => {
             try {
-                const { getDatabase } = require('./src/database/simple-db');
-                const db = getDatabase();
-                
-                // Calculate real-time users
-                let totalUsers = 0;
-                client.guilds.cache.forEach(guild => {
-                    totalUsers += guild.memberCount || 0;
-                });
-                
-                const stats = {
-                    guilds: client.guilds.cache.size,
-                    users: totalUsers,
-                    commands: client.commands.size,
-                    uptime: client.uptime,
-                    ping: client.ws.ping
-                };
+                // Stats cache'den al (merkezi kaynak)
+                const stats = client.statsCache.getStats();
                 
                 log(`📊 Real-time stats sent: ${JSON.stringify(stats)}`, 'DEBUG');
                 

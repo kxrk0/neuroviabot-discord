@@ -8,29 +8,27 @@ module.exports = {
     execute(client) {
         console.log(`✅ ${client.user.tag} olarak giriş yapıldı!`);
         console.log(`🎵 Bot hazır!`);
-        console.log(`📊 ${client.guilds.cache.size} sunucuda aktif`);
-        console.log(`👥 ${client.users.cache.size} kullanıcıya hizmet veriyor`);
+        
+        // Stats cache'den gerçek sayıları al
+        const stats = client.statsCache.getStats();
+        console.log(`📊 ${stats.guilds} sunucuda aktif`);
+        console.log(`👥 ${stats.users.toLocaleString()} kullanıcıya hizmet veriyor`);
         
         // Mevcut guild'leri database'e yükle
         loadExistingGuilds(client);
         
-        // Bot status'unu ayarla - Website + ULTRA REAL-TIME kullanıcı ve sunucu sayısı
+        // Bot status'unu ayarla - Merkezi stats cache kullan
         let activityIndex = 0;
         function updateActivity() {
             try {
-                // REAL-TIME veri alma - guild cache'den anlık bilgileri al
-                const totalUsers = client.guilds.cache.reduce((acc, guild) => {
-                    // Her guild'den gerçek member count al
-                    return acc + (guild.memberCount || 0);
-                }, 0);
-                
-                const totalServers = client.guilds.cache.size;
+                // Stats cache'den REAL-TIME veri al
+                const stats = client.statsCache.getStats();
                 
                 // Rotate between website, stats and maintenance notice
                 const activities = [
                     `neuroviabot.xyz 🌐`,
-                    `${totalUsers.toLocaleString()} kullanıcı | ${totalServers} sunucu 📊`,
-                    `🔧 Bakım modunda - Geliştirme devam ediyor`
+                    `${stats.users.toLocaleString()} kullanıcı | ${stats.guilds} sunucu 📊`,
+                    `🎮 ${stats.guilds} sunucuda oynatılıyor`
                 ];
                 
                 const activityText = activities[activityIndex];
@@ -40,8 +38,6 @@ module.exports = {
                     type: ActivityType.Streaming,
                     url: 'https://www.twitch.tv/swaffval'
                 });
-                
-                // Activity updated silently - no debug logs needed
                 
             } catch (error) {
                 console.error('❌ Activity güncelleme hatası:', error);
@@ -56,13 +52,15 @@ module.exports = {
             updateActivity();
         }, 10000); // 10 saniye
         
-        // Guild join/leave event'lerinde de güncelle (gerçek real-time için)
+        // Guild join/leave event'lerinde stats cache'i güncelle
         client.on('guildCreate', () => {
-            setTimeout(() => updateActivity(), 1000); // 1 saniye gecikme ile güncelle
+            client.statsCache.forceUpdate();
+            setTimeout(() => updateActivity(), 1000);
         });
         
         client.on('guildDelete', () => {
-            setTimeout(() => updateActivity(), 1000); // 1 saniye gecikme ile güncelle
+            client.statsCache.forceUpdate();
+            setTimeout(() => updateActivity(), 1000);
         });
         
         console.log('🚀 Bot tamamen hazır ve çalışıyor!');
