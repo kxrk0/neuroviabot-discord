@@ -31,9 +31,57 @@ import SecuritySettings from '../../../components/dashboard/SecuritySettings';
 import AnalyticsSettings from '../../../components/dashboard/AnalyticsSettings';
 import AutomationSettings from '../../../components/dashboard/AutomationSettings';
 import RoleReactionSettings from '../../../components/dashboard/RoleReactionSettings';
+import ServerOverview from '../../../components/dashboard/ServerOverview';
+import MemberManagement from '../../../components/dashboard/MemberManagement';
+import RoleEditor from '../../../components/dashboard/RoleEditor';
+import ChannelManager from '../../../components/dashboard/ChannelManager';
+import AuditLog from '../../../components/dashboard/AuditLog';
+import { useSocket } from '../../../hooks/useSocket';
+import { useNotification } from '../../../contexts/NotificationContext';
+import { DocumentTextIcon, UsersIcon } from '@heroicons/react/24/outline';
 
-// Feature Categories (MEE6 style)
+// Feature Categories - NEW MANAGEMENT CATEGORIES FIRST
 const categories = [
+  {
+    id: 'overview',
+    name: 'Genel Bakış',
+    description: 'Sunucu istatistikleri ve genel bilgiler',
+    icon: ChartBarIcon,
+    color: 'from-blue-500 to-cyan-500',
+    premium: false,
+  },
+  {
+    id: 'members',
+    name: 'Üye Yönetimi',
+    description: 'Üyeleri yönetin, at, yasaklayın veya susturun',
+    icon: UsersIcon,
+    color: 'from-purple-500 to-pink-500',
+    premium: false,
+  },
+  {
+    id: 'roles',
+    name: 'Rol Yönetimi',
+    description: 'Rolleri oluşturun, düzenleyin ve yönetin',
+    icon: ShieldCheckIcon,
+    color: 'from-green-500 to-emerald-500',
+    premium: false,
+  },
+  {
+    id: 'channels',
+    name: 'Kanal Yönetimi',
+    description: 'Kanalları oluşturun, düzenleyin ve silin',
+    icon: HashtagIcon,
+    color: 'from-yellow-500 to-amber-500',
+    premium: false,
+  },
+  {
+    id: 'audit',
+    name: 'Denetim Günlüğü',
+    description: 'Sunucu değişikliklerini ve işlemleri takip edin',
+    icon: DocumentTextIcon,
+    color: 'from-red-500 to-orange-500',
+    premium: false,
+  },
   {
     id: 'welcome',
     name: 'Hoşgeldin & Hoşçakal',
@@ -248,8 +296,9 @@ export default function ServerDashboard() {
   const params = useParams();
   const router = useRouter();
   const serverId = params?.serverId as string;
+  const { showNotification } = useNotification();
   
-  const [activeCategory, setActiveCategory] = useState('welcome');
+  const [activeCategory, setActiveCategory] = useState('overview');
   const [guild, setGuild] = useState<any>(null);
   const [guilds, setGuilds] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({});
@@ -260,6 +309,35 @@ export default function ServerDashboard() {
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Socket.IO with real-time updates and notifications
+  useSocket({
+    guildId: serverId,
+    onSettingsUpdated: (data) => {
+      showNotification(`⚙️ ${data.setting || 'Ayar'} güncellendi!`, 'success');
+      if (activeCategory === data.category || !data.category) {
+        fetchGuildSettings();
+      }
+    },
+    onMemberAction: (data) => {
+      showNotification(`👤 ${data.action}: ${data.memberName || 'Üye'}`, 'info');
+      if (activeCategory === 'members') {
+        // Trigger re-fetch in MemberManagement component
+      }
+    },
+    onRoleUpdate: (data) => {
+      showNotification(`🎭 Rol güncellendi: ${data.roleName || 'Rol'}`, 'info');
+      if (activeCategory === 'roles') {
+        // Trigger re-fetch in RoleEditor component
+      }
+    },
+    onChannelUpdate: (data) => {
+      showNotification(`#️⃣ Kanal güncellendi: ${data.channelName || 'Kanal'}`, 'info');
+      if (activeCategory === 'channels') {
+        // Trigger re-fetch in ChannelManager component
+      }
+    },
+  });
 
   useEffect(() => {
     fetchUser();
@@ -933,6 +1011,43 @@ export default function ServerDashboard() {
 
               {/* Features */}
               <div className="space-y-4">
+                {/* NEW MANAGEMENT COMPONENTS */}
+                {activeCategory === 'overview' && (
+                  <ServerOverview 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {activeCategory === 'members' && (
+                  <MemberManagement 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {activeCategory === 'roles' && (
+                  <RoleEditor 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {activeCategory === 'channels' && (
+                  <ChannelManager 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {activeCategory === 'audit' && (
+                  <AuditLog 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {/* EXISTING COMPONENTS */}
                 {/* Bot Commands Component */}
                 {activeCategory === 'commands' && (
                   <BotCommands 
@@ -1014,17 +1129,9 @@ export default function ServerDashboard() {
                     userId={user?.id || 'unknown'} 
                   />
                 )}
-
-                {/* Role Reaction Settings Component */}
-                {activeCategory === 'roles' && (
-                  <RoleReactionSettings 
-                    guildId={serverId} 
-                    userId={user?.id || 'unknown'} 
-                  />
-                )}
                 
                 {/* Other Features */}
-                {activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features.map((feature) => {
+                {activeCategory !== 'overview' && activeCategory !== 'members' && activeCategory !== 'channels' && activeCategory !== 'audit' && activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features?.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',
