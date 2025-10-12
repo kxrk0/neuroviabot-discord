@@ -20,37 +20,59 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            echo "🎯 Starting deployment..."
+            echo "🎯 Starting CLEAN deployment..."
             cd /root/neuroviabot/bot
             
             # Git operations
             echo "📥 Pulling latest changes..."
             git fetch origin main
             git reset --hard origin/main
+            git clean -fd
             
-            # Install dependencies
-            echo "📦 Installing bot dependencies..."
+            # ============================================
+            # BOT - Clean Install
+            # ============================================
+            echo "🗑️ Cleaning bot node_modules..."
+            rm -rf node_modules package-lock.json
+            
+            echo "📦 Installing bot dependencies from scratch..."
             npm install --production
             
-            echo "📦 Installing backend dependencies..."
+            # ============================================
+            # BACKEND - Clean Install
+            # ============================================
+            echo "🗑️ Cleaning backend node_modules..."
             cd neuroviabot-backend
+            rm -rf node_modules package-lock.json
+            
+            echo "📦 Installing backend dependencies from scratch..."
             npm install --production
             cd ..
             
-            echo "📦 Installing frontend dependencies..."
+            # ============================================
+            # FRONTEND - Clean Build
+            # ============================================
+            echo "🗑️ Cleaning frontend build artifacts..."
             cd neuroviabot-frontend
+            rm -rf node_modules package-lock.json .next out
+            
+            echo "📦 Installing frontend dependencies from scratch..."
             npm install
+            
+            echo "🌐 Building frontend from scratch..."
             npm run build
             cd ..
             
-            # Restart PM2 services
-            echo "🔄 Restarting services..."
+            # ============================================
+            # PM2 Restart
+            # ============================================
+            echo "🔄 Restarting all services..."
             pm2 restart neuroviabot --update-env
             pm2 restart neuroviabot-backend --update-env
             pm2 restart neuroviabot-frontend --update-env
             pm2 save
             
-            echo "✅ Deployment completed successfully!"
+            echo "✅ Clean deployment completed successfully!"
             pm2 status
 
       - name: 📊 Deployment Summary
