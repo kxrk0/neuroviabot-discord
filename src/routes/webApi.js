@@ -85,6 +85,40 @@ router.post('/test-broadcast', authenticateBotApi, async (req, res) => {
     }
 });
 
+// NeuroCoin balance endpoint
+router.get('/neurocoin/balance/:userId', authenticateBotApi, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
+        
+        // Get user's NeuroCoin balance
+        const balance = db.getNeuroCoinBalance(userId);
+        
+        if (!balance) {
+            return res.json({
+                success: true,
+                total: 0,
+                available: 0,
+                locked: 0,
+                lastUpdated: new Date().toISOString()
+            });
+        }
+        
+        res.json({
+            success: true,
+            total: balance.total || 0,
+            available: balance.available || 0,
+            locked: balance.locked || 0,
+            lastUpdated: balance.lastUpdated || new Date().toISOString()
+        });
+        
+    } catch (error) {
+        logger.error('NeuroCoin balance endpoint hatası:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Komut çalıştırma endpoint'i
 router.post('/execute-command', authenticateBotApi, async (req, res) => {
     try {

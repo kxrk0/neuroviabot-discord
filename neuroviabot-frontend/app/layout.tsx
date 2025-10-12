@@ -2,6 +2,7 @@ import './globals.scss';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { NotificationProvider } from '../contexts/NotificationContext';
+import { NeuroCoinProvider } from '../contexts/NeuroCoinContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,7 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <NotificationProvider>
-          {children}
+          <NeuroCoinProvider>
+            {children}
+          </NeuroCoinProvider>
         </NotificationProvider>
       </body>
     </html>

@@ -3,12 +3,15 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/hooks/useUser';
+import { useNeuroCoin } from '@/contexts/NeuroCoinContext';
 import Loading from '@/components/ui/Loading';
 import {
   UserCircleIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
+  ChartBarIcon,
+  TrophyIcon,
 } from '@heroicons/react/24/outline';
 
 export default function UserDropdown() {
@@ -16,6 +19,7 @@ export default function UserDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { user, loading, logout } = useUser();
+  const { balance, loading: balanceLoading } = useNeuroCoin();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -106,24 +110,55 @@ export default function UserDropdown() {
             </div>
           </div>
 
+          {/* NeuroCoin Balance Section */}
+          {balance && (
+            <div className="px-4 py-3 bg-gradient-to-r from-purple-600/10 to-blue-600/10 border-b border-white/10">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400 font-medium">NeuroCoin Balance</span>
+                <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                  {balance.total.toLocaleString()} NRC
+                </span>
+              </div>
+              <div className="flex gap-2 text-xs">
+                <div className="flex-1 bg-gray-800/50 rounded px-2 py-1">
+                  <div className="text-gray-500">Available</div>
+                  <div className="text-green-400 font-semibold">{balance.available.toLocaleString()}</div>
+                </div>
+                <div className="flex-1 bg-gray-800/50 rounded px-2 py-1">
+                  <div className="text-gray-500">Locked</div>
+                  <div className="text-yellow-400 font-semibold">{balance.locked.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Menu Items */}
           <div className="py-1">
             <Link
-              href="/dashboard"
+              href="/servers"
               className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <UserCircleIcon className="w-5 h-5" />
-              <span className="text-sm">Dashboard</span>
+              <span className="text-sm">My Servers</span>
             </Link>
 
             <Link
-              href="/dashboard/settings"
+              href="/neurocoin"
               className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
               onClick={() => setIsOpen(false)}
             >
-              <Cog6ToothIcon className="w-5 h-5" />
-              <span className="text-sm">Settings</span>
+              <ChartBarIcon className="w-5 h-5" />
+              <span className="text-sm">Manage NeuroCoin</span>
+            </Link>
+
+            <Link
+              href={`/profile/${user.id}`}
+              className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <TrophyIcon className="w-5 h-5" />
+              <span className="text-sm">View Profile</span>
             </Link>
 
             <div className="my-1 border-t border-white/10"></div>
