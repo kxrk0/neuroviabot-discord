@@ -14,6 +14,9 @@ interface UseSocketOptions {
   onMemberAction?: (data: any) => void;
   onChannelUpdate?: (data: any) => void;
   onRoleUpdate?: (data: any) => void;
+  onReactionRoleUpdate?: (data: any) => void;
+  onAnalyticsUpdate?: (data: any) => void;
+  onAuditLogEntry?: (data: any) => void;
 }
 
 export function useSocket({ 
@@ -25,6 +28,9 @@ export function useSocket({
   onMemberAction,
   onChannelUpdate,
   onRoleUpdate,
+  onReactionRoleUpdate,
+  onAnalyticsUpdate,
+  onAuditLogEntry,
 }: UseSocketOptions = {}) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
@@ -170,6 +176,48 @@ export function useSocket({
       };
     }
   }, [socket, onRoleUpdate]);
+
+  // Listen for reaction role updates
+  useEffect(() => {
+    if (socket && onReactionRoleUpdate) {
+      socket.on('reaction_role_update', (data) => {
+        console.log('[Socket.IO] Received reaction_role_update event:', data);
+        onReactionRoleUpdate(data);
+      });
+
+      return () => {
+        socket.off('reaction_role_update', onReactionRoleUpdate);
+      };
+    }
+  }, [socket, onReactionRoleUpdate]);
+
+  // Listen for analytics updates
+  useEffect(() => {
+    if (socket && onAnalyticsUpdate) {
+      socket.on('analytics_updated', (data) => {
+        console.log('[Socket.IO] Received analytics_updated event:', data);
+        onAnalyticsUpdate(data);
+      });
+
+      return () => {
+        socket.off('analytics_updated', onAnalyticsUpdate);
+      };
+    }
+  }, [socket, onAnalyticsUpdate]);
+
+  // Listen for audit log entries
+  useEffect(() => {
+    if (socket && onAuditLogEntry) {
+      socket.on('audit_log_entry', (data) => {
+        console.log('[Socket.IO] Received audit_log_entry event:', data);
+        onAuditLogEntry(data);
+      });
+
+      return () => {
+        socket.off('audit_log_entry', onAuditLogEntry);
+      };
+    }
+  }, [socket, onAuditLogEntry]);
 
   // Emit settings update
   const emitSettingsUpdate = useCallback((guildId: string, settings: any) => {
