@@ -4,6 +4,16 @@ const { logger } = require('./logger');
 class AuditLogger {
     constructor() {
         this.db = getDatabase();
+        this.io = null; // Socket.IO instance
+    }
+
+    /**
+     * Set Socket.IO instance for real-time broadcasting
+     * @param {Object} io - Socket.IO instance
+     */
+    setIO(io) {
+        this.io = io;
+        logger.info('[AuditLogger] Socket.IO instance set for real-time broadcasting');
     }
 
     /**
@@ -60,6 +70,29 @@ class AuditLogger {
             this.db.setGuildSettings(guildId, settings);
 
             logger.debug(`[AuditLogger] Logged action: ${action} in guild ${guildId}`);
+
+            // Broadcast to Socket.IO clients in real-time
+            if (this.io) {
+                const formattedEntry = {
+                    id: auditEntry.id,
+                    type: action,
+                    userId: auditEntry.executor?.id || 'System',
+                    targetId: auditEntry.target?.id || null,
+                    action: this.formatActionName(action),
+                    details: {
+                        executor: auditEntry.executor,
+                        target: auditEntry.target,
+                        changes: auditEntry.changes,
+                        reason: auditEntry.reason,
+                    },
+                    severity: this.getSeverity(action),
+                    timestamp: auditEntry.timestamp,
+                };
+
+                this.io.to(`guild_${guildId}`).emit('audit_log_entry', formattedEntry);
+                logger.debug(`[AuditLogger] Broadcasted audit log to guild_${guildId}`);
+            }
+
             return auditEntry;
         } catch (error) {
             logger.error('[AuditLogger] Error logging audit:', error);
@@ -142,6 +175,43 @@ class AuditLogger {
         } catch (error) {
             logger.error('[AuditLogger] Error clearing old logs:', error);
         }
+    }
+
+    /**
+     * Format action name for display
+     * @param {string} action - Action type
+     * @returns {string} Formatted action name
+     */
+    formatActionName(action) {
+        const actionNames = {
+            'ROLE_CREATE': 'Rol Oluşturuldu',
+            'ROLE_UPDATE': 'Rol Güncellendi',
+            'ROLE_DELETE': 'Rol Silindi',
+            'CHANNEL_CREATE': 'Kanal Oluşturuldu',
+            'CHANNEL_UPDATE': 'Kanal Güncellendi',
+            'CHANNEL_DELETE': 'Kanal Silindi',
+            'MEMBER_BAN': 'Üye Yasaklandı',
+            'MEMBER_KICK': 'Üye Atıldı',
+            'MEMBER_UPDATE': 'Üye Güncellendi',
+            'SETTINGS_CHANGE': 'Ayarlar Değiştirildi',
+            'MESSAGE_DELETE': 'Mesaj Silindi',
+            'MESSAGE_BULK_DELETE': 'Toplu Mesaj Silindi',
+        };
+        return actionNames[action] || action;
+    }
+
+    /**
+     * Get severity level for action
+     * @param {string} action - Action type
+     * @returns {string} Severity level
+     */
+    getSeverity(action) {
+        const dangerActions = ['ROLE_DELETE', 'CHANNEL_DELETE', 'MEMBER_BAN', 'MESSAGE_BULK_DELETE'];
+        const warningActions = ['ROLE_UPDATE', 'CHANNEL_UPDATE', 'MEMBER_KICK', 'SETTINGS_CHANGE'];
+        
+        if (dangerActions.includes(action)) return 'danger';
+        if (warningActions.includes(action)) return 'warning';
+        return 'info';
     }
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   HashtagIcon, 
   PlusIcon, 
@@ -14,6 +14,7 @@ import {
 import EmptyState from '../EmptyState';
 import LoadingSkeleton from '../LoadingSkeleton';
 import ConfirmDialog from './shared/ConfirmDialog';
+import SearchBar from '../ui/SearchBar';
 
 interface Channel {
   id: string;
@@ -48,11 +49,23 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
     nsfw: false, 
     parent: '' 
   });
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; channelId: string | null; channelName: string }>({
     open: false,
     channelId: null,
     channelName: ''
   });
+
+  // Filter channels based on search query
+  const filteredChannels = useMemo(() => {
+    if (!searchQuery.trim()) return channels;
+    const query = searchQuery.toLowerCase();
+    return channels.filter(channel => 
+      channel.name.toLowerCase().includes(query) ||
+      channel.id.includes(query) ||
+      (channel.topic && channel.topic.toLowerCase().includes(query))
+    );
+  }, [channels, searchQuery]);
 
   useEffect(() => {
     fetchChannels();
@@ -263,8 +276,25 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
         </div>
       )}
 
+      {/* Search Bar */}
+      {channels.length > 0 && (
+        <div className="mb-4">
+          <SearchBar
+            placeholder="Kanal ara (isim, ID veya konu)..."
+            onSearch={setSearchQuery}
+            className="w-full"
+          />
+        </div>
+      )}
+
       {/* Channels List */}
       <div className="space-y-6">
+        {filteredChannels.length === 0 && searchQuery ? (
+          <div className="text-center py-8 text-gray-400">
+            <p>"{searchQuery}" için sonuç bulunamadı</p>
+          </div>
+        ) : (
+          <>
         {/* Categories */}
         {categories.length > 0 && (
           <div>

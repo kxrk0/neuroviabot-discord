@@ -27,6 +27,7 @@ import LoadingSkeleton from '../LoadingSkeleton';
 import EmptyState from '../EmptyState';
 import ErrorBoundary from '../ErrorBoundary';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useSocket } from '@/hooks/useSocket';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
@@ -64,6 +65,27 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   const [filter, setFilter] = useState({ type: '', userId: '', search: '' });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const { showNotification } = useNotification();
+
+  // Socket.IO real-time updates
+  useSocket({
+    guildId,
+    onAuditLogEntry: (entry: AuditEntry) => {
+      console.log('📋 New audit log entry received:', entry);
+      
+      // Add new entry to the top of the list
+      setLogs(prevLogs => [entry, ...prevLogs]);
+      
+      // Show notification for important events
+      if (entry.severity === 'danger' || entry.severity === 'warning') {
+        showNotification({
+          type: entry.severity === 'danger' ? 'error' : 'warning',
+          title: 'Yeni Denetim Kaydı',
+          message: entry.action,
+        });
+      }
+    },
+  });
 
   useEffect(() => {
     fetchLogs();

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ShieldCheckIcon, 
   PlusIcon, 
@@ -14,6 +14,7 @@ import EmptyState from '../EmptyState';
 import LoadingSkeleton from '../LoadingSkeleton';
 import ColorPicker from './shared/ColorPicker';
 import ConfirmDialog from './shared/ConfirmDialog';
+import SearchBar from '../ui/SearchBar';
 
 interface Role {
   id: string;
@@ -39,11 +40,22 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [creatingRole, setCreatingRole] = useState(false);
   const [newRole, setNewRole] = useState({ name: '', color: '#99AAB5', hoist: false, mentionable: false });
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; roleId: string | null; roleName: string }>({
     open: false,
     roleId: null,
     roleName: ''
   });
+
+  // Filter roles based on search query
+  const filteredRoles = useMemo(() => {
+    if (!searchQuery.trim()) return roles;
+    const query = searchQuery.toLowerCase();
+    return roles.filter(role => 
+      role.name.toLowerCase().includes(query) ||
+      role.id.includes(query)
+    );
+  }, [roles, searchQuery]);
 
   useEffect(() => {
     fetchRoles();
@@ -251,9 +263,25 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
         </div>
       )}
 
+      {/* Search Bar */}
+      {roles.length > 0 && (
+        <div className="mb-4">
+          <SearchBar
+            placeholder="Rol ara (isim veya ID)..."
+            onSearch={setSearchQuery}
+            className="w-full"
+          />
+        </div>
+      )}
+
       {/* Roles List */}
       <div className="space-y-2">
-        {roles.map((role) => (
+        {filteredRoles.length === 0 && searchQuery ? (
+          <div className="text-center py-8 text-gray-400">
+            <p>"{searchQuery}" için sonuç bulunamadı</p>
+          </div>
+        ) : (
+          filteredRoles.map((role) => (
           <div
             key={role.id}
             className="bg-[#2c2f38] rounded-lg border border-white/10 p-4 hover:border-white/20 transition"
@@ -296,7 +324,8 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}

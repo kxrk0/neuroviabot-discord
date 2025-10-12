@@ -105,6 +105,12 @@ const reactionRolesRoutes = require('./routes/reaction-roles');
 const auditLogRoutes = require('./routes/audit-log');
 const analyticsRoutes = require('./routes/analytics');
 
+// Set up Audit Logger with Socket.IO
+const { getAuditLogger } = require('../src/utils/auditLogger');
+const auditLogger = getAuditLogger();
+auditLogger.setIO(io);
+console.log('[Backend] Audit Logger configured with Socket.IO');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
 app.use('/api/bot-commands', botCommandsRoutes);

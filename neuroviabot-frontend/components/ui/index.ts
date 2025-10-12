@@ -8,3 +8,4 @@ export { default as Switch } from './Switch';
 export { default as Modal, ConfirmModal } from './Modal';
 export { default as MinimalCard } from './MinimalCard';
 export { default as ShimmerButton } from './ShimmerButton';
+export { default as SearchBar } from './SearchBar';
