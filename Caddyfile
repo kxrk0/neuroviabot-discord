@@ -1,0 +1,121 @@
+# ==========================================
+# NeuroViaBot Discord Bot Dashboard
+# ==========================================
+
+# GitHub Webhook Endpoint (IP-based access)
+:80 {
+    # GitHub Webhook Deployment
+    handle /webhook {
+        reverse_proxy localhost:9000 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            # Preserve GitHub webhook headers
+            header_up X-GitHub-Event {http.request.header.X-GitHub-Event}
+            header_up X-Hub-Signature-256 {http.request.header.X-Hub-Signature-256}
+            header_up X-GitHub-Delivery {http.request.header.X-GitHub-Delivery}
+            
+            # Increase timeout for deployments
+            timeout 5m
+        }
+    }
+    
+    # Health check
+    handle /health {
+        reverse_proxy localhost:9000
+    }
+    
+    # Default response
+    handle {
+        respond "NeuroViaBot Webhook Server" 200
+    }
+}
+
+neuroviabot.xyz www.neuroviabot.xyz {
+    # Backend API - Express.js (Port 5000)
+    handle /api/* {
+        reverse_proxy localhost:5000 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+            
+            # CRITICAL: Pass cookies and credentials
+            header_down Access-Control-Allow-Credentials true
+            header_down Access-Control-Allow-Origin {http.request.header.Origin}
+        }
+    }
+
+    # WebSocket support for real-time updates
+    handle /socket.io/* {
+        reverse_proxy localhost:5000 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Static assets from Next.js
+    handle /_next/* {
+        reverse_proxy localhost:3001
+    }
+
+    handle /public/* {
+        reverse_proxy localhost:3001
+    }
+
+    # Specific files
+    handle /favicon.ico {
+        reverse_proxy localhost:3001
+    }
+
+    handle /robots.txt {
+        reverse_proxy localhost:3001
+    }
+
+    handle /sitemap.xml {
+        reverse_proxy localhost:3001
+    }
+
+    # Catch-all for Next.js frontend (Port 3001)
+    handle /* {
+        reverse_proxy localhost:3001 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # Enhanced security headers
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+        # XSS Protection
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+
+        # CSP for Discord OAuth
+        Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://discord.com https://cdn.discordapp.com https: data:;"
+
+        # Hide server info
+        -Server
+        -X-Powered-By
+    }
+
+    # Enable compression
+    encode gzip
+
+    # Logging
+    log {
+        output file /var/log/caddy/neuroviabot-access.log
+        level INFO
+    }
+}
