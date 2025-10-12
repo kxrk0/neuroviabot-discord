@@ -301,14 +301,14 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
-        open={deleteConfirm.open}
+        isOpen={deleteConfirm.open}
         title="Rolü Sil"
         message={`"${deleteConfirm.roleName}" rolünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
         confirmText="Sil"
         cancelText="İptal"
         onConfirm={handleDeleteRole}
-        onCancel={() => setDeleteConfirm({ open: false, roleId: null, roleName: '' })}
-        variant="danger"
+        onClose={() => setDeleteConfirm({ open: false, roleId: null, roleName: '' })}
+        type="danger"
       />
     </div>
   );

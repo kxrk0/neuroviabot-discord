@@ -289,7 +289,7 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
             </h3>
             <div className="space-y-2">
               {textChannels.map((channel) => (
-                <ChannelItem key={channel.id} channel={channel} onDelete={handleDeleteChannel} />
+                <ChannelItem key={channel.id} channel={channel} onDelete={openDeleteConfirm} />
               ))}
             </div>
           </div>
@@ -304,7 +304,7 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
             </h3>
             <div className="space-y-2">
               {voiceChannels.map((channel) => (
-                <ChannelItem key={channel.id} channel={channel} onDelete={handleDeleteChannel} />
+                <ChannelItem key={channel.id} channel={channel} onDelete={openDeleteConfirm} />
               ))}
             </div>
           </div>
@@ -313,14 +313,14 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
-        open={deleteConfirm.open}
+        isOpen={deleteConfirm.open}
         title="Kanalı Sil"
         message={`"${deleteConfirm.channelName}" kanalını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
         confirmText="Sil"
         cancelText="İptal"
         onConfirm={handleDeleteChannel}
-        onCancel={() => setDeleteConfirm({ open: false, channelId: null, channelName: '' })}
-        variant="danger"
+        onClose={() => setDeleteConfirm({ open: false, channelId: null, channelName: '' })}
+        type="danger"
       />
     </div>
   );
