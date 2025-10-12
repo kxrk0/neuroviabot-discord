@@ -22,6 +22,9 @@ export interface BotStats {
   uptime: number;
   ping: number;
   memoryUsage: number;
+  source?: string; // 'bot-server' | 'database'
+  timestamp?: number;
+  status?: string;
 }
 
 export interface GuildSettings {
