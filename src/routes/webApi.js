@@ -516,31 +516,45 @@ router.get('/analytics/:guildId', authenticateBotApi, async (req, res) => {
             return res.status(404).json({ error: 'Guild bulunamadı' });
         }
         
-        // Gerçek analitik verilerini topla
-        const analytics = {
-            totalMessages: guild.memberCount || 0,
-            totalJoins: Math.floor(Math.random() * 100) + 50, // Mock - gerçek veri gerekli
-            totalLeaves: Math.floor(Math.random() * 50) + 20, // Mock - gerçek veri gerekli
-            totalCommands: Math.floor(Math.random() * 200) + 100, // Mock - gerçek veri gerekli
-            totalVoiceTime: Math.floor(Math.random() * 1000) + 500, // Mock - gerçek veri gerekli
-            activeUsers: guild.memberCount || 0,
-            topChannels: guild.channels.cache
-                .filter(channel => channel.type === 0) // Text channels
-                .map(channel => ({
-                    id: channel.id,
-                    name: channel.name,
-                    messages: Math.floor(Math.random() * 1000) + 100 // Mock - gerçek veri gerekli
-                }))
-                .sort((a, b) => b.messages - a.messages)
-                .slice(0, 5),
-            topUsers: Array.from(guild.members.cache.values())
-                .slice(0, 5)
-                .map(member => ({
-                    id: member.id,
-                    name: member.displayName || member.user.username,
-                    messages: Math.floor(Math.random() * 500) + 50 // Mock - gerçek veri gerekli
-                }))
+        // REAL analytics data from analyticsHandler
+        let analytics = {
+            totalMessages: 0,
+            totalJoins: 0,
+            totalLeaves: 0,
+            totalCommands: 0,
+            totalVoiceTime: 0,
+            activeUsers: 0,
+            topChannels: [],
+            topUsers: []
         };
+
+        if (client.analyticsHandler) {
+            const guildAnalytics = client.analyticsHandler.getGuildAnalytics(guildId);
+            
+            // Calculate totals from real data
+            analytics.totalMessages = guildAnalytics.messages?.total || 0;
+            analytics.totalCommands = guildAnalytics.commands?.total || 0;
+            analytics.totalVoiceTime = guildAnalytics.voice?.totalMinutes || 0;
+            
+            // Calculate joins/leaves from daily data
+            const joins = guildAnalytics.members?.joins || {};
+            const leaves = guildAnalytics.members?.leaves || {};
+            analytics.totalJoins = Object.values(joins).reduce((sum, count) => sum + count, 0);
+            analytics.totalLeaves = Object.values(leaves).reduce((sum, count) => sum + count, 0);
+            
+            // Active users (users who sent messages)
+            const userMessages = guildAnalytics.messages?.byUser || {};
+            analytics.activeUsers = Object.keys(userMessages).length;
+            
+            // Top channels (real data)
+            analytics.topChannels = client.analyticsHandler.getTopChannels(guildId, 5);
+            
+            // Top users (real data)
+            analytics.topUsers = client.analyticsHandler.getTopUsers(guildId, 5);
+        } else {
+            // Fallback to basic guild stats if handler not ready
+            analytics.activeUsers = guild.memberCount || 0;
+        }
         
         res.json({
             success: true,

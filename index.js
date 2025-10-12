@@ -606,6 +606,10 @@ let achievementHandler = null;
 const ReactionRoleHandler = require('./src/handlers/reactionRoleHandler');
 let reactionRoleHandler = null;
 
+// Analytics Handler
+const AnalyticsHandler = require('./src/handlers/analyticsHandler');
+let analyticsHandler = null;
+
 // Monitoring Service
 const { getMonitoringService } = require('./src/utils/monitoring');
 let monitoring = null;
@@ -658,6 +662,11 @@ client.once('clientReady', () => {
     // Reaction Role Handler'ı başlat
     reactionRoleHandler = new ReactionRoleHandler(client);
     log('⚡ Reaction Role Handler initialized', 'SUCCESS');
+    
+    // Analytics Handler'ı başlat
+    analyticsHandler = new AnalyticsHandler(client);
+    client.analyticsHandler = analyticsHandler;
+    log('📊 Analytics Handler initialized', 'SUCCESS');
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();
