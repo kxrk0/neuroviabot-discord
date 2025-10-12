@@ -6,7 +6,7 @@
  */
 
 // .env dosyasını yükle
-require('dotenv').config();
+require('dotenv').config({ path: '/root/neuroviabot/bot/.env' });
 
 const express = require('express');
 const crypto = require('crypto');
@@ -19,15 +19,12 @@ const PORT = process.env.WEBHOOK_PORT || 9000;
 const REPO_PATH = '/root/neuroviabot/bot';
 
 // Webhook secret ZORUNLU - güvenlik nedeniyle fallback YOK
-// ⚠️ ÖNEMLI: VPS'de .env dosyasında SESSION_SECRET tanımlanmalı
-// Yeni secret oluşturmak için: openssl rand -hex 32
 const SECRET = process.env.SESSION_SECRET;
 
 if (!SECRET) {
     console.error('❌ FATAL ERROR: SESSION_SECRET environment variable is required!');
-    console.error('💡 Generate new secret: openssl rand -hex 32');
-    console.error('📝 Add to .env file: SESSION_SECRET=your_generated_secret');
-    console.error('🔐 Update GitHub webhook settings with the same secret');
+    console.error('💡 .env file should contain: SESSION_SECRET=your_secret');
+    console.error(`📁 Checked path: ${path.join(REPO_PATH, '.env')}`);
     process.exit(1);
 }
 
@@ -37,7 +34,29 @@ app.use(express.json());
 // Logging
 const log = (message, type = 'INFO') => {
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] [${type}] ${message}`);
+    const emoji = {
+        'INFO': 'ℹ️',
+        'SUCCESS': '✅',
+        'WARNING': '⚠️',
+        'ERROR': '❌',
+        'DEPLOY': '🚀',
+        'WEBHOOK': '📨',
+        'START': '🎯'
+    };
+    console.log(`[${timestamp}] [${type}] ${emoji[type] || '•'} ${message}`);
+};
+
+// Execute shell command with better error handling
+const runCommand = (command, cwd = REPO_PATH, timeout = 300000) => {
+    return new Promise((resolve, reject) => {
+        exec(command, { cwd, timeout }, (error, stdout, stderr) => {
+            if (error) {
+                reject({ error, stderr, stdout, command });
+            } else {
+                resolve({ stdout, stderr });
+            }
+        });
+    });
 };
 
 // Webhook signature verification
@@ -51,104 +70,101 @@ const verifySignature = (req) => {
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
 };
 
-// Execute shell command
-const runCommand = (command, cwd = REPO_PATH) => {
-    return new Promise((resolve, reject) => {
-        exec(command, { cwd }, (error, stdout, stderr) => {
-            if (error) {
-                reject({ error, stderr });
-            } else {
-                resolve({ stdout, stderr });
-            }
-        });
-    });
-};
-
-// Deployment function
+// Deployment function with improved error handling
 const deploy = async () => {
-    log('🚀 Deployment başlatılıyor...', 'DEPLOY');
+    log('Deployment başlatılıyor...', 'DEPLOY');
+    const startTime = Date.now();
 
     try {
-        // 1. Git pull (clean untracked files and stash changes)
+        // 1. Git operations
         log('📥 Git pull yapılıyor...', 'DEPLOY');
         
-        // Clean untracked files and directories
         try {
-            await runCommand('git clean -fd');
-            log('🧹 Untracked dosyalar temizlendi', 'DEPLOY');
+            await runCommand('git fetch origin main');
+            await runCommand('git reset --hard origin/main');
+            log('✅ Git reset başarılı', 'DEPLOY');
         } catch (e) {
-            log('ℹ️  No untracked files to clean', 'DEPLOY');
+            log(`Git reset hatası: ${e.stderr}`, 'WARNING');
+            // Try alternative method
+            await runCommand('git stash');
+            await runCommand('git pull origin main --rebase');
         }
-        
-        // Stash any local changes
-        try {
-            await runCommand('git stash -u');
-            log('💾 Local değişiklikler stash edildi', 'DEPLOY');
-        } catch (e) {
-            log('ℹ️  No local changes to stash', 'DEPLOY');
-        }
-        
-        // Pull latest changes
-        await runCommand('git pull origin main');
-        log('✅ Git pull tamamlandı', 'DEPLOY');
 
         // 2. Bot dependencies
         log('📦 Bot dependencies kuruluyor...', 'DEPLOY');
-        await runCommand('npm install --omit=dev');
-        log('✅ Bot dependencies kuruldu', 'DEPLOY');
+        try {
+            await runCommand('npm install --production', REPO_PATH, 120000);
+            log('✅ Bot dependencies kuruldu', 'DEPLOY');
+        } catch (e) {
+            log(`⚠️ Bot dependencies warning: ${e.stderr || e.message}`, 'WARNING');
+        }
 
-        // 3. Frontend build
-        log('🌐 Frontend build başlıyor...', 'DEPLOY');
-        await runCommand('npm install', `${REPO_PATH}/neuroviabot-frontend`);
-        await runCommand('npm run build', `${REPO_PATH}/neuroviabot-frontend`);
-        await runCommand('npm prune --production', `${REPO_PATH}/neuroviabot-frontend`);
-        log('✅ Frontend build tamamlandı', 'DEPLOY');
-
-        // 4. Backend dependencies
+        // 3. Backend dependencies
         log('⚙️ Backend dependencies kuruluyor...', 'DEPLOY');
-        await runCommand('npm install --omit=dev', `${REPO_PATH}/neuroviabot-backend`);
-        log('✅ Backend dependencies kuruldu', 'DEPLOY');
+        try {
+            await runCommand('npm install --production', `${REPO_PATH}/neuroviabot-backend`, 120000);
+            log('✅ Backend dependencies kuruldu', 'DEPLOY');
+        } catch (e) {
+            log(`⚠️ Backend dependencies warning: ${e.stderr || e.message}`, 'WARNING');
+        }
 
-        // 5. PM2 restart (or start if not exists)
+        // 4. Frontend build (optional - don't fail deployment if this fails)
+        log('🌐 Frontend build başlıyor...', 'DEPLOY');
+        try {
+            await runCommand('npm install', `${REPO_PATH}/neuroviabot-frontend`, 180000);
+            await runCommand('npm run build', `${REPO_PATH}/neuroviabot-frontend`, 300000);
+            log('✅ Frontend build tamamlandı', 'DEPLOY');
+        } catch (e) {
+            log(`⚠️ Frontend build failed (non-critical): ${e.stderr || e.message}`, 'WARNING');
+            log('ℹ️ Continuing deployment without frontend rebuild...', 'INFO');
+        }
+
+        // 5. PM2 restart with --update-env
         log('🔄 PM2 servisleri yeniden başlatılıyor...', 'DEPLOY');
         
-        // Bot
         try {
-            await runCommand('pm2 restart neuroviabot');
-        } catch {
-            await runCommand('pm2 start index.js --name neuroviabot', REPO_PATH);
+            // Restart bot
+            await runCommand('pm2 restart neuroviabot --update-env');
+            log('✅ Bot restarted', 'DEPLOY');
+        } catch (e) {
+            log(`⚠️ Bot restart warning: ${e.message}`, 'WARNING');
         }
-        
-        // Frontend
-        try {
-            await runCommand('pm2 restart neuroviabot-frontend');
-        } catch {
-            await runCommand('pm2 start npm --name neuroviabot-frontend -- start', `${REPO_PATH}/neuroviabot-frontend`);
-        }
-        
-        // Backend
-        try {
-            await runCommand('pm2 restart neuroviabot-backend');
-        } catch {
-            await runCommand('pm2 start npm --name neuroviabot-backend -- start', `${REPO_PATH}/neuroviabot-backend`);
-        }
-        
-        await runCommand('pm2 save');
-        log('✅ PM2 servisleri restart edildi', 'DEPLOY');
 
-        log('🎉 DEPLOYMENT BAŞARILI!', 'SUCCESS');
-        return { success: true, message: 'Deployment successful' };
+        try {
+            // Restart backend
+            await runCommand('pm2 restart neuroviabot-backend --update-env');
+            log('✅ Backend restarted', 'DEPLOY');
+        } catch (e) {
+            log(`⚠️ Backend restart warning: ${e.message}`, 'WARNING');
+        }
+
+        try {
+            // Restart frontend
+            await runCommand('pm2 restart neuroviabot-frontend --update-env');
+            log('✅ Frontend restarted', 'DEPLOY');
+        } catch (e) {
+            log(`⚠️ Frontend restart warning: ${e.message}`, 'WARNING');
+        }
+
+        // Save PM2 configuration
+        await runCommand('pm2 save');
+        
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+        log(`🎉 DEPLOYMENT BAŞARILI! (${duration}s)`, 'SUCCESS');
+        return { success: true, message: 'Deployment successful', duration };
 
     } catch (error) {
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
         log(`❌ Deployment hatası: ${error.message}`, 'ERROR');
-        log(`stderr: ${error.stderr}`, 'ERROR');
-        throw error;
+        if (error.stderr) log(`stderr: ${error.stderr}`, 'ERROR');
+        if (error.command) log(`command: ${error.command}`, 'ERROR');
+        return { success: false, error: error.message, duration };
     }
 };
 
 // Webhook endpoint
 app.post('/webhook', async (req, res) => {
-    log('📨 Webhook alındı', 'WEBHOOK');
+    log('Webhook alındı', 'WEBHOOK');
 
     // Verify signature
     if (!verifySignature(req)) {
@@ -172,10 +188,11 @@ app.post('/webhook', async (req, res) => {
 
     // Deploy asynchronously
     setTimeout(async () => {
-        try {
-            await deploy();
-        } catch (error) {
-            log(`❌ Deployment failed: ${error.message}`, 'ERROR');
+        const result = await deploy();
+        if (result.success) {
+            log(`Deployment completed successfully in ${result.duration}s`, 'SUCCESS');
+        } else {
+            log(`Deployment failed after ${result.duration}s: ${result.error}`, 'ERROR');
         }
     }, 100);
 });
@@ -185,24 +202,27 @@ app.get('/health', (req, res) => {
     res.json({ 
         status: 'ok', 
         uptime: process.uptime(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        secret_configured: !!SECRET
     });
 });
 
 // Start server
 app.listen(PORT, () => {
-    log(`🎯 Webhook server listening on port ${PORT}`, 'START');
-    log(`🔐 Webhook secret configured`, 'START');
-    log(`📁 Repository path: ${REPO_PATH}`, 'START');
-    log('✅ Ready to receive webhooks!', 'START');
+    log(`Webhook server listening on port ${PORT}`, 'START');
+    log(`Webhook secret: ${SECRET ? 'configured ✓' : 'NOT CONFIGURED ✗'}`, 'START');
+    log(`Repository path: ${REPO_PATH}`, 'START');
+    log('.env file loaded', 'START');
+    log('Ready to receive webhooks!', 'START');
 });
 
 // Handle errors
 process.on('uncaughtException', (error) => {
     log(`Uncaught Exception: ${error.message}`, 'ERROR');
+    log(error.stack, 'ERROR');
 });
 
 process.on('unhandledRejection', (error) => {
     log(`Unhandled Rejection: ${error.message}`, 'ERROR');
+    log(error.stack, 'ERROR');
 });
-

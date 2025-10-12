@@ -1,0 +1,41 @@
+# ==========================================
+# 🔐 GitHub Webhook Secret Güncelleme
+# ==========================================
+
+## 1️⃣ GitHub'da Webhook Ayarları:
+
+1. GitHub repo > Settings > Webhooks > Manage webhook
+2. "Change secret" butonuna tıkla
+3. Bu secret'i yapıştır:
+   fdd863a42064ec909542df57b48d3f160d6f6ccc36ce8e31c303d480e1f03186
+
+4. ⚠️ ÖNEMLİ: Sayfanın en altındaki "Update webhook" butonuna BAS!
+
+5. "Recent Deliveries" sekmesine git
+6. En son delivery'ye tıkla
+7. "Redeliver" butonuna bas (manuel test için)
+
+## 2️⃣ VPS'de Kontrol:
+
+pm2 logs webhook-deploy --lines 0
+
+## 3️⃣ Beklenen Çıktı:
+
+✅ [WEBHOOK] 📨 Webhook alındı
+✅ [WEBHOOK] Event: push, Branch: refs/heads/main
+✅ [DEPLOY] 🚀 Deployment başlatılıyor...
+
+## 🔴 HATA Alıyorsanız:
+
+❌ Invalid signature → Secret GitHub ile VPS'de eşleşmiyor
+❌ Timed out → Port kapalı (ama bunu hallettik)
+❌ SESSION_SECRET required → VPS'de .env yüklenmiyor
+
+## 4️⃣ VPS'de Secret Kontrolü:
+
+cd /root/neuroviabot/bot
+cat .env | grep SESSION_SECRET
+
+# Şu çıktıyı görmeli:
+# SESSION_SECRET=fdd863a42064ec909542df57b48d3f160d6f6ccc36ce8e31c303d480e1f03186
+
