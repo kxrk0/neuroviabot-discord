@@ -42,13 +42,38 @@ export default function ServerOverview({ guildId, userId }: ServerOverviewProps)
   const fetchGuildInfo = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guilds/${guildId}`, {
+      
+      // Fetch guild basic info
+      const guildResponse = await fetch(`${API_URL}/api/guilds/${guildId}`, {
         credentials: 'include',
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setGuildInfo(data);
+      // Fetch REAL bot stats from bot server
+      const statsResponse = await fetch(`${API_URL}/api/bot/stats/${guildId}`, {
+        credentials: 'include',
+      });
+
+      if (guildResponse.ok && statsResponse.ok) {
+        const guildData = await guildResponse.json();
+        const statsData = await statsResponse.json();
+
+        setGuildInfo({
+          name: guildData.name,
+          icon: guildData.icon,
+          banner: guildData.banner,
+          description: guildData.description,
+          memberCount: statsData.stats.memberCount,
+          onlineCount: statsData.stats.onlineMembers,
+          channelCount: statsData.stats.channelCount,
+          roleCount: statsData.stats.roleCount,
+          boostLevel: statsData.stats.boostLevel,
+          boostCount: statsData.stats.boostCount,
+          createdAt: statsData.stats.guildCreatedAt,
+        });
+      } else if (guildResponse.ok) {
+        // Fallback to basic guild data if stats fail
+        const guildData = await guildResponse.json();
+        setGuildInfo(guildData);
       }
     } catch (error) {
       console.error('Error fetching guild info:', error);
