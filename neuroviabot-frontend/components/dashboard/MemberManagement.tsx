@@ -10,6 +10,9 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { useNotification } from '../../contexts/NotificationContext';
+import LoadingSkeleton from '../LoadingSkeleton';
+import EmptyState from '../EmptyState';
+import ErrorBoundary from '../ErrorBoundary';
 
 interface MemberManagementProps {
   guildId: string;
@@ -92,19 +95,12 @@ export default function MemberManagement({ guildId, userId }: MemberManagementPr
   };
 
   if (loading && members.length === 0) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full"
-        />
-      </div>
-    );
+    return <LoadingSkeleton type="list" />;
   }
 
   return (
-    <div className="space-y-6">
+    <ErrorBoundary>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -126,8 +122,15 @@ export default function MemberManagement({ guildId, userId }: MemberManagementPr
       </div>
 
       {/* Members List */}
-      <div className="grid grid-cols-1 gap-4">
-        <AnimatePresence mode="popLayout">
+      {members.length === 0 ? (
+        <EmptyState 
+          type="members" 
+          title="Üye Bulunamadı"
+          description={search ? 'Arama kriterlerinize uygun üye bulunamadı.' : 'Sunucuda üye bulunmuyor.'}
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          <AnimatePresence mode="popLayout">
           {members.map((member, index) => (
             <motion.div
               key={member.id}
@@ -208,6 +211,7 @@ export default function MemberManagement({ guildId, userId }: MemberManagementPr
           ))}
         </AnimatePresence>
       </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -232,6 +236,7 @@ export default function MemberManagement({ guildId, userId }: MemberManagementPr
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 }
 
