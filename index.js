@@ -7,7 +7,6 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, Collection, REST, Routes, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const configSync = require('./src/utils/configSync');
 
 // Console renkli çıktı için
 const colors = {
@@ -278,41 +277,6 @@ client.giveawayHandler = new GiveawayHandler(client);
 client.guardHandler = new GuardHandler(client);
 client.verificationHandler = new VerificationHandler(client);
 client.welcomeHandler = new WelcomeHandler(client);
-
-// ConfigSync event listeners for handlers
-configSync.on('configUpdated', () => {
-    // Handler'ları yeniden başlat
-    if (client.loggingHandler) {
-        client.loggingHandler.restart();
-    }
-    if (client.levelingHandler) {
-        client.levelingHandler.restart();
-    }
-    if (client.ticketHandler) {
-        client.ticketHandler.restart();
-    }
-    if (client.roleReactionHandler) {
-        client.roleReactionHandler.restart();
-    }
-    if (client.webCommandHandler) {
-        client.webCommandHandler.restart();
-    }
-    if (client.backupHandler) {
-        client.backupHandler.restart();
-    }
-    if (client.giveawayHandler) {
-        client.giveawayHandler.restart();
-    }
-    if (client.guardHandler) {
-        client.guardHandler.restart();
-    }
-    if (client.verificationHandler) {
-        client.verificationHandler.restart();
-    }
-    if (client.welcomeHandler) {
-        client.welcomeHandler.restart();
-    }
-});
 
 client.on('messageDelete', async (message) => {
     const { logMessageDelete } = require('./src/handlers/loggingHandler');
