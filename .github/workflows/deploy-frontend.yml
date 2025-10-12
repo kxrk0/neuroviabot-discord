@@ -1,0 +1,124 @@
+name: 🌐 Deploy Frontend Only
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'neuroviabot-frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    name: 🌐 Deploy Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Pull Latest Frontend Code
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📥 FRONTEND: Pulling Latest Changes"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot
+            git fetch origin main
+            git reset --hard origin/main
+            echo "✅ Frontend code updated"
+            echo ""
+
+      - name: 🗑️ Clean Frontend Build
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🗑️ FRONTEND: Cleaning Build"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot/neuroviabot-frontend
+            rm -rf node_modules package-lock.json .next out
+            echo "✅ Build cleaned"
+            echo ""
+
+      - name: 📦 Install Frontend Dependencies
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📦 FRONTEND: Installing Dependencies"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot/neuroviabot-frontend
+            npm install
+            echo "✅ Dependencies installed"
+            echo ""
+
+      - name: 🏗️ Build Frontend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🏗️ FRONTEND: Building Application"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot/neuroviabot-frontend
+            npm run build
+            echo "✅ Build completed"
+            echo ""
+
+      - name: 🔄 Restart Frontend Service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔄 PM2: Restarting Frontend"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            pm2 restart neuroviabot-frontend --update-env
+            sleep 3
+            echo "✅ Frontend restarted"
+            echo ""
+
+      - name: ✅ Verify Frontend Status
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "✅ FRONTEND DEPLOYMENT COMPLETED!"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            pm2 status neuroviabot-frontend
+            pm2 logs neuroviabot-frontend --lines 10 --nostream
+
+      - name: 📊 Deployment Summary
+        if: always()
+        run: |
+          echo "### 🌐 Frontend Deployment Completed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 Frontend | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
