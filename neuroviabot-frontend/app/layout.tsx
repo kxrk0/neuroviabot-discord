@@ -1,10 +1,7 @@
 import './globals.scss';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { NeuroCoinProvider } from '../contexts/NeuroCoinContext';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'NeuroViaBot Dashboard',
@@ -19,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         <NotificationProvider>
           <NeuroCoinProvider>
             {children}
