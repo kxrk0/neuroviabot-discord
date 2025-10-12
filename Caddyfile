@@ -17,8 +17,11 @@
             header_up X-Hub-Signature-256 {http.request.header.X-Hub-Signature-256}
             header_up X-GitHub-Delivery {http.request.header.X-GitHub-Delivery}
             
-            # Increase timeout for deployments
-            timeout 5m
+            # Increase timeout for long deployments
+            transport http {
+                read_timeout 5m
+                write_timeout 5m
+            }
         }
     }
     
