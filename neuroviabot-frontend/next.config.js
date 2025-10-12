@@ -11,15 +11,8 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // Turbopack configuration (Next.js 15+)
-  turbopack: {
-    resolveAlias: {
-      '@': './',
-    },
-  },
-  
-  // Output file tracing
-  outputFileTracingRoot: require('path').join(__dirname, '../'),
+  // Output configuration
+  output: 'standalone',
   
   // Environment variables
   env: {
