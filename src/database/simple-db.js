@@ -26,6 +26,7 @@ class SimpleDatabase {
             questProgress: new Map(), // New: userId -> quest data
             serverMarketConfig: new Map(), // New: guildId -> market settings
             activityRewards: new Map(), // New: userId -> last reward timestamp
+            userProfiles: new Map(), // New: userId -> profile data (bio, color, badges)
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),
