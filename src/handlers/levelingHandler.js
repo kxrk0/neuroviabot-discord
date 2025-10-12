@@ -1,35 +1,18 @@
 const { EmbedBuilder } = require('discord.js');
 const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
-const configSync = require('../utils/configSync');
 
 class LevelingHandler {
     constructor(client) {
         this.client = client;
-        this.isEnabled = false;
+        this.isEnabled = true; // Handler her zaman aktif, guild ayarları kontrol edilir
         this.xpCooldowns = new Map(); // User cooldown tracking
-        this.checkAndSetup();
-    }
-
-    checkAndSetup() {
-        try {
-            // ConfigSync ile güncel durumu al
-            this.isEnabled = configSync.isFeatureEnabled('leveling');
-            
-            if (this.isEnabled) {
-                console.log('[LEVELING-HANDLER] Leveling sistemi aktif - handler başlatıldı');
-            } else {
-                console.log('[LEVELING-HANDLER] Leveling sistemi kapalı - handler devre dışı');
-            }
-        } catch (error) {
-            console.error('[LEVELING-HANDLER] Config okuma hatası:', error);
-            this.isEnabled = false;
-        }
+        console.log('[LEVELING-HANDLER] Leveling handler başlatıldı');
     }
 
     // Handler'ı yeniden başlat
     restart() {
-        this.checkAndSetup();
+        console.log('[LEVELING-HANDLER] Handler yeniden başlatıldı');
     }
 
     async handleMessageXp(message) {

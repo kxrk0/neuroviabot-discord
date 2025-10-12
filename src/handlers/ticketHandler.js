@@ -1,36 +1,19 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
 const { Guild, Ticket, User } = require('../models');
 const { logger } = require('../utils/logger');
-const configSync = require('../utils/configSync');
 const { v4: uuidv4 } = require('uuid');
 
 class TicketHandler {
     constructor(client) {
         this.client = client;
-        this.isEnabled = false;
-        this.checkAndSetup();
-    }
-
-    checkAndSetup() {
-        try {
-            // ConfigSync ile güncel durumu al
-            this.isEnabled = configSync.isFeatureEnabled('tickets');
-            
-            if (this.isEnabled) {
-                this.setupEventListeners();
-                console.log('[TICKET-HANDLER] Ticket sistemi aktif - handler başlatıldı');
-            } else {
-                console.log('[TICKET-HANDLER] Ticket sistemi kapalı - handler devre dışı');
-            }
-        } catch (error) {
-            console.error('[TICKET-HANDLER] Config okuma hatası:', error);
-            this.isEnabled = false;
-        }
+        this.isEnabled = true; // Handler her zaman aktif
+        this.setupEventListeners();
+        console.log('[TICKET-HANDLER] Ticket handler başlatıldı');
     }
 
     // Handler'ı yeniden başlat
     restart() {
-        this.checkAndSetup();
+        console.log('[TICKET-HANDLER] Handler yeniden başlatıldı');
     }
 
     setupEventListeners() {
