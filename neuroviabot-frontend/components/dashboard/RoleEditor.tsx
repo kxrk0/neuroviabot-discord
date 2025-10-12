@@ -138,7 +138,7 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
   };
 
   if (loading) {
-    return <LoadingSkeleton count={5} />;
+    return <LoadingSkeleton type="list" />;
   }
 
   if (error) {

@@ -148,7 +148,7 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
   };
 
   if (loading) {
-    return <LoadingSkeleton count={5} />;
+    return <LoadingSkeleton type="list" />;
   }
 
   if (error) {
