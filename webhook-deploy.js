@@ -16,14 +16,14 @@ const PORT = process.env.WEBHOOK_PORT || 9000;
 const REPO_PATH = '/root/neuroviabot/bot';
 
 // Webhook secret ZORUNLU - güvenlik nedeniyle fallback YOK
-// ⚠️ ÖNEMLI: VPS'de .env dosyasında WEBHOOK_SECRET tanımlanmalı
+// ⚠️ ÖNEMLI: VPS'de .env dosyasında SESSION_SECRET tanımlanmalı
 // Yeni secret oluşturmak için: openssl rand -hex 32
-const SECRET = process.env.WEBHOOK_SECRET;
+const SECRET = process.env.SESSION_SECRET;
 
 if (!SECRET) {
-    console.error('❌ FATAL ERROR: WEBHOOK_SECRET environment variable is required!');
+    console.error('❌ FATAL ERROR: SESSION_SECRET environment variable is required!');
     console.error('💡 Generate new secret: openssl rand -hex 32');
-    console.error('📝 Add to .env file: WEBHOOK_SECRET=your_generated_secret');
+    console.error('📝 Add to .env file: SESSION_SECRET=your_generated_secret');
     console.error('🔐 Update GitHub webhook settings with the same secret');
     process.exit(1);
 }

@@ -68,6 +68,27 @@ module.exports = {
       merge_logs: true,
       time: true,
     },
+
+    // Webhook Deploy Server
+    {
+      name: 'webhook-deploy',
+      script: './webhook-deploy.js',
+      cwd: '/root/neuroviabot/bot',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '200M',
+      env: {
+        NODE_ENV: 'production',
+        WEBHOOK_PORT: 9000,
+      },
+      error_file: './logs/webhook-error.log',
+      out_file: './logs/webhook-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      time: true,
+    },
   ],
 
   // Deployment configuration

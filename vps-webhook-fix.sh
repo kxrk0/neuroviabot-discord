@@ -11,15 +11,15 @@ echo "📥 Git pull yapılıyor..."
 git pull origin main
 
 echo ""
-echo "🔐 WEBHOOK_SECRET kontrol ediliyor..."
+echo "🔐 SESSION_SECRET kontrol ediliyor..."
 
-# .env dosyasında WEBHOOK_SECRET var mı kontrol et
-if grep -q "WEBHOOK_SECRET=" .env 2>/dev/null; then
-    echo "✅ WEBHOOK_SECRET zaten mevcut"
+# .env dosyasında SESSION_SECRET var mı kontrol et
+if grep -q "SESSION_SECRET=" .env 2>/dev/null; then
+    echo "✅ SESSION_SECRET zaten mevcut"
 else
-    echo "⚠️ WEBHOOK_SECRET bulunamadı, ekleniyor..."
-    echo "WEBHOOK_SECRET=fdd863a42064ec909542df57b48d3f160d6f6ccc36ce8e31c303d480e1f03186" >> .env
-    echo "✅ WEBHOOK_SECRET eklendi"
+    echo "⚠️ SESSION_SECRET bulunamadı, ekleniyor..."
+    echo "SESSION_SECRET=fdd863a42064ec909542df57b48d3f160d6f6ccc36ce8e31c303d480e1f03186" >> .env
+    echo "✅ SESSION_SECRET eklendi"
 fi
 
 echo ""
