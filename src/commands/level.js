@@ -105,9 +105,11 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         // Leveling sistemi kontrolü
-        // Config cache'ini temizle ve yeniden yükle
-        const configSync = require('../utils/configSync');
-        if (!configSync.isFeatureEnabled('leveling')) {
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
+        const settings = db.getGuildSettings(interaction.guild.id);
+        
+        if (!settings.leveling?.enabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Seviye Sistemi Kapalı')

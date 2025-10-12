@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { logger } = require('../utils/logger');
-const configSync = require('../utils/configSync');
 
 // Client'ı global olarak sakla
 let client = null;

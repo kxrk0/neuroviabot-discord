@@ -95,8 +95,11 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         // Ekonomi sistemi kontrolü
-        const configSync = require('../utils/configSync');
-        if (!configSync.isFeatureEnabled('economy')) {
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
+        const settings = db.getGuildSettings(interaction.guild.id);
+        
+        if (!settings.economy?.enabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Ekonomi Sistemi Kapalı')

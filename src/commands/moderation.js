@@ -205,9 +205,11 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         // Moderasyon sistemi kontrolü
-        // Config cache'ini temizle ve yeniden yükle
-        const configSync = require('../utils/configSync');
-        if (!configSync.isFeatureEnabled('moderation')) {
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
+        const settings = db.getGuildSettings(interaction.guild.id);
+        
+        if (!settings.moderation?.enabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Moderasyon Sistemi Kapalı')

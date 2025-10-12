@@ -1,5 +1,4 @@
 const { logger } = require('./logger');
-const configSync = require('./configSync');
 
 class WebCommandHandler {
     constructor(client) {

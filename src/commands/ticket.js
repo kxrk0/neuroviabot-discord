@@ -95,8 +95,10 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         // Ticket sistemi kontrolü
-        const configSync = require('../utils/configSync');
-        const isEnabled = configSync.isFeatureEnabled('tickets');
+        const { getDatabase } = require('../database/simple-db');
+        const db = getDatabase();
+        const settings = db.getGuildSettings(interaction.guild.id);
+        const isEnabled = settings.tickets?.enabled || false;
         
         
         if (!isEnabled) {
