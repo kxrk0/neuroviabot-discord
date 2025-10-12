@@ -101,6 +101,8 @@ const neuroCoinRoutes = require('./routes/neurocoin');
 const questsRoutes = require('./routes/quests');
 const levelingRoutes = require('./routes/leveling');
 const premiumRoutes = require('./routes/premium');
+const reactionRolesRoutes = require('./routes/reaction-roles');
+const auditLogRoutes = require('./routes/audit-log');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
@@ -114,6 +116,8 @@ app.use('/api/neurocoin', neuroCoinRoutes);
 app.use('/api/quests', questsRoutes);
 app.use('/api/leveling', levelingRoutes);
 app.use('/api/premium', premiumRoutes);
+app.use('/api/reaction-roles', reactionRolesRoutes);
+app.use('/api/audit', auditLogRoutes);
 
 // Bot API proxy routes
 app.use('/api/bot', require('./routes/bot-proxy'));
