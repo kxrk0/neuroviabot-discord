@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: 📥 Pull Latest Frontend Code
         uses: appleboy/ssh-action@v1.0.3
+        continue-on-error: true
+        id: pull_code_attempt1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
@@ -31,6 +33,25 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             echo "✅ Frontend code updated"
+            echo ""
+
+      - name: 📥 Pull Latest Frontend Code (Retry)
+        if: steps.pull_code_attempt1.outcome == 'failure'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔄 FRONTEND: Retrying Pull (Attempt 2)"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot
+            git fetch origin main
+            git reset --hard origin/main
+            echo "✅ Frontend code updated (retry successful)"
             echo ""
 
       - name: 🗑️ Clean Frontend Build
