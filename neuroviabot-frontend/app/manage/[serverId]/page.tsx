@@ -31,6 +31,7 @@ import SecuritySettings from '../../../components/dashboard/SecuritySettings';
 import AnalyticsSettings from '../../../components/dashboard/AnalyticsSettings';
 import AutomationSettings from '../../../components/dashboard/AutomationSettings';
 import RoleReactionSettings from '../../../components/dashboard/RoleReactionSettings';
+import PremiumSettings from '../../../components/dashboard/PremiumSettings';
 import ServerOverview from '../../../components/dashboard/ServerOverview';
 import MemberManagement from '../../../components/dashboard/MemberManagement';
 import RoleEditor from '../../../components/dashboard/RoleEditor';
@@ -105,20 +106,12 @@ const categories = [
     ]
   },
   {
-    id: 'roles',
+    id: 'reaction-roles',
     name: 'Tepki Rolleri',
     description: 'Üyelerin tepki vererek rol almasını sağlayın',
     icon: UserGroupIcon,
     color: 'from-purple-500 to-pink-500',
-    premium: true,
-    features: [
-      {
-        id: 'reactionRoles',
-        name: 'Tepki Rolleri',
-        description: 'Mesajlara tepki vererek rol kazanma sistemi',
-        settings: ['messageId', 'roles']
-      },
-    ]
+    premium: false, // Changed to false for now
   },
   {
     id: 'moderation',
@@ -262,34 +255,6 @@ const categories = [
       },
     ]
   },
-  {
-    id: 'features',
-    name: 'Özellik Yönetimi',
-    description: 'Bot özelliklerini açın/kapatın ve dil ayarlarını yapın',
-    icon: Cog6ToothIcon,
-    color: 'from-emerald-500 to-teal-500',
-    premium: false,
-    features: [
-      {
-        id: 'featureToggle',
-        name: 'Özellik Kontrolü',
-        description: 'Bot özelliklerini tek tıkla yönetin',
-        settings: ['tickets', 'economy', 'moderation', 'leveling', 'giveaways', 'music', 'games', 'security']
-      },
-      {
-        id: 'languageSettings',
-        name: 'Dil Ayarları',
-        description: 'Bot mesajları için dil seçin ve özelleştirin',
-        settings: ['language', 'customMessages', 'translations']
-      },
-      {
-        id: 'prefixSettings',
-        name: 'Komut Öneki',
-        description: 'Bot komutları için önek belirleyin',
-        settings: ['prefix', 'customPrefix']
-      },
-    ]
-  },
 ];
 
 export default function ServerDashboard() {
@@ -302,7 +267,7 @@ export default function ServerDashboard() {
   const [guild, setGuild] = useState<any>(null);
   const [guilds, setGuilds] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({});
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true); // Only for initial page load
   const [user, setUser] = useState<any>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [guildMenuOpen, setGuildMenuOpen] = useState(false);
@@ -341,21 +306,23 @@ export default function ServerDashboard() {
   });
 
   useEffect(() => {
-    fetchUser();
-    fetchUserGuilds();
-    fetchNotifications();
-    if (serverId) {
-      fetchGuildData();
-      fetchGuildSettings();
-    }
-  }, [serverId, activeCategory]);
+    // Initial data load
+    const loadInitialData = async () => {
+      setInitialLoading(true);
+      await Promise.all([
+        fetchUser(),
+        fetchUserGuilds(),
+        fetchNotifications(),
+        serverId ? fetchGuildData() : Promise.resolve(),
+        serverId ? fetchGuildSettings() : Promise.resolve(),
+      ]);
+      setInitialLoading(false);
+    };
+    
+    loadInitialData();
+  }, [serverId]);
 
-  // Kategori değişikliğinde ayarları yeniden yükle
-  useEffect(() => {
-    if (serverId && activeCategory) {
-      fetchGuildSettings();
-    }
-  }, [activeCategory]);
+  // NO LOADING on category change - instant switch
 
   // ESC tuşu ile dropdown kapatma
   useEffect(() => {
@@ -441,7 +408,7 @@ export default function ServerDashboard() {
 
   const fetchGuildSettings = async () => {
     try {
-      setLoading(true);
+      // NO setLoading here - only initial load shows loading
       const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       
       // Önce bot API'den ayarları al
@@ -469,9 +436,8 @@ export default function ServerDashboard() {
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
-    } finally {
-      setLoading(false);
     }
+    // NO finally setLoading - only initial load controls loading state
   };
 
   const toggleFeature = async (category: string, featureId: string, currentValue: boolean) => {
@@ -594,7 +560,7 @@ export default function ServerDashboard() {
     }
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
         {/* Animated Background */}
@@ -1008,10 +974,21 @@ export default function ServerDashboard() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeCategory}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ 
+                opacity: 1, 
+                x: 0,
+                transition: { 
+                  duration: 0.15, 
+                  ease: [0.4, 0, 0.2, 1] // Cubic bezier for smooth easing
+                }
+              }}
+              exit={{ 
+                opacity: 0, 
+                x: 20,
+                transition: { duration: 0.1 }
+              }}
+              style={{ willChange: 'transform, opacity' }} // Hardware acceleration
             >
               {/* Category Header */}
               <div className="mb-8">
@@ -1071,6 +1048,13 @@ export default function ServerDashboard() {
 
                 {activeCategory === 'audit' && (
                   <AuditLog 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
+                {activeCategory === 'reaction-roles' && (
+                  <RoleReactionSettings 
                     guildId={serverId} 
                     userId={user?.id || 'unknown'} 
                   />
@@ -1158,9 +1142,16 @@ export default function ServerDashboard() {
                     userId={user?.id || 'unknown'} 
                   />
                 )}
+
+                {activeCategory === 'premium' && (
+                  <PremiumSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
                 
                 {/* Other Features */}
-                {activeCategory !== 'overview' && activeCategory !== 'members' && activeCategory !== 'channels' && activeCategory !== 'audit' && activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features?.map((feature) => {
+                {activeCategory !== 'overview' && activeCategory !== 'members' && activeCategory !== 'channels' && activeCategory !== 'audit' && activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'reaction-roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features?.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',

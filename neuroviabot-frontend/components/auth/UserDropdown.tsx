@@ -58,7 +58,7 @@ export default function UserDropdown() {
   }
 
   const avatarUrl = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar.startsWith('a_') ? 'gif' : 'png'}?size=128`
     : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`;
 
   const displayTag = user.discriminator && user.discriminator !== '0' 
@@ -76,7 +76,10 @@ export default function UserDropdown() {
         <img
           src={avatarUrl}
           alt={user.username}
-          className="w-7 h-7 rounded-full"
+          className="w-7 h-7 rounded-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`;
+          }}
         />
         <span className="hidden md:block text-white text-sm font-medium">
           {user.username}
