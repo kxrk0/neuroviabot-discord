@@ -1,0 +1,89 @@
+# ==========================================
+# 🚨 VPS'DE MANUEL OLARAK ÇALIŞTIRIN
+# ==========================================
+# Her satırı TEK TEK kopyalayıp SSH'de çalıştırın
+
+# 1. Repo dizinine git
+cd /root/neuroviabot/bot
+
+# 2. Mevcut .env'i kontrol et
+cat .env
+
+# 3. SESSION_SECRET'ı sil (varsa eski/yanlış değer)
+sed -i '/SESSION_SECRET/d' .env
+
+# 4. SESSION_SECRET ekle (DOĞRU DEĞER)
+echo 'SESSION_SECRET=fdd863a42064ec909542df57b48d3f160d6f6ccc36ce8e31c303d480e1f03186' >> .env
+
+# 5. .env'i tekrar kontrol et (SESSION_SECRET olmalı)
+cat .env | grep SESSION_SECRET
+
+# 6. PM2'yi TAMAMEN DURUR (önemli!)
+pm2 kill
+
+# 7. 2 saniye bekle
+sleep 2
+
+# 8. PM2 Ecosystem ile başlat
+pm2 start PM2-ECOSYSTEM.config.js
+
+# 9. PM2'yi kaydet
+pm2 save
+
+# 10. PM2 durumunu kontrol et (4 servis online olmalı)
+pm2 status
+
+# 11. Webhook loglarını kontrol et
+pm2 logs webhook-deploy --lines 20
+
+# ==========================================
+# 🎯 BAŞARILI ÇIKTI ŞU ŞEKİLDE OLMALI:
+# ==========================================
+# [START] 🎯 Webhook server listening on port 9000
+# [START] 🔐 Webhook secret configured
+# [START] 📁 Repository path: /root/neuroviabot/bot
+# [START] ✅ Ready to receive webhooks!
+
+# ==========================================
+# ⚠️ HALA SESSION_SECRET HATASI ALIYORSANIZ:
+# ==========================================
+
+# .env dosyasının varlığını kesin olarak kontrol et
+ls -la /root/neuroviabot/bot/.env
+
+# .env dosyasını doğrudan düzenle
+nano /root/neuroviabot/bot/.env
+
+# Aşağıdaki satırı ekleyin (başka bir SESSION_SECRET satırı varsa silin):
+# SESSION_SECRET=fdd863a42064ec909542df57b48d3f160d6f6ccc36ce8e31c303d480e1f03186
+
+# Kaydet: Ctrl+O, Enter, Ctrl+X
+
+# PM2'yi tekrar kill + start yapın
+pm2 kill
+pm2 start PM2-ECOSYSTEM.config.js
+pm2 save
+
+# ==========================================
+# 🐛 MODULE_NOT_FOUND HATASI İÇİN:
+# ==========================================
+
+# Bot dizininde npm install
+cd /root/neuroviabot/bot
+npm install
+
+# Backend'de npm install
+cd /root/neuroviabot/bot/neuroviabot-backend
+npm install
+
+# Frontend'de npm install ve build
+cd /root/neuroviabot/bot/neuroviabot-frontend
+npm install
+npm run build
+
+# Ana dizine dön
+cd /root/neuroviabot/bot
+
+# PM2'yi yeniden başlat
+pm2 restart all
+

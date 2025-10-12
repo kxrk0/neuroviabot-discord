@@ -5,6 +5,9 @@
  * VPS'te çalışır, GitHub'dan webhook alır ve otomatik deploy yapar
  */
 
+// .env dosyasını yükle
+require('dotenv').config();
+
 const express = require('express');
 const crypto = require('crypto');
 const { exec } = require('child_process');
