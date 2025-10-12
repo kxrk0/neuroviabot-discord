@@ -598,6 +598,10 @@ let activityRewardHandler = null;
 const QuestProgressHandler = require('./src/handlers/questProgressHandler');
 let questProgressHandler = null;
 
+// Achievement Handler
+const AchievementHandler = require('./src/handlers/achievementHandler');
+let achievementHandler = null;
+
 // HTTP API Server for web interface
 const express = require('express');
 const { router: webApiRouter, setClient: setWebApiClient } = require('./src/routes/webApi');
@@ -629,6 +633,10 @@ client.once('clientReady', () => {
     // Quest Progress Handler'ı başlat
     questProgressHandler = new QuestProgressHandler(client);
     log('🗺️ Quest Progress Handler initialized', 'SUCCESS');
+    
+    // Achievement Handler'ı başlat
+    achievementHandler = new AchievementHandler(client);
+    log('🏆 Achievement Handler initialized', 'SUCCESS');
     
     log(`🌐 Client web API'ye bağlandı`, 'SUCCESS');
 });

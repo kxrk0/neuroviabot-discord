@@ -27,6 +27,7 @@ class SimpleDatabase {
             serverMarketConfig: new Map(), // New: guildId -> market settings
             activityRewards: new Map(), // New: userId -> last reward timestamp
             userProfiles: new Map(), // New: userId -> profile data (bio, color, badges)
+            userStats: new Map(), // New: userId -> stats (messages, voiceTime, gameWins, winStreak)
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),
