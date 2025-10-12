@@ -52,8 +52,23 @@ export default function Home() {
             commands: data.commands || stats.commands
           };
           
+          // İlk yüklemede animasyon göster
+          const hasChanged = {
+            guilds: finalStats.guilds !== stats.guilds,
+            users: finalStats.users !== stats.users,
+            commands: finalStats.commands !== stats.commands
+          };
+          
           console.log('💾 Setting stats to:', finalStats);
           setStats(finalStats);
+          
+          // İlk yüklemede animasyon
+          if (hasChanged.guilds || hasChanged.users || hasChanged.commands) {
+            setStatsUpdating(hasChanged);
+            setTimeout(() => {
+              setStatsUpdating({ guilds: false, users: false, commands: false });
+            }, 1000);
+          }
         } else {
           console.log('⚠️ Waiting for real-time stats via Socket.IO...');
         }

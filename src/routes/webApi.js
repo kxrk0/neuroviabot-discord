@@ -50,6 +50,41 @@ router.get('/stats', authenticateBotApi, async (req, res) => {
     }
 });
 
+// Test endpoint - Stats broadcast'i tetikle (geliştirme için)
+router.post('/test-broadcast', authenticateBotApi, async (req, res) => {
+    try {
+        if (!client || !client.socket || !client.statsCache) {
+            return res.status(503).json({ error: 'Bot veya socket bağlantısı hazır değil' });
+        }
+        
+        const currentStats = client.statsCache.getStats();
+        logger.info(`🧪 Test broadcast triggered: ${currentStats.users.toLocaleString()} users, ${currentStats.guilds} guilds`);
+        
+        // Global broadcast - tüm frontend client'lara gönder
+        client.socket.emit('broadcast_global', {
+            event: 'bot_stats_update',
+            data: {
+                guilds: currentStats.guilds,
+                users: currentStats.users,
+                commands: currentStats.commands,
+                uptime: currentStats.uptime,
+                ping: currentStats.ping,
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+        res.json({
+            success: true,
+            message: 'Stats broadcast sent to all clients',
+            stats: currentStats
+        });
+        
+    } catch (error) {
+        logger.error('Test broadcast hatası:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Komut çalıştırma endpoint'i
 router.post('/execute-command', authenticateBotApi, async (req, res) => {
     try {
