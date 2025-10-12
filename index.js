@@ -602,6 +602,10 @@ let questProgressHandler = null;
 const AchievementHandler = require('./src/handlers/achievementHandler');
 let achievementHandler = null;
 
+// Reaction Role Handler
+const ReactionRoleHandler = require('./src/handlers/reactionRoleHandler');
+let reactionRoleHandler = null;
+
 // Monitoring Service
 const { getMonitoringService } = require('./src/utils/monitoring');
 let monitoring = null;
@@ -612,6 +616,7 @@ const { router: webApiRouter, setClient: setWebApiClient } = require('./src/rout
 const { router: guildManagementRouter, setClient: setGuildManagementClient } = require('./src/routes/guild-management');
 const { router: marketplaceRouter } = require('./src/routes/marketplace');
 const { router: levelingRouter, setClient: setLevelingClient } = require('./src/routes/leveling');
+const { router: botStatsRouter, setClient: setBotStatsClient } = require('./src/routes/bot-stats');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -619,6 +624,7 @@ apiApp.use('/api/bot', webApiRouter);
 apiApp.use('/api/bot/guilds', guildManagementRouter);
 apiApp.use('/api/bot/marketplace', marketplaceRouter);
 apiApp.use('/api/bot/leveling', levelingRouter);
+apiApp.use('/api/bot/stats', botStatsRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
@@ -632,6 +638,7 @@ client.once('clientReady', () => {
     setWebApiClient(client);
     setGuildManagementClient(client);
     setLevelingClient(client);
+    setBotStatsClient(client);
     
     // Activity Reward Handler'ı başlat
     activityRewardHandler = new ActivityRewardHandler(client);
@@ -644,6 +651,10 @@ client.once('clientReady', () => {
     // Achievement Handler'ı başlat
     achievementHandler = new AchievementHandler(client);
     log('🏆 Achievement Handler initialized', 'SUCCESS');
+    
+    // Reaction Role Handler'ı başlat
+    reactionRoleHandler = new ReactionRoleHandler(client);
+    log('⚡ Reaction Role Handler initialized', 'SUCCESS');
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();
