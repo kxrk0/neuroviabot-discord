@@ -1,66 +1,56 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 
-// Get bot stats
+// Bot sunucusu API URL'i
+const BOT_API_URL = process.env.BOT_API_URL || 'http://localhost:3002';
+
+// Get bot stats - Bot sunucusundan direkt çek
 router.get('/stats', async (req, res) => {
   try {
-    const db = req.app.get('db');
-    const io = req.app.get('io');
+    console.log('[Backend API] Fetching stats from bot server:', `${BOT_API_URL}/api/bot/stats`);
     
-    // Get guild data from shared database
-    const guilds = Array.from(db.data.guilds.values());
-    const guildIds = Array.from(db.data.guilds.keys());
-    
-    // Calculate total users from database
-    let totalUsers = 0;
-    guilds.forEach((guild) => {
-      if (guild.memberCount) {
-        totalUsers += guild.memberCount;
+    // Bot sunucusundan direkt stats çek
+    const response = await axios.get(`${BOT_API_URL}/api/bot/stats`, {
+      timeout: 3000,
+      headers: {
+        'Authorization': `Bearer ${process.env.BOT_API_KEY || 'neuroviabot-secret'}`
       }
-    }); 
-    
-    // Try to get real-time stats from bot via Socket.IO
-    let commandCount = 29; // Fallback value
-    let realTimeUsers = totalUsers;
-    
-    try {
-      // Ask bot for real-time stats
-      const botStats = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Timeout')), 2000);
-        
-        io.emit('get_bot_stats', {}, (response) => {
-          clearTimeout(timeout);
-          if (response && response.success) {
-            resolve(response.data);
-          } else {
-            reject(new Error('No response from bot'));
-          }
-        });
-      });
-      
-      if (botStats) {
-        commandCount = botStats.commands || commandCount;
-        realTimeUsers = botStats.users || realTimeUsers;
-        console.log('[Backend API] Real-time stats from bot - Commands:', commandCount, 'Users:', realTimeUsers);
-      }
-    } catch (socketError) {
-      console.log('[Backend API] Using database stats (bot not connected via socket)');
-    }
-    
-    console.log('[Backend API] Final stats - Guilds:', guilds.length, 'Users:', realTimeUsers, 'Commands:', commandCount);
-    
-    res.json({
-      guilds: guilds.length,
-      users: realTimeUsers,
-      commands: commandCount,
-      uptime: process.uptime() * 1000, // Process uptime in milliseconds
-      ping: 0, // Not available without bot client
-      memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
-      guildIds: guildIds,
     });
+    
+    console.log('[Backend API] Stats received from bot server:', response.data);
+    res.json(response.data);
+    
   } catch (error) {
-    console.error('[Backend API] Error fetching bot stats:', error);
-    res.status(500).json({ error: 'Failed to fetch bot stats' });
+    console.error('[Backend API] Error fetching from bot server:', error.message);
+    
+    // Fallback: Database'den stats al
+    try {
+      const db = req.app.get('db');
+      const guilds = Array.from(db.data.guilds.values());
+      
+      let totalUsers = 0;
+      guilds.forEach((guild) => {
+        if (guild.memberCount) {
+          totalUsers += guild.memberCount;
+        }
+      }); 
+      
+      console.log('[Backend API] Using database fallback - Guilds:', guilds.length, 'Users:', totalUsers);
+      
+      res.json({
+        guilds: guilds.length,
+        users: totalUsers,
+        commands: 29,
+        uptime: process.uptime() * 1000,
+        ping: 0,
+        memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024,
+        source: 'database'
+      });
+    } catch (dbError) {
+      console.error('[Backend API] Database fallback failed:', dbError);
+      res.status(500).json({ error: 'Failed to fetch bot stats' });
+    }
   }
 });
 

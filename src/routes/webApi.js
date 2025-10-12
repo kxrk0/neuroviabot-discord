@@ -22,6 +22,34 @@ const authenticateBotApi = (req, res, next) => {
     next();
 };
 
+// Bot stats endpoint - Backend için
+router.get('/stats', authenticateBotApi, async (req, res) => {
+    try {
+        if (!client || !client.statsCache) {
+            return res.status(503).json({ error: 'Bot henüz hazır değil' });
+        }
+        
+        const stats = client.statsCache.getStats();
+        logger.info(`📊 Stats requested via API: ${stats.users.toLocaleString()} users, ${stats.guilds} guilds`);
+        
+        res.json({
+            guilds: stats.guilds,
+            users: stats.users,
+            commands: stats.commands,
+            uptime: stats.uptime,
+            ping: stats.ping,
+            status: stats.status,
+            timestamp: stats.lastUpdate,
+            memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
+            source: 'bot-server'
+        });
+        
+    } catch (error) {
+        logger.error('Stats endpoint hatası:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Komut çalıştırma endpoint'i
 router.post('/execute-command', authenticateBotApi, async (req, res) => {
     try {
