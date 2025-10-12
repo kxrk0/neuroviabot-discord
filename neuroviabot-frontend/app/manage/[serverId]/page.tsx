@@ -810,9 +810,14 @@ export default function ServerDashboard() {
         {/* Sidebar with smooth animations */}
         <motion.aside 
           initial={{ x: -300, opacity: 0 }}
-          animate={{ x: sidebarOpen || window.innerWidth >= 1024 ? 0 : -300, opacity: 1 }}
+          animate={{ 
+            x: 0,
+            opacity: 1 
+          }}
           transition={{ duration: 0.3, type: "spring", stiffness: 100 }}
-          className="fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 shadow-2xl z-40 flex flex-col"
+          className={`fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 shadow-2xl z-40 flex flex-col transition-transform duration-300 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
         >
           {/* Server Info with gradient */}
           <motion.div 
@@ -999,7 +1004,7 @@ export default function ServerDashboard() {
         </motion.aside>
 
         {/* Main Content */}
-        <main className="flex-1 ml-64 p-8">
+        <main className="flex-1 ml-0 lg:ml-72 p-4 lg:p-8 min-h-screen">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeCategory}
