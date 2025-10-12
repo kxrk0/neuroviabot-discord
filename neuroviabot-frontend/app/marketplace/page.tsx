@@ -14,6 +14,7 @@ import {
   ClockIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
+import CreateListingModal from '@/components/marketplace/CreateListingModal';
 
 interface MarketItem {
   id: string;
