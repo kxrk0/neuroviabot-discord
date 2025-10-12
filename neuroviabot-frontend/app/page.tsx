@@ -774,21 +774,21 @@ export default function Home() {
               delay: 0.35,
               ease: [0.22, 1, 0.36, 1]
             }}
-            className="flex flex-wrap gap-6 mb-8 justify-center lg:justify-start"
+            className="flex flex-wrap gap-4 mb-8 justify-center lg:justify-start"
             style={{ willChange: 'transform, opacity' }}
           >
             {[
-              { icon: '🎵', value: '43+', label: 'Komut', color: 'purple' },
-              { icon: '🏆', value: stats.guilds || '66', label: 'Sunucu', color: 'yellow' },
-              { icon: '👥', value: stats.users.toLocaleString(), label: 'Kullanıcı', color: 'blue' }
+              { icon: '🎵', value: `${stats.commands || 29}+`, label: 'Komut', gradient: 'from-purple-500/10 to-pink-500/10', border: 'border-purple-500/20' },
+              { icon: '🏆', value: stats.guilds || '72', label: 'Sunucu', gradient: 'from-amber-500/10 to-orange-500/10', border: 'border-amber-500/20' },
+              { icon: '👥', value: stats.users.toLocaleString(), label: 'Kullanıcı', gradient: 'from-blue-500/10 to-cyan-500/10', border: 'border-blue-500/20' }
             ].map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] }
+                  y: -2,
+                  transition: { duration: 0.2, ease: "easeOut" }
                 }}
                 transition={{ 
                   duration: 0.6, 
@@ -796,18 +796,12 @@ export default function Home() {
                   ease: [0.16, 1, 0.3, 1]
                 }}
                 style={{ willChange: 'transform, opacity' }}
-                className={`flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border transition-all duration-300 ${
-                  stat.color === 'purple' 
-                    ? 'border-purple-500/30 hover:border-purple-500/60 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]'
-                    : stat.color === 'yellow'
-                    ? 'border-yellow-500/30 hover:border-yellow-500/60 shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)]'
-                    : 'border-blue-500/30 hover:border-blue-500/60 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]'
-                }`}
+                className={`flex items-center gap-3 px-5 py-3 bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl border ${stat.border} transition-all duration-300 shadow-lg hover:shadow-xl`}
               >
-                <span className="text-2xl">{stat.icon}</span>
+                <span className="text-2xl filter drop-shadow-sm">{stat.icon}</span>
                 <div>
-                  <div className="text-lg font-bold text-white">{stat.value}</div>
-                  <div className="text-xs text-gray-400">{stat.label}</div>
+                  <div className="text-xl font-bold text-white leading-none mb-0.5">{stat.value}</div>
+                  <div className="text-xs font-medium text-gray-300 opacity-80 leading-none">{stat.label}</div>
                 </div>
               </motion.div>
             ))}

@@ -418,6 +418,39 @@ async function setupSocketIO(client) {
             log('❌ Backend bağlantısı kesildi', 'WARNING');
         });
 
+        // Real-time stats request from backend
+        socket.on('get_bot_stats', async (data, callback) => {
+            try {
+                const { getDatabase } = require('./src/database/simple-db');
+                const db = getDatabase();
+                
+                // Calculate real-time users
+                let totalUsers = 0;
+                client.guilds.cache.forEach(guild => {
+                    totalUsers += guild.memberCount || 0;
+                });
+                
+                const stats = {
+                    guilds: client.guilds.cache.size,
+                    users: totalUsers,
+                    commands: client.commands.size,
+                    uptime: client.uptime,
+                    ping: client.ws.ping
+                };
+                
+                log(`📊 Real-time stats sent: ${JSON.stringify(stats)}`, 'DEBUG');
+                
+                if (callback) {
+                    callback({ success: true, data: stats });
+                }
+            } catch (error) {
+                log(`Error sending stats: ${error.message}`, 'ERROR');
+                if (callback) {
+                    callback({ success: false, error: error.message });
+                }
+            }
+        });
+
         // Settings değişikliğini dinle
         socket.on('settings_changed', async (data) => {
             const { guildId, settings, category } = data;

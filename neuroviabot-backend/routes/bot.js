@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 
 // Get bot stats
-router.get('/stats', (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     const db = req.app.get('db');
+    const io = req.app.get('io');
     
     // Get guild data from shared database
     const guilds = Array.from(db.data.guilds.values());
@@ -18,13 +19,40 @@ router.get('/stats', (req, res) => {
       }
     }); 
     
-    console.log('[Backend API] Stats from database - Guilds:', guilds.length, 'Users:', totalUsers);
-    console.log('[Backend API] Guild IDs:', guildIds);
+    // Try to get real-time stats from bot via Socket.IO
+    let commandCount = 29; // Fallback value
+    let realTimeUsers = totalUsers;
+    
+    try {
+      // Ask bot for real-time stats
+      const botStats = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Timeout')), 2000);
+        
+        io.emit('get_bot_stats', {}, (response) => {
+          clearTimeout(timeout);
+          if (response && response.success) {
+            resolve(response.data);
+          } else {
+            reject(new Error('No response from bot'));
+          }
+        });
+      });
+      
+      if (botStats) {
+        commandCount = botStats.commands || commandCount;
+        realTimeUsers = botStats.users || realTimeUsers;
+        console.log('[Backend API] Real-time stats from bot - Commands:', commandCount, 'Users:', realTimeUsers);
+      }
+    } catch (socketError) {
+      console.log('[Backend API] Using database stats (bot not connected via socket)');
+    }
+    
+    console.log('[Backend API] Final stats - Guilds:', guilds.length, 'Users:', realTimeUsers, 'Commands:', commandCount);
     
     res.json({
       guilds: guilds.length,
-      users: totalUsers,
-      commands: 43,
+      users: realTimeUsers,
+      commands: commandCount,
       uptime: process.uptime() * 1000, // Process uptime in milliseconds
       ping: 0, // Not available without bot client
       memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
