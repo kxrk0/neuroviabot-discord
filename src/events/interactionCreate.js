@@ -107,14 +107,25 @@ module.exports = {
             const endTime = Date.now();
             const executionTime = endTime - startTime;
 
-            // Analytics tracking
-            client.analytics.trackCommand(
-                interaction.commandName,
-                interaction.user.id,
-                interaction.guild?.id || 'DM',
-                executionTime,
-                true
-            );
+            // Analytics tracking (new handler)
+            if (client.analyticsHandler && interaction.guild) {
+                client.analyticsHandler.trackCommand(
+                    interaction.guild.id,
+                    interaction.commandName,
+                    interaction.user.id
+                );
+            }
+
+            // Legacy analytics tracking
+            if (client.analytics) {
+                client.analytics.trackCommand(
+                    interaction.commandName,
+                    interaction.user.id,
+                    interaction.guild?.id || 'DM',
+                    executionTime,
+                    true
+                );
+            }
 
             // Başarılı komut logu
             logger.commandUsage(

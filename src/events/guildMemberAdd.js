@@ -29,6 +29,11 @@ module.exports = {
             // Database'e kaydetme (eğer veritabanı aktifse)
             await saveToDatabase(member);
 
+            // Analytics tracking
+            if (client.analyticsHandler) {
+                client.analyticsHandler.trackMemberJoin(guild.id);
+            }
+
         } catch (error) {
             logger.error('guildMemberAdd event hatası', error, {
                 guild: member.guild.name,

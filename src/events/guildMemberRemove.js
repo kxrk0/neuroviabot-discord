@@ -26,6 +26,11 @@ module.exports = {
             // Database'den temizleme/güncelleme
             await updateDatabase(member);
 
+            // Analytics tracking
+            if (client.analyticsHandler) {
+                client.analyticsHandler.trackMemberLeave(guild.id);
+            }
+
         } catch (error) {
             logger.error('guildMemberRemove event hatası', error, {
                 guild: member.guild.name,
