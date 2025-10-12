@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { logger } = require('../utils/logger');
+const { getAuditLogger } = require('../utils/auditLogger');
 
 // Client'ı global olarak sakla
 let client = null;
@@ -329,6 +330,17 @@ router.post('/:guildId/roles', authenticateBotApi, async (req, res) => {
             mentionable: mentionable || false,
         });
 
+        // Audit log
+        const auditLogger = getAuditLogger();
+        auditLogger.log({
+            guildId,
+            action: 'ROLE_CREATE',
+            executor: { id: executor },
+            target: { id: role.id, name: role.name, type: 'role' },
+            changes: { color, permissions, hoist, mentionable },
+            reason: 'Created via dashboard',
+        });
+
         // Broadcast to frontend
         if (client.socket && client.socket.connected) {
             client.socket.emit('broadcast_to_guild', {
@@ -368,12 +380,30 @@ router.patch('/:guildId/roles/:roleId', authenticateBotApi, async (req, res) => 
             return res.status(404).json({ error: 'Role not found' });
         }
 
+        const oldData = {
+            name: role.name,
+            color: role.color,
+            hoist: role.hoist,
+            mentionable: role.mentionable,
+        };
+
         await role.edit({
             name: name || role.name,
             color: color !== undefined ? color : role.color,
             permissions: permissions || role.permissions,
             hoist: hoist !== undefined ? hoist : role.hoist,
             mentionable: mentionable !== undefined ? mentionable : role.mentionable,
+        });
+
+        // Audit log
+        const auditLogger = getAuditLogger();
+        auditLogger.log({
+            guildId,
+            action: 'ROLE_UPDATE',
+            executor: { id: executor },
+            target: { id: role.id, name: role.name, type: 'role' },
+            changes: { old: oldData, new: { name, color, hoist, mentionable } },
+            reason: 'Updated via dashboard',
         });
 
         // Broadcast to frontend
@@ -417,6 +447,16 @@ router.delete('/:guildId/roles/:roleId', authenticateBotApi, async (req, res) =>
 
         const roleName = role.name;
         await role.delete();
+
+        // Audit log
+        const auditLogger = getAuditLogger();
+        auditLogger.log({
+            guildId,
+            action: 'ROLE_DELETE',
+            executor: { id: executor },
+            target: { id: roleId, name: roleName, type: 'role' },
+            reason: 'Deleted via dashboard',
+        });
 
         // Broadcast to frontend
         if (client.socket && client.socket.connected) {
@@ -490,6 +530,17 @@ router.post('/:guildId/channels', authenticateBotApi, async (req, res) => {
             parent: parent || null,
         });
 
+        // Audit log
+        const auditLogger = getAuditLogger();
+        auditLogger.log({
+            guildId,
+            action: 'CHANNEL_CREATE',
+            executor: { id: executor },
+            target: { id: channel.id, name: channel.name, type: 'channel' },
+            changes: { type, topic, nsfw, parent },
+            reason: 'Created via dashboard',
+        });
+
         // Broadcast to frontend
         if (client.socket && client.socket.connected) {
             client.socket.emit('broadcast_to_guild', {
@@ -529,10 +580,27 @@ router.patch('/:guildId/channels/:channelId', authenticateBotApi, async (req, re
             return res.status(404).json({ error: 'Channel not found' });
         }
 
+        const oldData = {
+            name: channel.name,
+            topic: channel.topic,
+            nsfw: channel.nsfw,
+        };
+
         await channel.edit({
             name: name || channel.name,
             topic: topic !== undefined ? topic : channel.topic,
             nsfw: nsfw !== undefined ? nsfw : channel.nsfw,
+        });
+
+        // Audit log
+        const auditLogger = getAuditLogger();
+        auditLogger.log({
+            guildId,
+            action: 'CHANNEL_UPDATE',
+            executor: { id: executor },
+            target: { id: channel.id, name: channel.name, type: 'channel' },
+            changes: { old: oldData, new: { name, topic, nsfw } },
+            reason: 'Updated via dashboard',
         });
 
         // Broadcast to frontend
@@ -577,6 +645,16 @@ router.delete('/:guildId/channels/:channelId', authenticateBotApi, async (req, r
         const channelName = channel.name;
         await channel.delete();
 
+        // Audit log
+        const auditLogger = getAuditLogger();
+        auditLogger.log({
+            guildId,
+            action: 'CHANNEL_DELETE',
+            executor: { id: executor },
+            target: { id: channelId, name: channelName, type: 'channel' },
+            reason: 'Deleted via dashboard',
+        });
+
         // Broadcast to frontend
         if (client.socket && client.socket.connected) {
             client.socket.emit('broadcast_to_guild', {
@@ -602,37 +680,65 @@ router.delete('/:guildId/channels/:channelId', authenticateBotApi, async (req, r
 
 // === AUDIT LOGS ===
 
-// Get audit logs
+// Get audit logs (merged: Discord + Custom)
 router.get('/:guildId/audit-logs', authenticateBotApi, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { limit = 25 } = req.query;
+        const { page, limit, actionType, userId, startDate, endDate } = req.query;
 
         const guild = client.guilds.cache.get(guildId);
         if (!guild) {
             return res.status(404).json({ error: 'Guild not found' });
         }
 
-        const auditLogs = await guild.fetchAuditLogs({ limit: parseInt(limit) });
-        const logs = Array.from(auditLogs.entries.values()).map(entry => ({
-            id: entry.id,
-            action: entry.action,
-            actionType: entry.actionType,
-            executor: {
-                id: entry.executor.id,
-                username: entry.executor.username,
-                avatar: entry.executor.avatar,
-            },
-            target: entry.target ? {
-                id: entry.target.id,
-                name: entry.target.name || entry.target.username || 'Unknown',
-            } : null,
-            reason: entry.reason || null,
-            createdAt: entry.createdAt,
-        }));
+        // Get custom audit logs from database
+        const auditLogger = getAuditLogger();
+        const customLogs = auditLogger.getLogs(guildId, {
+            page,
+            limit,
+            action: actionType,
+            userId,
+            startDate,
+            endDate,
+        });
 
-        res.json({ logs, total: logs.length });
-        logger.debug(`[Bot API] Fetched ${logs.length} audit logs for guild ${guildId}`);
+        // Get Discord audit logs
+        let discordLogs = [];
+        try {
+            const auditLogs = await guild.fetchAuditLogs({ limit: 50 });
+            discordLogs = Array.from(auditLogs.entries.values()).map(entry => ({
+                id: entry.id,
+                action: `DISCORD_${entry.action}`,
+                actionType: entry.actionType,
+                executor: {
+                    id: entry.executor.id,
+                    username: entry.executor.username,
+                    avatar: entry.executor.avatar,
+                },
+                target: entry.target ? {
+                    id: entry.target.id,
+                    name: entry.target.name || entry.target.username || 'Unknown',
+                } : null,
+                reason: entry.reason || null,
+                timestamp: entry.createdAt.toISOString(),
+            }));
+        } catch (err) {
+            logger.warn('[Bot API] Could not fetch Discord audit logs:', err.message);
+        }
+
+        // Merge and sort by timestamp
+        const allLogs = [...customLogs.logs, ...discordLogs]
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, parseInt(limit) || 25);
+
+        res.json({
+            logs: allLogs,
+            total: customLogs.total + discordLogs.length,
+            page: customLogs.page,
+            totalPages: customLogs.totalPages,
+        });
+
+        logger.debug(`[Bot API] Fetched ${allLogs.length} audit logs for guild ${guildId}`);
     } catch (error) {
         logger.error('[Bot API] Error fetching audit logs:', error);
         res.status(500).json({ error: error.message });
