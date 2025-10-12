@@ -28,24 +28,18 @@ router.get('/:guildId/settings', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
-    // Mock general settings data
-    const settings = {
-      guildId,
-      lastUpdated: new Date().toISOString(),
-      features: {
-        welcome: false,
-        leveling: false,
-        moderation: false,
-        economy: false,
-        backup: false,
-        security: false,
-        analytics: false,
-        automation: false,
-        roleReactions: false
-      }
-    };
+    // Get actual settings from database
+    const db = req.app.get('db');
+    const settings = db.getGuildSettings(guildId);
 
-    res.json({ success: true, settings });
+    res.json({ 
+      success: true, 
+      settings: {
+        guildId,
+        lastUpdated: new Date().toISOString(),
+        features: settings.features || {}
+      }
+    });
   } catch (error) {
     console.error('Error fetching general settings:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch general settings' });
@@ -57,16 +51,20 @@ router.get('/:guildId/settings/welcome', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
-    // Mock data for now - replace with actual database query
+    // Get actual settings from database
+    const db = req.app.get('db');
+    const guildSettings = db.getGuildSettings(guildId);
+    
     const settings = {
-      enabled: false,
-      channelId: '',
-      message: 'Hoş geldin {user}! Sunucumuza katıldığın için teşekkürler!',
-      embed: true,
-      imageUrl: '',
-      leaveEnabled: false,
-      leaveChannelId: '',
-      leaveMessage: '{user} sunucumuzdan ayrıldı. Görüşmek üzere!',
+      enabled: guildSettings.welcome?.enabled || false,
+      channelId: guildSettings.welcome?.channelId || '',
+      message: guildSettings.welcome?.message || 'Hoş geldin {user}! Sunucumuza katıldığın için teşekkürler!',
+      embed: guildSettings.welcome?.embedEnabled || true,
+      embedColor: guildSettings.welcome?.embedColor || '#5865F2',
+      imageUrl: guildSettings.welcome?.imageUrl || '',
+      leaveEnabled: guildSettings.leave?.enabled || false,
+      leaveChannelId: guildSettings.leave?.channelId || '',
+      leaveMessage: guildSettings.leave?.message || '{user} sunucumuzdan ayrıldı. Görüşmek üzere!',
     };
 
     res.json({ success: true, settings });
@@ -81,8 +79,33 @@ router.post('/:guildId/settings/welcome', requireAuth, async (req, res) => {
     const { guildId } = req.params;
     const settings = req.body;
     
-    // Mock save - replace with actual database save
-    // Settings saved (reduced logging)
+    // Save to database
+    const db = req.app.get('db');
+    db.updateGuildSettingsCategory(guildId, 'welcome', {
+      enabled: settings.enabled,
+      channelId: settings.channelId,
+      message: settings.message,
+      embedEnabled: settings.embed,
+      embedColor: settings.embedColor,
+      imageUrl: settings.imageUrl
+    });
+    
+    db.updateGuildSettingsCategory(guildId, 'leave', {
+      enabled: settings.leaveEnabled,
+      channelId: settings.leaveChannelId,
+      message: settings.leaveMessage
+    });
+
+    // Broadcast settings change via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`guild_${guildId}`).emit('settings_changed', {
+        guildId,
+        settings: db.getGuildSettings(guildId),
+        category: 'welcome',
+        timestamp: new Date().toISOString()
+      });
+    }
     
     res.json({ success: true, message: 'Welcome settings saved successfully' });
   } catch (error) {
@@ -96,15 +119,18 @@ router.get('/:guildId/settings/leveling', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
-    // Mock data for now - replace with actual database query
+    // Get actual settings from database
+    const db = req.app.get('db');
+    const guildSettings = db.getGuildSettings(guildId);
+    
     const settings = {
-      enabled: false,
-      xpPerMessage: 15,
-      cooldown: 60,
-      announceChannelId: '',
-      roleRewards: [],
-      levelUpMessage: '🎉 {user} seviye {level}\'e yükseldi!',
-      showLevelUpMessage: true,
+      enabled: guildSettings.leveling?.enabled || false,
+      xpPerMessage: guildSettings.leveling?.xpPerMessage || 15,
+      cooldown: guildSettings.leveling?.xpCooldown || 60,
+      announceChannelId: guildSettings.leveling?.levelUpChannelId || '',
+      roleRewards: guildSettings.leveling?.levelRoles || {},
+      levelUpMessage: guildSettings.leveling?.levelUpMessage || 'Tebrikler {user}! {level}. seviyeye ulaştın! 🎉',
+      showLevelUpMessage: guildSettings.leveling?.levelUpMessage !== 'false',
     };
 
     res.json({ success: true, settings });
@@ -119,8 +145,27 @@ router.post('/:guildId/settings/leveling', requireAuth, async (req, res) => {
     const { guildId } = req.params;
     const settings = req.body;
     
-    // Mock save - replace with actual database save
-    // Settings saved (reduced logging)
+    // Save to database
+    const db = req.app.get('db');
+    db.updateGuildSettingsCategory(guildId, 'leveling', {
+      enabled: settings.enabled,
+      xpPerMessage: settings.xpPerMessage,
+      xpCooldown: settings.cooldown,
+      levelUpChannelId: settings.announceChannelId,
+      levelRoles: settings.roleRewards,
+      levelUpMessage: settings.showLevelUpMessage ? settings.levelUpMessage : 'false'
+    });
+
+    // Broadcast settings change via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`guild_${guildId}`).emit('settings_changed', {
+        guildId,
+        settings: db.getGuildSettings(guildId),
+        category: 'leveling',
+        timestamp: new Date().toISOString()
+      });
+    }
     
     res.json({ success: true, message: 'Leveling settings saved successfully' });
   } catch (error) {
@@ -134,19 +179,22 @@ router.get('/:guildId/settings/moderation', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
-    // Mock data for now - replace with actual database query
+    // Get actual settings from database
+    const db = req.app.get('db');
+    const guildSettings = db.getGuildSettings(guildId);
+    
     const settings = {
-      autoModEnabled: false,
-      spamProtection: true,
-      badWordsFilter: true,
-      logChannelId: '',
-      warningsEnabled: false,
-      maxWarnings: 3,
-      punishments: [
-        { warnings: 1, action: 'mute', duration: 300 },
-        { warnings: 2, action: 'mute', duration: 1800 },
-        { warnings: 3, action: 'kick' },
-      ],
+      autoModEnabled: guildSettings.moderation?.enabled && guildSettings.moderation?.autoMod || false,
+      spamProtection: guildSettings.moderation?.spamProtection || false,
+      antiInvite: guildSettings.moderation?.antiInvite || false,
+      antiLink: guildSettings.moderation?.antiLink || false,
+      badWordsFilter: guildSettings.moderation?.bannedWords && guildSettings.moderation.bannedWords.length > 0 || false,
+      bannedWords: guildSettings.moderation?.bannedWords || [],
+      logChannelId: guildSettings.moderation?.logChannelId || '',
+      muteRoleId: guildSettings.moderation?.muteRoleId || '',
+      warningsEnabled: guildSettings.moderation?.maxWarnings > 0 || false,
+      maxWarnings: guildSettings.moderation?.maxWarnings || 3,
+      punishments: [],
     };
 
     res.json({ success: true, settings });
@@ -161,13 +209,81 @@ router.post('/:guildId/settings/moderation', requireAuth, async (req, res) => {
     const { guildId } = req.params;
     const settings = req.body;
     
-    // Mock save - replace with actual database save
-    // Settings saved (reduced logging)
+    // Save to database
+    const db = req.app.get('db');
+    db.updateGuildSettingsCategory(guildId, 'moderation', {
+      enabled: true,
+      autoMod: settings.autoModEnabled,
+      spamProtection: settings.spamProtection,
+      antiInvite: settings.antiInvite,
+      antiLink: settings.antiLink,
+      bannedWords: settings.bannedWords || [],
+      logChannelId: settings.logChannelId,
+      muteRoleId: settings.muteRoleId,
+      maxWarnings: settings.maxWarnings
+    });
+
+    // Broadcast settings change via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`guild_${guildId}`).emit('settings_changed', {
+        guildId,
+        settings: db.getGuildSettings(guildId),
+        category: 'moderation',
+        timestamp: new Date().toISOString()
+      });
+    }
     
     res.json({ success: true, message: 'Moderation settings saved successfully' });
   } catch (error) {
     console.error('Error saving moderation settings:', error);
     res.status(500).json({ success: false, error: 'Failed to save moderation settings' });
+  }
+});
+
+// Features settings
+router.get('/:guildId/settings/features', requireAuth, async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    
+    // Get actual settings from database
+    const db = req.app.get('db');
+    const features = db.getGuildFeatures(guildId);
+
+    res.json({ success: true, features });
+  } catch (error) {
+    console.error('Error fetching features:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch features' });
+  }
+});
+
+router.post('/:guildId/settings/features', requireAuth, async (req, res) => {
+  try {
+    const { guildId } = req.params;
+    const { features } = req.body;
+    
+    // Save to database
+    const db = req.app.get('db');
+    
+    Object.keys(features).forEach(feature => {
+      db.updateGuildFeature(guildId, feature, features[feature]);
+    });
+
+    // Broadcast settings change via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`guild_${guildId}`).emit('settings_changed', {
+        guildId,
+        settings: db.getGuildSettings(guildId),
+        category: 'features',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    res.json({ success: true, message: 'Features updated successfully' });
+  } catch (error) {
+    console.error('Error updating features:', error);
+    res.status(500).json({ success: false, error: 'Failed to update features' });
   }
 });
 

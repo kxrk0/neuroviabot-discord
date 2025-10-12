@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { Guild, GuildMember, User } = require('../models');
+const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
 const moment = require('moment');
 
@@ -114,28 +114,28 @@ module.exports = {
         try {
             switch (subcommand) {
                 case 'balance':
-                    await this.handleBalance(interaction, guild);
+                    await this.handleBalance(interaction);
                     break;
                 case 'daily':
-                    await this.handleDaily(interaction, guild);
+                    await this.handleDaily(interaction);
                     break;
                 case 'work':
-                    await this.handleWork(interaction, guild);
+                    await this.handleWork(interaction);
                     break;
                 case 'transfer':
-                    await this.handleTransfer(interaction, guild);
+                    await this.handleTransfer(interaction);
                     break;
                 case 'deposit':
-                    await this.handleDeposit(interaction, guild);
+                    await this.handleDeposit(interaction);
                     break;
                 case 'withdraw':
-                    await this.handleWithdraw(interaction, guild);
+                    await this.handleWithdraw(interaction);
                     break;
                 case 'leaderboard':
-                    await this.handleLeaderboard(interaction, guild);
+                    await this.handleLeaderboard(interaction);
                     break;
                 case 'stats':
-                    await this.handleStats(interaction, guild);
+                    await this.handleStats(interaction);
                     break;
             }
         } catch (error) {
@@ -155,7 +155,7 @@ module.exports = {
         }
     },
 
-    async handleBalance(interaction, guild) {
+    async handleBalance(interaction) {
         const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
 
         if (targetUser.bot) {
@@ -168,42 +168,28 @@ module.exports = {
             return interaction.reply({ embeds: [errorEmbed], flags: 64 });
         }
 
-        const guildMember = await GuildMember.findOne({
-            where: {
-                userId: targetUser.id,
-                guildId: interaction.guild.id
-            },
-            include: [{
-                model: User,
-                as: 'user'
-            }]
-        });
+        const db = getDatabase();
+        const economy = db.getUserEconomy(targetUser.id);
+        const settings = db.getGuildSettings(interaction.guild.id);
 
-        if (!guildMember) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Kullanıcı Bulunamadı')
-                .setDescription('Bu kullanıcının ekonomi verisi bulunamadı!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
-        }
-
-        const balance = parseInt(guildMember.balance) || 0;
-        const bank = parseInt(guildMember.bank) || 0;
+        const balance = parseInt(economy.balance) || 0;
+        const bank = parseInt(economy.bank) || 0;
         const total = balance + bank;
+
+        const currencySymbol = settings.economy?.currencySymbol || '💰';
+        const currencyName = settings.economy?.currencyName || 'Coin';
 
         const balanceEmbed = new EmbedBuilder()
             .setColor('#00ff00')
             .setTitle(`💰 ${targetUser.username} - Bakiye`)
             .setThumbnail(targetUser.displayAvatarURL())
             .addFields(
-                { name: `💵 Cüzdan`, value: `${balance.toLocaleString()} ${guild.currencySymbol}`, inline: true },
-                { name: `🏦 Banka`, value: `${bank.toLocaleString()} ${guild.currencySymbol}`, inline: true },
-                { name: `📊 Toplam`, value: `${total.toLocaleString()} ${guild.currencySymbol}`, inline: true }
+                { name: `💵 Cüzdan`, value: `${balance.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: `🏦 Banka`, value: `${bank.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: `📊 Toplam`, value: `${total.toLocaleString()} ${currencySymbol}`, inline: true }
             )
             .setFooter({
-                text: `${guild.currencyName} • ${interaction.guild.name}`,
+                text: `${currencyName} • ${interaction.guild.name}`,
                 iconURL: interaction.guild.iconURL()
             })
             .setTimestamp();
@@ -211,27 +197,14 @@ module.exports = {
         await interaction.reply({ embeds: [balanceEmbed] });
     },
 
-    async handleDaily(interaction, guild) {
-        const guildMember = await GuildMember.findOne({
-            where: {
-                userId: interaction.user.id,
-                guildId: interaction.guild.id
-            }
-        });
-
-        if (!guildMember) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Kullanıcı Bulunamadı')
-                .setDescription('Ekonomi verileriniz bulunamadı!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
-        }
+    async handleDaily(interaction) {
+        const db = getDatabase();
+        const economy = db.getUserEconomy(interaction.user.id);
+        const settings = db.getGuildSettings(interaction.guild.id);
 
         // Son daily kontrolü
         const now = new Date();
-        const lastDaily = guildMember.lastDaily;
+        const lastDaily = economy.lastDaily;
         
         if (lastDaily) {
             const timeSinceDaily = now - new Date(lastDaily);
@@ -254,7 +227,7 @@ module.exports = {
         }
 
         // Daily streak hesapla
-        let streak = guildMember.dailyStreak || 0;
+        let streak = economy.dailyStreak || 0;
         if (lastDaily) {
             const daysSince = Math.floor((now - new Date(lastDaily)) / (1000 * 60 * 60 * 24));
             if (daysSince === 1) {
@@ -267,15 +240,15 @@ module.exports = {
         }
 
         // Ödül miktarı hesapla
-        const baseAmount = guild.dailyAmount || 100;
+        const baseAmount = settings.economy?.dailyAmount || 100;
         const streakBonus = Math.min(streak * 10, 500); // Max 500 bonus
         const totalAmount = baseAmount + streakBonus;
 
         // Bakiyeyi güncelle
-        const newBalance = parseInt(guildMember.balance) + totalAmount;
-        await guildMember.update({
+        const newBalance = parseInt(economy.balance) + totalAmount;
+        db.updateUserEconomy(interaction.user.id, {
             balance: newBalance,
-            lastDaily: now,
+            lastDaily: now.toISOString(),
             dailyStreak: streak
         });
 
@@ -294,15 +267,17 @@ module.exports = {
             });
         }
 
+        const currencySymbol = settings.economy?.currencySymbol || '💰';
+
         const dailyEmbed = new EmbedBuilder()
             .setColor('#00ff00')
             .setTitle('🎁 Günlük Ödül Alındı!')
             .setDescription(`Günlük ödülünüzü başarıyla aldınız!`)
             .addFields(
-                { name: '💰 Kazanılan', value: `${totalAmount.toLocaleString()} ${guild.currencySymbol}`, inline: true },
+                { name: '💰 Kazanılan', value: `${totalAmount.toLocaleString()} ${currencySymbol}`, inline: true },
                 { name: '🔥 Streak', value: `${streak} gün`, inline: true },
-                { name: '🎯 Bonus', value: `${streakBonus.toLocaleString()} ${guild.currencySymbol}`, inline: true },
-                { name: '💵 Yeni Bakiye', value: `${newBalance.toLocaleString()} ${guild.currencySymbol}`, inline: false }
+                { name: '🎯 Bonus', value: `${streakBonus.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: '💵 Yeni Bakiye', value: `${newBalance.toLocaleString()} ${currencySymbol}`, inline: false }
             )
             .setFooter({
                 text: 'Sonraki ödül 24 saat sonra!',
@@ -313,28 +288,15 @@ module.exports = {
         await interaction.reply({ embeds: [dailyEmbed] });
     },
 
-    async handleWork(interaction, guild) {
-        const guildMember = await GuildMember.findOne({
-            where: {
-                userId: interaction.user.id,
-                guildId: interaction.guild.id
-            }
-        });
-
-        if (!guildMember) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Kullanıcı Bulunamadı')
-                .setDescription('Ekonomi verileriniz bulunamadı!')
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
-        }
+    async handleWork(interaction) {
+        const db = getDatabase();
+        const economy = db.getUserEconomy(interaction.user.id);
+        const settings = db.getGuildSettings(interaction.guild.id);
 
         // Cooldown kontrolü
         const now = new Date();
-        const lastWork = guildMember.lastWork;
-        const cooldown = guild.workCooldown || 3600000; // 1 saat default
+        const lastWork = economy.lastWork;
+        const cooldown = settings.economy?.workCooldown || 3600000; // 1 saat default
         
         if (lastWork) {
             const timeSinceWork = now - new Date(lastWork);
@@ -374,12 +336,12 @@ module.exports = {
         const randomJob = jobs[Math.floor(Math.random() * jobs.length)];
         
         // Kazanç hesapla
-        const minAmount = guild.workMinAmount || 50;
-        const maxAmount = guild.workMaxAmount || 200;
+        const minAmount = settings.economy?.workMinAmount || 50;
+        const maxAmount = settings.economy?.workMaxAmount || 200;
         const earnedAmount = Math.floor(Math.random() * (maxAmount - minAmount + 1)) + minAmount;
 
         // Work streak hesapla
-        let workStreak = guildMember.workStreak || 0;
+        let workStreak = economy.workStreak || 0;
         if (lastWork) {
             const daysSince = Math.floor((now - new Date(lastWork)) / (1000 * 60 * 60 * 24));
             if (daysSince <= 1) {
@@ -396,21 +358,25 @@ module.exports = {
         const totalAmount = earnedAmount + streakBonus;
 
         // Bakiyeyi güncelle
-        await guildMember.update({
-            balance: parseInt(guildMember.balance) + totalAmount,
-            lastWork: now,
+        const currentBalance = parseInt(economy.balance) || 0;
+        const newBalance = currentBalance + totalAmount;
+        db.updateUserEconomy(interaction.user.id, {
+            balance: newBalance,
+            lastWork: now.toISOString(),
             workStreak: workStreak
         });
+
+        const currencySymbol = settings.economy?.currencySymbol || '💰';
 
         const workEmbed = new EmbedBuilder()
             .setColor('#00ff00')
             .setTitle(`💼 ${randomJob.name}`)
             .setDescription(`${randomJob.emoji} ${randomJob.description}`)
             .addFields(
-                { name: '💰 Kazanılan', value: `${earnedAmount.toLocaleString()} ${guild.currencySymbol}`, inline: true },
-                { name: '🔥 Streak Bonusu', value: `${streakBonus.toLocaleString()} ${guild.currencySymbol}`, inline: true },
-                { name: '📊 Toplam', value: `${totalAmount.toLocaleString()} ${guild.currencySymbol}`, inline: true },
-                { name: '💵 Yeni Bakiye', value: `${(parseInt(guildMember.balance) + totalAmount).toLocaleString()} ${guild.currencySymbol}`, inline: false }
+                { name: '💰 Kazanılan', value: `${earnedAmount.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: '🔥 Streak Bonusu', value: `${streakBonus.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: '📊 Toplam', value: `${totalAmount.toLocaleString()} ${currencySymbol}`, inline: true },
+                { name: '💵 Yeni Bakiye', value: `${newBalance.toLocaleString()} ${currencySymbol}`, inline: false }
             )
             .setFooter({
                 text: `Çalışma Streak: ${workStreak} | Sonraki: ${Math.floor(cooldown / (1000 * 60 * 60))} saat sonra`,

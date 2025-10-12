@@ -46,9 +46,15 @@ module.exports = {
             // Custom command kontrolü
             await handleCustomCommands(message);
 
-            // XP/Leveling sistemi (levelingHandler kullanarak)
+            // XP/Leveling sistemi (levelingHandler kullanarak) - guild-specific
             if (client.levelingHandler) {
-                await client.levelingHandler.handleMessageXp(message);
+                const { getDatabase } = require('../database/simple-db');
+                const db = getDatabase();
+                
+                // Guild-specific leveling kontrolü
+                if (db.isGuildFeatureEnabled(message.guild.id, 'leveling')) {
+                    await client.levelingHandler.handleMessageXp(message);
+                }
             }
 
         } catch (error) {

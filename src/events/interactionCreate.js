@@ -48,8 +48,8 @@ module.exports = {
             return;
         }
 
-        // Feature kontrolü
-        const featureCheck = checkFeatureEnabled(command);
+        // Feature kontrolü (guild-specific)
+        const featureCheck = checkFeatureEnabled(command, interaction.guildId);
         if (!featureCheck.enabled) {
             if (!interaction.replied && !interaction.deferred) {
                 return await interaction.reply({
@@ -241,54 +241,65 @@ function getCooldownAmount(commandName) {
     return 3; // Default 3 saniye
 }
 
-// Feature kontrolü
-function checkFeatureEnabled(command) {
+// Feature kontrolü (guild-specific)
+function checkFeatureEnabled(command, guildId) {
+    const { getDatabase } = require('../database/simple-db');
+    const db = getDatabase();
     const commandName = command.data.name;
     
-
     // Ekonomi komutları
     const economyCommands = ['balance', 'daily', 'work', 'shop', 'buy', 'inventory', 'slots', 'coinflip', 'blackjack'];
-    if (economyCommands.includes(commandName) && !config.features.economy) {
-        return {
-            enabled: false,
-            message: 'Ekonomi sistemi şu anda devre dışı!'
-        };
+    if (economyCommands.includes(commandName)) {
+        if (!db.isGuildFeatureEnabled(guildId, 'economy')) {
+            return {
+                enabled: false,
+                message: 'Bu sunucuda ekonomi sistemi devre dışı!'
+            };
+        }
     }
 
     // Moderasyon komutları
     const moderationCommands = ['ban', 'kick', 'mute', 'warn', 'clear', 'backup'];
-    if (moderationCommands.includes(commandName) && !config.features.moderation) {
-        return {
-            enabled: false,
-            message: 'Moderasyon sistemi şu anda devre dışı!'
-        };
+    if (moderationCommands.includes(commandName)) {
+        if (!db.isGuildFeatureEnabled(guildId, 'moderation')) {
+            return {
+                enabled: false,
+                message: 'Bu sunucuda moderasyon sistemi devre dışı!'
+            };
+        }
     }
 
     // Seviye komutları
     const levelingCommands = ['level', 'rank', 'leaderboard'];
-    if (levelingCommands.includes(commandName) && !config.features.leveling) {
-        return {
-            enabled: false,
-            message: 'Seviye sistemi şu anda devre dışı!'
-        };
+    if (levelingCommands.includes(commandName)) {
+        if (!db.isGuildFeatureEnabled(guildId, 'leveling')) {
+            return {
+                enabled: false,
+                message: 'Bu sunucuda seviye sistemi devre dışı!'
+            };
+        }
     }
 
     // Ticket komutları
     const ticketCommands = ['ticket'];
-    if (ticketCommands.includes(commandName) && !config.features.tickets) {
-        return {
-            enabled: false,
-            message: 'Ticket sistemi şu anda devre dışı!'
-        };
+    if (ticketCommands.includes(commandName)) {
+        if (!db.isGuildFeatureEnabled(guildId, 'tickets')) {
+            return {
+                enabled: false,
+                message: 'Bu sunucuda ticket sistemi devre dışı!'
+            };
+        }
     }
 
     // Çekiliş komutları
     const giveawayCommands = ['giveaway'];
-    if (giveawayCommands.includes(commandName) && !config.features.giveaways) {
-        return {
-            enabled: false,
-            message: 'Çekiliş sistemi şu anda devre dışı!'
-        };
+    if (giveawayCommands.includes(commandName)) {
+        if (!db.isGuildFeatureEnabled(guildId, 'giveaways')) {
+            return {
+                enabled: false,
+                message: 'Bu sunucuda çekiliş sistemi devre dışı!'
+            };
+        }
     }
 
     return { enabled: true };

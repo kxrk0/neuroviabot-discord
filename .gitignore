@@ -4,9 +4,9 @@
 
 # Environment & Secrets (CRITICAL - NEVER COMMIT!)
 .env
-.env.local
-.env.production
-.env.development
+.env.*
+!.env.example
+*.env
 config/config.json
 frontend/.env
 frontend/.env.local
@@ -14,7 +14,18 @@ frontend/.env.production
 backend/.env
 backend/.env.local
 backend/.env.production
+neuroviabot-backend/.env
+neuroviabot-backend/.env.*
+!neuroviabot-backend/.env.example
+neuroviabot-frontend/.env.local
+neuroviabot-frontend/.env.production
+neuroviabot-frontend/.env.*
+!neuroviabot-frontend/.env.example
 Caddyfile
+
+# Session Storage (Backend)
+neuroviabot-backend/sessions/
+sessions/
 
 # SSH Keys (NEVER COMMIT!)
 github_deploy

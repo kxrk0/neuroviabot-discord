@@ -24,8 +24,25 @@ export function useUser() {
   const fetchUser = async () => {
     try {
       setLoading(true);
-      // User data comes from NextAuth session
       setError(null);
+
+      // Fetch user from backend API
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await fetch(`${API_URL}/api/auth/user`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // User not authenticated
+          setUser(null);
+        } else {
+          throw new Error(`Failed to fetch user: ${response.status}`);
+        }
+      } else {
+        const userData = await response.json();
+        setUser(userData);
+      }
     } catch (err: any) {
       console.error('Failed to fetch user:', err);
       setError(err.message);

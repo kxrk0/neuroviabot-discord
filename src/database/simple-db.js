@@ -217,6 +217,28 @@ class SimpleDatabase {
         return updated;
     }
 
+    // Guild Features yönetimi (guild-specific)
+    isGuildFeatureEnabled(guildId, feature) {
+        const settings = this.getGuildSettings(guildId);
+        return settings.features?.[feature] === true;
+    }
+
+    updateGuildFeature(guildId, feature, enabled) {
+        const settings = this.getGuildSettings(guildId);
+        if (!settings.features) {
+            settings.features = {};
+        }
+        settings.features[feature] = enabled;
+        this.updateGuildSettings(guildId, settings);
+        this.saveData();
+        return true;
+    }
+
+    getGuildFeatures(guildId) {
+        const settings = this.getGuildSettings(guildId);
+        return settings.features || {};
+    }
+
     // Warning işlemleri
     addWarning(userId, guildId, moderatorId, reason) {
         const warningId = Date.now().toString();

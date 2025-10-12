@@ -4,8 +4,6 @@
 
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { logger } = require('../utils/logger');
-const config = require('../config.js');
-const featureManager = require('../utils/featureManager');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -120,14 +118,15 @@ async function handleStatus(interaction) {
             return; // Zaten yanıtlandıysa çık
         }
     
-    // Config güncel durumunu al
-    const configSync = require('../utils/configSync');
-    const features = configSync.getAllFeatures();
+    // Database'den guild-specific features durumunu al
+    const { getDatabase } = require('../database/simple-db');
+    const db = getDatabase();
+    const features = db.getGuildFeatures(interaction.guild.id);
     
     const statusEmbed = new EmbedBuilder()
         .setColor('#0099ff')
-        .setTitle('📊 Bot Özellik Durumları')
-        .setDescription('Sunucudaki tüm bot özelliklerinin durumu:')
+        .setTitle('📊 Sunucu Özellik Durumları')
+        .setDescription('Bu sunucudaki tüm bot özelliklerinin durumu:')
         .addFields(
             {
                 name: '🎫 Ticket Sistemi',
@@ -172,30 +171,29 @@ async function handleStatus(interaction) {
 // Tek özelliği aktifleştir
 async function handleEnable(interaction) {
     const feature = interaction.options.getString('özellik');
+    const guildId = interaction.guild.id;
 
-    // Özelliği aktifleştir (sync olarak dene önce)
+    const { getDatabase } = require('../database/simple-db');
+    const db = getDatabase();
+
     let success = false;
-    let isEnabled = false;
 
     try {
-        success = await toggleFeature(feature, true);
-        // Çok kısa bir bekleme ekle - config güncellemesi için
-        await new Promise(resolve => setTimeout(resolve, 50));
-        // Hemen kontrol et
-        isEnabled = featureManager.isFeatureEnabled(feature);
-        // ConfigSync ile de kontrol et
-        const configSync = require('../utils/configSync');
-        const configSyncEnabled = configSync.isFeatureEnabled(feature);
+        // Database'de guild feature'ı aktifleştir
+        success = db.updateGuildFeature(guildId, feature, true);
         
-        if (isEnabled !== configSyncEnabled) {
-            logger.warn(`Feature senkronizasyon sorunu: featureManager=${isEnabled}, configSync=${configSyncEnabled}`);
-            // ConfigSync'i yeniden yükle
-            configSync.reloadConfig();
-            isEnabled = configSync.isFeatureEnabled(feature);
+        // Socket.IO broadcast (backend'e bildir)
+        if (interaction.client.socket) {
+            interaction.client.socket.emit('settings_changed', {
+                guildId,
+                settings: db.getGuildSettings(guildId),
+                category: 'features',
+                timestamp: new Date().toISOString()
+            });
         }
-        
     } catch (error) {
         logger.error('Feature toggle error', error);
+        success = false;
     }
 
     const featureNames = {
@@ -208,7 +206,7 @@ async function handleEnable(interaction) {
 
     const featureName = featureNames[feature] || feature;
 
-    if (success && isEnabled) {
+    if (success) {
         const successEmbed = new EmbedBuilder()
             .setColor('#00ff00')
             .setTitle('✅ Özellik Aktifleştirildi')
@@ -277,30 +275,29 @@ async function handleEnable(interaction) {
 // Tek özelliği devre dışı bırak
 async function handleDisable(interaction) {
     const feature = interaction.options.getString('özellik');
+    const guildId = interaction.guild.id;
 
-    // Özelliği devre dışı bırak (sync olarak dene önce)
+    const { getDatabase } = require('../database/simple-db');
+    const db = getDatabase();
+
     let success = false;
-    let isEnabled = false;
 
     try {
-        success = await toggleFeature(feature, false);
-        // Çok kısa bir bekleme ekle - config güncellemesi için
-        await new Promise(resolve => setTimeout(resolve, 50));
-        // Hemen kontrol et
-        isEnabled = featureManager.isFeatureEnabled(feature);
-        // ConfigSync ile de kontrol et
-        const configSync = require('../utils/configSync');
-        const configSyncEnabled = configSync.isFeatureEnabled(feature);
+        // Database'de guild feature'ı devre dışı bırak
+        success = db.updateGuildFeature(guildId, feature, false);
         
-        if (isEnabled !== configSyncEnabled) {
-            logger.warn(`Feature senkronizasyon sorunu: featureManager=${isEnabled}, configSync=${configSyncEnabled}`);
-            // ConfigSync'i yeniden yükle
-            configSync.reloadConfig();
-            isEnabled = configSync.isFeatureEnabled(feature);
+        // Socket.IO broadcast (backend'e bildir)
+        if (interaction.client.socket) {
+            interaction.client.socket.emit('settings_changed', {
+                guildId,
+                settings: db.getGuildSettings(guildId),
+                category: 'features',
+                timestamp: new Date().toISOString()
+            });
         }
-        
     } catch (error) {
         logger.error('Feature toggle error', error);
+        success = false;
     }
     
     const featureNames = {
@@ -313,7 +310,7 @@ async function handleDisable(interaction) {
 
     const featureName = featureNames[feature] || feature;
 
-    if (success && !isEnabled) {
+    if (success) {
         const successEmbed = new EmbedBuilder()
             .setColor('#00ff00')
             .setTitle('✅ Özellik Devre Dışı Bırakıldı')

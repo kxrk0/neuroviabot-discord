@@ -49,13 +49,15 @@ module.exports = {
         rateLimitTime: parseInt(process.env.RATE_LIMIT_TIME) || 60000
     },
     
-    // Feature flags - Tüm özellikler kapalı, sadece hoş geldin mesajı aktif
+    // Feature flags - DEFAULT DEĞERLER (Yeni guild'ler için)
+    // ⚠️ NOT: Bu değerler runtime'da DEĞİŞMEZ - sadece yeni guild'ler için default
+    // Her guild kendi features'ını database'de yönetir (guild-specific)
     features: {
-        economy: false,
-        moderation: false,
-        leveling: false,
-        tickets: false,
-        giveaways: false
+        economy: true,
+        moderation: true,
+        leveling: true,
+        tickets: true,
+        giveaways: true
     },
     
     // Mesajlar

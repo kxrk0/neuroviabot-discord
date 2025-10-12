@@ -1,5 +1,5 @@
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const { Guild } = require('../models');
+const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
 
 class GuardHandler {
@@ -57,11 +57,12 @@ class GuardHandler {
             if (member.user.bot) return;
 
             // Guild ayarlarını al
-            const guild = await Guild.findOne({ where: { id: member.guild.id } });
-            if (!guild || !guild.guardEnabled || !guild.antiRaidEnabled) return;
+            const db = getDatabase();
+            const settings = db.getGuildSettings(member.guild.id);
+            if (!settings.moderation?.enabled || !settings.moderation?.antiRaid) return;
 
             // Whitelist kontrolü
-            if (this.isWhitelisted(member, guild)) {
+            if (this.isWhitelisted(member, settings)) {
                 logger.debug(`Whitelisted user joined: ${member.user.tag}`);
                 return;
             }
@@ -83,9 +84,9 @@ class GuardHandler {
             this.joinTracking.set(guildId, recentJoins);
 
             // Raid kontrolü
-            const maxJoins = guild.maxJoinsPerMinute || 10;
+            const maxJoins = settings.moderation?.maxJoinsPerMinute || 10;
             if (recentJoins.length > maxJoins) {
-                await this.executeRaidProtection(member, guild, recentJoins.length);
+                await this.executeRaidProtection(member, settings, recentJoins.length);
             }
 
             // Hesap yaşı kontrolü
@@ -153,9 +154,9 @@ class GuardHandler {
         }
     }
 
-    async executeRaidProtection(member, guild, joinCount) {
+    async executeRaidProtection(member, settings, joinCount) {
         try {
-            const action = guild.raidAction || 'kick';
+            const action = settings.moderation?.raidAction || 'kick';
             
             logger.warn(`RAID DETECTED: ${member.guild.name} - ${joinCount} joins in 1 minute`);
 
@@ -191,8 +192,8 @@ class GuardHandler {
                 .setTimestamp();
 
             // Log kanalına gönder
-            if (guild.logChannelId) {
-                const logChannel = await member.guild.channels.fetch(guild.logChannelId).catch(() => null);
+            if (settings.moderation?.logChannelId) {
+                const logChannel = await member.guild.channels.fetch(settings.moderation.logChannelId).catch(() => null);
                 if (logChannel) {
                     await logChannel.send({ embeds: [raidEmbed] });
                 }
@@ -244,9 +245,10 @@ class GuardHandler {
                 .setTimestamp();
 
             // Log kanalına gönder
-            const guild = await Guild.findOne({ where: { id: member.guild.id } });
-            if (guild?.logChannelId) {
-                const logChannel = await member.guild.channels.fetch(guild.logChannelId).catch(() => null);
+            const db = getDatabase();
+            const settings = db.getGuildSettings(member.guild.id);
+            if (settings.moderation?.logChannelId) {
+                const logChannel = await member.guild.channels.fetch(settings.moderation.logChannelId).catch(() => null);
                 if (logChannel) {
                     await logChannel.send({ embeds: [suspiciousEmbed] });
                 }
@@ -330,17 +332,17 @@ class GuardHandler {
         }
     }
 
-    isWhitelisted(member, guild) {
-        if (!member || !guild) return false;
+    isWhitelisted(member, settings) {
+        if (!member || !settings) return false;
 
         // Kullanıcı whitelist kontrolü
-        if (guild.whitelistUsers && guild.whitelistUsers.includes(member.user.id)) {
+        if (settings.moderation?.whitelistUsers && settings.moderation.whitelistUsers.includes(member.user.id)) {
             return true;
         }
 
         // Rol whitelist kontrolü
-        if (guild.whitelistRoles && guild.whitelistRoles.length > 0) {
-            const hasWhitelistRole = guild.whitelistRoles.some(roleId => 
+        if (settings.moderation?.whitelistRoles && settings.moderation.whitelistRoles.length > 0) {
+            const hasWhitelistRole = settings.moderation.whitelistRoles.some(roleId => 
                 member.roles.cache.has(roleId)
             );
             if (hasWhitelistRole) return true;
@@ -373,8 +375,9 @@ class GuardHandler {
             // Sadece rol değişikliklerini izle
             if (oldMember.roles.cache.size === newMember.roles.cache.size) return;
             
-            const guild = await Guild.findOne({ where: { id: newMember.guild.id } });
-            if (!guild || !guild.guardEnabled) return;
+            const db = getDatabase();
+            const settings = db.getGuildSettings(newMember.guild.id);
+            if (!settings.moderation?.enabled || !settings.moderation?.guardEnabled) return;
 
             // Admin/Moderator rolü verilme kontrolü
             const dangerousPermissions = [
@@ -403,11 +406,12 @@ class GuardHandler {
         try {
             if (!channel.guild) return;
             
-            const guild = await Guild.findOne({ where: { id: channel.guild.id } });
-            if (!guild || !guild.guardEnabled) return;
+            const db = getDatabase();
+            const settings = db.getGuildSettings(channel.guild.id);
+            if (!settings.moderation?.enabled || !settings.moderation?.guardEnabled) return;
 
             // Log suspicious channel creation
-            await this.logChannelChange(channel, 'created');
+            await this.logChannelChange(channel, 'created', settings);
 
         } catch (error) {
             logger.error('Channel create handler hatası', error);
@@ -418,11 +422,12 @@ class GuardHandler {
         try {
             if (!channel.guild) return;
             
-            const guild = await Guild.findOne({ where: { id: channel.guild.id } });
-            if (!guild || !guild.guardEnabled) return;
+            const db = getDatabase();
+            const settings = db.getGuildSettings(channel.guild.id);
+            if (!settings.moderation?.enabled || !settings.moderation?.guardEnabled) return;
 
             // Log channel deletion
-            await this.logChannelChange(channel, 'deleted');
+            await this.logChannelChange(channel, 'deleted', settings);
 
         } catch (error) {
             logger.error('Channel delete handler hatası', error);
@@ -431,11 +436,12 @@ class GuardHandler {
 
     async handleRoleCreate(role) {
         try {
-            const guild = await Guild.findOne({ where: { id: role.guild.id } });
-            if (!guild || !guild.guardEnabled) return;
+            const db = getDatabase();
+            const settings = db.getGuildSettings(role.guild.id);
+            if (!settings.moderation?.enabled || !settings.moderation?.guardEnabled) return;
 
             // Log role creation
-            await this.logRoleChange(role, 'created');
+            await this.logRoleChange(role, 'created', settings);
 
         } catch (error) {
             logger.error('Role create handler hatası', error);
@@ -444,11 +450,12 @@ class GuardHandler {
 
     async handleRoleDelete(role) {
         try {
-            const guild = await Guild.findOne({ where: { id: role.guild.id } });
-            if (!guild || !guild.guardEnabled) return;
+            const db = getDatabase();
+            const settings = db.getGuildSettings(role.guild.id);
+            if (!settings.moderation?.enabled || !settings.moderation?.guardEnabled) return;
 
             // Log role deletion
-            await this.logRoleChange(role, 'deleted');
+            await this.logRoleChange(role, 'deleted', settings);
 
         } catch (error) {
             logger.error('Role delete handler hatası', error);
@@ -469,9 +476,10 @@ class GuardHandler {
                 )
                 .setTimestamp();
 
-            const guild = await Guild.findOne({ where: { id: member.guild.id } });
-            if (guild?.logChannelId) {
-                const logChannel = await member.guild.channels.fetch(guild.logChannelId).catch(() => null);
+            const db = getDatabase();
+            const settings = db.getGuildSettings(member.guild.id);
+            if (settings.moderation?.logChannelId) {
+                const logChannel = await member.guild.channels.fetch(settings.moderation.logChannelId).catch(() => null);
                 if (logChannel) {
                     await logChannel.send({ embeds: [embed] });
                 }
@@ -482,7 +490,7 @@ class GuardHandler {
         }
     }
 
-    async logChannelChange(channel, action) {
+    async logChannelChange(channel, action, settings) {
         try {
             const embed = new EmbedBuilder()
                 .setColor(action === 'created' ? '#00ff00' : '#ff0000')
@@ -494,9 +502,8 @@ class GuardHandler {
                 )
                 .setTimestamp();
 
-            const guild = await Guild.findOne({ where: { id: channel.guild.id } });
-            if (guild?.logChannelId) {
-                const logChannel = await channel.guild.channels.fetch(guild.logChannelId).catch(() => null);
+            if (settings.moderation?.logChannelId) {
+                const logChannel = await channel.guild.channels.fetch(settings.moderation.logChannelId).catch(() => null);
                 if (logChannel && logChannel.id !== channel.id) {
                     await logChannel.send({ embeds: [embed] });
                 }
@@ -507,7 +514,7 @@ class GuardHandler {
         }
     }
 
-    async logRoleChange(role, action) {
+    async logRoleChange(role, action, settings) {
         try {
             const embed = new EmbedBuilder()
                 .setColor(action === 'created' ? '#00ff00' : '#ff0000')
@@ -527,9 +534,8 @@ class GuardHandler {
                 });
             }
 
-            const guild = await Guild.findOne({ where: { id: role.guild.id } });
-            if (guild?.logChannelId) {
-                const logChannel = await role.guild.channels.fetch(guild.logChannelId).catch(() => null);
+            if (settings.moderation?.logChannelId) {
+                const logChannel = await role.guild.channels.fetch(settings.moderation.logChannelId).catch(() => null);
                 if (logChannel) {
                     await logChannel.send({ embeds: [embed] });
                 }

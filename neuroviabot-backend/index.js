@@ -37,14 +37,20 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+// Ensure SESSION_SECRET is set
+if (!process.env.SESSION_SECRET) {
+  console.error('ERROR: SESSION_SECRET environment variable is required!');
+  process.exit(1);
+}
+
 app.use(session({
   store: new FileStore({
     path: './sessions',
     ttl: 7 * 24 * 60 * 60, // 7 days in seconds
     retries: 2,
-    secret: process.env.SESSION_SECRET || 'UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk',
+    secret: process.env.SESSION_SECRET,
   }),
-  secret: process.env.SESSION_SECRET || 'UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   proxy: process.env.NODE_ENV === 'production', // Trust nginx proxy
