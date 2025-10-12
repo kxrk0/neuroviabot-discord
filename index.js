@@ -598,11 +598,13 @@ let activityRewardHandler = null;
 const express = require('express');
 const { router: webApiRouter, setClient: setWebApiClient } = require('./src/routes/webApi');
 const { router: guildManagementRouter, setClient: setGuildManagementClient } = require('./src/routes/guild-management');
+const { router: marketplaceRouter } = require('./src/routes/marketplace');
 
 const apiApp = express();
 apiApp.use(express.json());
 apiApp.use('/api/bot', webApiRouter);
 apiApp.use('/api/bot/guilds', guildManagementRouter);
+apiApp.use('/api/bot/marketplace', marketplaceRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {

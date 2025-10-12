@@ -96,6 +96,7 @@ const guildRoutes = require('./routes/guilds');
 const contactRoutes = require('./routes/contact');
 const feedbackRoutes = require('./routes/feedback');
 const guildManagementRoutes = require('./routes/guild-management');
+const marketplaceRoutes = require('./routes/marketplace');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
@@ -104,6 +105,7 @@ app.use('/api/guilds', guildRoutes);
 app.use('/api/guild-settings', require('./routes/guild-settings'));
 app.use('/api/notifications', require('./routes/guild-settings'));
 app.use('/api/guild-management', guildManagementRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
 
 // Bot API proxy routes
 app.use('/api/bot', require('./routes/bot-proxy'));
