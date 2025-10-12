@@ -74,13 +74,15 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
   const fetchChannels = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/channels`, {
+      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/channels`, {
         credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
-        const textChannels = (data.channels || []).filter((channel: any) => channel.type === 'text' || channel.type === 0);
+        const textChannels = (data.channels || []).filter((channel: any) => 
+          channel.type === 'GUILD_TEXT' || channel.type === 'text' || channel.type === 0
+        );
         setChannels(textChannels);
       } else {
         setChannels([]);
@@ -95,7 +97,7 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
   const fetchRoles = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await fetch(`${API_URL}/api/guild-settings/${guildId}/roles`, {
+      const response = await fetch(`${API_URL}/api/guild-management/${guildId}/roles`, {
         credentials: 'include',
       });
 
