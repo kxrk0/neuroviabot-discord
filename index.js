@@ -702,6 +702,12 @@ client.once('clientReady', () => {
     client.tradingHandler = tradingHandler;
     log('💱 Trading Handler initialized', 'SUCCESS');
     
+    // Feedback Handler'ı başlat
+    const FeedbackHandler = require('./src/handlers/feedbackHandler');
+    const feedbackHandler = new FeedbackHandler(client);
+    client.feedbackHandler = feedbackHandler;
+    log('💬 Feedback Handler initialized', 'SUCCESS');
+    
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();
     log('📊 Monitoring Service initialized', 'SUCCESS');

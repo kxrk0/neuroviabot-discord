@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 import {
   ArrowLeftIcon,
   ChatBubbleLeftRightIcon,
@@ -46,9 +47,9 @@ const feedbackTypes = [
 ];
 
 const experienceAreas = [
-  'Müzik Sistemi',
-  'Moderasyon Araçları',
-  'Ekonomi Sistemi',
+  'NRC Ekonomi Sistemi',
+  'P2P Trading',
+  'Moderasyon & Auto-Mod',
   'Ticket Sistemi',
   'Çekiliş Sistemi',
   'Leveling Sistemi',
@@ -56,7 +57,9 @@ const experienceAreas = [
   'Bot Performansı',
   'Komut Kullanımı',
   'Destek Hizmeti',
-  'Dokümantasyon'
+  'Dokümantasyon',
+  'Pazar Yeri',
+  'Yatırım & Staking'
 ];
 
 export default function FeedbackPage() {
@@ -74,6 +77,23 @@ export default function FeedbackPage() {
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [stats, setStats] = useState({ total: 0, implemented: 0, resolved: 0 });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  async function fetchStats() {
+    try {
+      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const response = await axios.get(`${apiUrl}/api/feedback/stats`);
+      if (response.data.success) {
+        setStats(response.data.stats);
+      }
+    } catch (error) {
+      console.error('Failed to fetch feedback stats:', error);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -446,19 +466,19 @@ export default function FeedbackPage() {
             <div className="relative p-6 rounded-3xl bg-gradient-to-br from-white/5 to-white/0 border border-white/10 shadow-xl overflow-hidden">
               <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl" />
               <div className="relative">
-                <h3 className="text-xl font-bold mb-4">Bu Ay</h3>
+                <h3 className="text-xl font-bold mb-4">İstatistikler</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">Geri Bildirim</span>
-                    <span className="text-white font-bold">127</span>
+                    <span className="text-white font-bold">{stats.total}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">Uygulanan Öneri</span>
-                    <span className="text-green-400 font-bold">23</span>
+                    <span className="text-green-400 font-bold">{stats.implemented}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">Çözülen Sorun</span>
-                    <span className="text-blue-400 font-bold">41</span>
+                    <span className="text-blue-400 font-bold">{stats.resolved}</span>
                   </div>
                 </div>
               </div>

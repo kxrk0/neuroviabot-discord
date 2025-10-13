@@ -63,11 +63,34 @@ router.post('/', async (req, res) => {
       timestamp: new Date().toISOString()
     });
 
-    // Here you can add:
-    // 1. Save to database
-    // 2. Send email notification
-    // 3. Send Discord webhook notification
-    // 4. Update analytics/metrics
+    // Save to database
+    const db = req.app.get('db');
+    if (db) {
+      if (!db.data.feedback) {
+        db.data.feedback = new Map();
+      }
+      
+      const feedbackId = `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const feedbackData = {
+        id: feedbackId,
+        name,
+        email,
+        discordTag,
+        serverName,
+        feedbackType,
+        rating,
+        experienceAreas,
+        title,
+        message,
+        timestamp: Date.now(),
+        status: 'pending',
+        source: 'web'
+      };
+      
+      db.data.feedback.set(feedbackId, feedbackData);
+      db.save();
+      console.log('[FEEDBACK] Saved to database:', feedbackId);
+    }
 
     // Example: Send to Discord webhook (optional)
     if (process.env.FEEDBACK_WEBHOOK_URL) {
@@ -133,24 +156,92 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Get feedback list
+router.get('/list', async (req, res) => {
+  try {
+    const { category, limit = 50 } = req.query;
+    
+    // Get database
+    const db = req.app.get('db');
+    
+    if (!db || !db.data.feedback) {
+      // Return empty list if no database
+      return res.json({
+        success: true,
+        feedback: []
+      });
+    }
+    
+    let feedbackList = Array.from(db.data.feedback.values());
+    
+    // Filter by category if specified
+    if (category && category !== 'all') {
+      feedbackList = feedbackList.filter(f => f.category === category);
+    }
+    
+    // Sort by date (newest first)
+    feedbackList.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Limit results
+    feedbackList = feedbackList.slice(0, parseInt(limit));
+    
+    res.json({
+      success: true,
+      feedback: feedbackList,
+      total: feedbackList.length
+    });
+    
+  } catch (error) {
+    console.error('[FEEDBACK] List error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch feedback list'
+    });
+  }
+});
+
 // Get feedback statistics (optional)
 router.get('/stats', async (req, res) => {
   try {
-    // This is mock data - replace with real database queries
+    const db = req.app.get('db');
+    
+    if (!db || !db.data.feedback) {
+      // Return mock data if no database
+      return res.json({
+        success: true,
+        stats: {
+          total: 0,
+          implemented: 0,
+          resolved: 0,
+          byType: {
+            positive: 0,
+            negative: 0,
+            suggestion: 0,
+            issue: 0
+          },
+          averageRating: 0
+        }
+      });
+    }
+    
+    const feedbackList = Array.from(db.data.feedback.values());
+    
     const stats = {
-      total: 127,
-      implemented: 23,
-      resolved: 41,
+      total: feedbackList.length,
+      implemented: feedbackList.filter(f => f.status === 'implemented').length,
+      resolved: feedbackList.filter(f => f.status === 'resolved').length,
       byType: {
-        positive: 45,
-        negative: 12,
-        suggestion: 54,
-        issue: 16
+        positive: feedbackList.filter(f => f.feedbackType === 'positive').length,
+        negative: feedbackList.filter(f => f.feedbackType === 'negative').length,
+        suggestion: feedbackList.filter(f => f.feedbackType === 'suggestion').length,
+        issue: feedbackList.filter(f => f.feedbackType === 'issue').length
       },
-      averageRating: 4.3
+      averageRating: feedbackList.length > 0 
+        ? feedbackList.reduce((sum, f) => sum + (f.rating || 0), 0) / feedbackList.length 
+        : 0
     };
 
-    res.status(200).json({
+    res.json({
       success: true,
       stats
     });
