@@ -42,7 +42,8 @@ class SimpleDatabase {
             cmsContent: new Map(), // New: section -> { content, lastUpdated, updatedBy }
             automodSettings: new Map(), // New: guildId -> automod config
             automodViolations: new Map(), // New: violationId -> violation data
-            reactionRoles: new Map() // New: messageId -> reaction role setup
+            reactionRoles: new Map(), // New: messageId -> reaction role setup
+            tempBans: new Map() // New: userId_guildId -> { userId, guildId, expiresAt, reason, createdAt }
         };
         
         this.ensureDirectory();

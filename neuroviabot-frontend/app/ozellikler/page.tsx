@@ -173,7 +173,7 @@ export default function FeaturesPage() {
               Güçlü Özellikler
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              NeuroViaBot ile Discord sunucunuzu profesyonel bir platforma dönüştürün. 
+              Neurovia ile Discord sunucunuzu profesyonel bir platforma dönüştürün. 
               <span className="text-purple-400 font-bold"> {features.length}+ özellik</span> ile tam kontrol.
             </p>
           </motion.div>
@@ -265,7 +265,7 @@ export default function FeaturesPage() {
                 Hemen Başlayın
               </h2>
               <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-                NeuroViaBot'u sunucunuza ekleyin ve tüm bu özelliklerin keyfini çıkarın!
+                Neurovia'u sunucunuza ekleyin ve tüm bu özelliklerin keyfini çıkarın!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a

@@ -85,7 +85,7 @@ export default function FeedbackPage() {
 
   async function fetchStats() {
     try {
-      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://Neurovia.xyz';
       const response = await axios.get(`${apiUrl}/api/feedback/stats`);
       if (response.data.success) {
         setStats(response.data.stats);
@@ -101,7 +101,7 @@ export default function FeedbackPage() {
     setSubmitStatus('idle');
 
     try {
-      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://Neurovia.xyz';
       const response = await fetch(`${apiUrl}/api/feedback`, {
         method: 'POST',
         headers: {
@@ -192,7 +192,7 @@ export default function FeedbackPage() {
             Geri Bildiriminiz Bizim İçin Değerli
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            NeuroViaBot'u daha iyi hale getirmemize yardımcı olun. Deneyimlerinizi, önerilerinizi ve görüşlerinizi bizimle paylaşın.
+            Neurovia'u daha iyi hale getirmemize yardımcı olun. Deneyimlerinizi, önerilerinizi ve görüşlerinizi bizimle paylaşın.
           </p>
         </motion.div>
 
@@ -457,7 +457,7 @@ export default function FeedbackPage() {
                 <LightBulbIcon className="w-10 h-10 text-purple-400 mb-4" />
                 <h3 className="text-xl font-bold mb-2">Geri Bildiriminiz Neden Önemli?</h3>
                 <p className="text-gray-400 text-sm mb-4">
-                  Her geri bildiriminiz, NeuroViaBot'u daha iyi hale getirmemize yardımcı olur. Kullanıcılarımızın deneyimleri bizim için en değerli rehberdir.
+                  Her geri bildiriminiz, Neurovia'u daha iyi hale getirmemize yardımcı olur. Kullanıcılarımızın deneyimleri bizim için en değerli rehberdir.
                 </p>
               </div>
             </div>

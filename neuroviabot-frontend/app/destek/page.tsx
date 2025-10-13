@@ -49,7 +49,7 @@ export default function SupportPage() {
             <h3 className="text-xl font-bold mb-2">Discord Sunucusu</h3>
             <p className="text-gray-400 mb-4">Topluluğumuzla sohbet edin ve anlık destek alın</p>
             <a
-              href="https://discord.gg/neuroviabot"
+              href="https://discord.gg/Neurovia"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"

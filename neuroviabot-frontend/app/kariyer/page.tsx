@@ -23,7 +23,7 @@ export default function CareersPage() {
           <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
             Kariyer Fırsatları
           </h1>
-          <p className="text-xl text-gray-300">NeuroViaBot ekibine katılın</p>
+          <p className="text-xl text-gray-300">Neurovia ekibine katılın</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-16">

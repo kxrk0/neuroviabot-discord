@@ -2,9 +2,10 @@ import './globals.scss';
 import type { Metadata } from 'next';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { NeuroCoinProvider } from '../contexts/NeuroCoinContext';
+import { LanguageProvider } from '../contexts/LanguageContext';
 
 export const metadata: Metadata = {
-  title: 'NeuroViaBot Dashboard',
+  title: 'Neurovia Dashboard',
   description: 'Advanced Discord Bot Management Dashboard',
   keywords: ['discord bot', 'bot dashboard', 'neuroviabot'],
 };
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        <NotificationProvider>
-          <NeuroCoinProvider>
-            {children}
-          </NeuroCoinProvider>
-        </NotificationProvider>
+        <LanguageProvider>
+          <NotificationProvider>
+            <NeuroCoinProvider>
+              {children}
+            </NeuroCoinProvider>
+          </NotificationProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

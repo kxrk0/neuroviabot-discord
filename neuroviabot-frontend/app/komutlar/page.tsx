@@ -209,7 +209,7 @@ export default function CommandsPage() {
             Bot Komutları
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            NeuroViaBot'un sunduğu <span className="text-purple-400 font-bold">{totalCommands}+ komut</span> ile Discord sunucunuzu bir üst seviyeye taşıyın.
+            Neurovia'un sunduğu <span className="text-purple-400 font-bold">{totalCommands}+ komut</span> ile Discord sunucunuzu bir üst seviyeye taşıyın.
           </p>
 
           {/* Search Bar */}

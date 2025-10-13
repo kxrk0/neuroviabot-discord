@@ -7,6 +7,7 @@ import NeuroCoinBadge from './NeuroCoinBadge';
 import DeveloperMenu from './DeveloperMenu';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useUser } from '@/hooks/useUser';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -16,6 +17,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,7 +52,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               </svg>
             </div>
             <span className="hidden sm:block">
-              NeuroViaBot
+              Neurovia
             </span>
           </Link>
         </div>
@@ -81,6 +83,19 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           
           {/* Developer Menu (only visible to developers) */}
           <DeveloperMenu />
+          
+          {/* Language Switcher */}
+          <button
+            onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
+            className="relative p-2 rounded-lg hover:bg-[#383A40] transition text-gray-400 hover:text-white flex items-center gap-2"
+            aria-label="Change language"
+            title={language === 'tr' ? 'Switch to English' : 'Türkçe\'ye geç'}
+          >
+            <span className="text-lg">{language === 'tr' ? '🇹🇷' : '🇺🇸'}</span>
+            <span className="hidden md:inline text-sm font-medium">
+              {language === 'tr' ? 'TR' : 'EN'}
+            </span>
+          </button>
           
           {/* Notifications */}
           <button 

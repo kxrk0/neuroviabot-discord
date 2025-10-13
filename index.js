@@ -719,11 +719,17 @@ client.once('clientReady', () => {
     await reactionRoleHandler.loadActiveSetups();
     log('⭐ Reaction Role Handler initialized', 'SUCCESS');
     
-    // Auto-Mod Handler'ı başlat
-    const AutoModHandler = require('./src/handlers/autoModHandler');
-    const autoModHandler = new AutoModHandler(client);
-    client.autoModHandler = autoModHandler;
-    log('🛡️ Auto-Mod Handler initialized', 'SUCCESS');
+    // Raid Protection Handler'ı başlat
+    const RaidProtectionHandler = require('./src/handlers/raidProtectionHandler');
+    const raidProtectionHandler = new RaidProtectionHandler(client);
+    client.raidProtectionHandler = raidProtectionHandler;
+    log('🛡️ Raid Protection Handler initialized', 'SUCCESS');
+    
+    // Temporary Ban Scheduler'ı başlat
+    const TempBanScheduler = require('./src/handlers/tempBanScheduler');
+    const tempBanScheduler = new TempBanScheduler(client);
+    client.tempBanScheduler = tempBanScheduler;
+    log('⏰ Temporary Ban Scheduler initialized', 'SUCCESS');
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();

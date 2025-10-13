@@ -8,7 +8,7 @@ import { ArrowLeftIcon, NewspaperIcon, CalendarIcon, UserIcon } from '@heroicons
 export default function BlogPage() {
   const posts = [
     {
-      title: 'NeuroViaBot 2.0 Güncellemesi',
+      title: 'Neurovia 2.0 Güncellemesi',
       excerpt: 'Yeni NRC ekonomi sistemi, gelişmiş moderasyon ve daha fazlası...',
       date: '13 Ocak 2025',
       author: 'NeuroVia Team',

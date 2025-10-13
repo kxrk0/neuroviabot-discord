@@ -48,7 +48,7 @@ export default function AboutPage() {
             <RocketIcon className="w-12 h-12 text-purple-400 mb-4" />
             <h2 className="text-2xl font-bold mb-4">Vizyonumuz</h2>
             <p className="text-gray-300 leading-relaxed">
-              NeuroViaBot, Discord topluluklarını daha etkileşimli, güvenli ve yönetilebilir hale getirmek için geliştirilmiştir.
+              Neurovia, Discord topluluklarını daha etkileşimli, güvenli ve yönetilebilir hale getirmek için geliştirilmiştir.
               Amacımız, sunucu sahiplerine kapsamlı araçlar sunarak topluluk deneyimini en üst düzeye çıkarmaktır.
             </p>
           </motion.div>

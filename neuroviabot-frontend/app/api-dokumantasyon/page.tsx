@@ -21,7 +21,7 @@ export default function APIDocsPage() {
           <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
             API Dokümantasyonu
           </h1>
-          <p className="text-xl text-gray-300">NeuroViaBot API kullanım kılavuzu</p>
+          <p className="text-xl text-gray-300">Neurovia API kullanım kılavuzu</p>
         </div>
 
         <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-8">

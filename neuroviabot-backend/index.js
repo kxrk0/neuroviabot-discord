@@ -133,6 +133,7 @@ app.use('/api/premium', premiumRoutes);
 app.use('/api/reaction-roles', reactionRolesRoutes);
 app.use('/api/audit', auditLogRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/moderation', require('./routes/moderation'));
 app.use('/api/dev', developerRoutes);
 
 // Bot API proxy routes

@@ -71,6 +71,33 @@ module.exports = {
         )
         .addSubcommand(subcommand =>
             subcommand
+                .setName('tempban')
+                .setDescription('⏰ Kullanıcıyı geçici olarak yasakla')
+                .addUserOption(option =>
+                    option.setName('kullanıcı')
+                        .setDescription('Yasaklanacak kullanıcı')
+                        .setRequired(true)
+                )
+                .addStringOption(option =>
+                    option.setName('süre')
+                        .setDescription('Yasak süresi (örn: 1h, 1d, 7d)')
+                        .setRequired(true)
+                )
+                .addStringOption(option =>
+                    option.setName('sebep')
+                        .setDescription('Yasaklama sebebi')
+                        .setRequired(false)
+                )
+                .addIntegerOption(option =>
+                    option.setName('mesaj-sil')
+                        .setDescription('Silinecek mesaj günü (0-7)')
+                        .setMinValue(0)
+                        .setMaxValue(7)
+                        .setRequired(false)
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('unban')
                 .setDescription('🔓 Kullanıcının yasağını kaldır')
                 .addStringOption(option =>
@@ -224,6 +251,7 @@ module.exports = {
             warn: PermissionFlagsBits.ModerateMembers,
             kick: PermissionFlagsBits.KickMembers,
             ban: PermissionFlagsBits.BanMembers,
+            tempban: PermissionFlagsBits.BanMembers,
             unban: PermissionFlagsBits.BanMembers,
             mute: PermissionFlagsBits.ModerateMembers,
             unmute: PermissionFlagsBits.ModerateMembers,
@@ -256,6 +284,9 @@ module.exports = {
                     break;
                 case 'ban':
                     await this.handleBan(interaction);
+                    break;
+                case 'tempban':
+                    await this.handleTempBan(interaction);
                     break;
                 case 'unban':
                     await this.handleUnban(interaction);
@@ -511,10 +542,710 @@ module.exports = {
         }
     },
 
-    // Diğer metodlar buraya gelecek...
+    async handleBan(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+        const reason = interaction.options.getString('sebep') || 'Belirtilmedi';
+        const deleteMessageDays = interaction.options.getInteger('mesaj-sil') || 0;
+
+        // Kendine ban kontrolü
+        if (targetUser.id === interaction.user.id) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Geçersiz İşlem')
+                .setDescription('Kendinizi yasaklayamazsınız!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
+        // Bot kontrolü
+        if (targetUser.bot) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Bot Kullanıcısı')
+                .setDescription('Bot kullanıcılarını yasaklayamazsınız!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
+        await interaction.deferReply();
+
+        try {
+            // Guild member kontrolü
+            const targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+            
+            if (targetMember) {
+                // Yetki kontrolü
+                if (targetMember.roles.highest.position >= interaction.member.roles.highest.position) {
+                    const errorEmbed = new EmbedBuilder()
+                        .setColor('#ff0000')
+                        .setTitle('❌ Yetkisiz İşlem')
+                        .setDescription('Bu kullanıcıyı yasaklayamazsınız! (Yüksek yetki)')
+                        .setTimestamp();
+                    
+                    return interaction.editReply({ embeds: [errorEmbed] });
+                }
+            }
+
+            // DM gönder (ban öncesi)
+            try {
+                const dmEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle(`🔨 ${interaction.guild.name} - Sunucudan Yasaklandınız`)
+                    .setDescription(`Sunucudan yasaklandınız.`)
+                    .addFields(
+                        { name: '📝 Sebep', value: reason, inline: false },
+                        { name: '👮 Moderatör', value: interaction.user.username, inline: true }
+                    )
+                    .setFooter({
+                        text: 'Yasak kaldırma için moderatörlerle iletişime geçebilirsiniz.',
+                        iconURL: interaction.guild.iconURL()
+                    })
+                    .setTimestamp();
+
+                await targetUser.send({ embeds: [dmEmbed] });
+            } catch (error) {
+                // DM gönderilemedi, devam et
+            }
+
+            // Ban işlemi
+            await interaction.guild.members.ban(targetUser, {
+                reason: `${interaction.user.tag}: ${reason}`,
+                deleteMessageSeconds: deleteMessageDays * 24 * 60 * 60
+            });
+
+            const banEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('🔨 Kullanıcı Yasaklandı')
+                .setDescription(`${targetUser} kullanıcısı sunucudan yasaklandı!`)
+                .addFields(
+                    { name: '👤 Yasaklanan', value: `${targetUser.tag}`, inline: true },
+                    { name: '👮 Moderatör', value: interaction.user.username, inline: true },
+                    { name: '📝 Sebep', value: reason, inline: false },
+                    { name: '🗑️ Silinen Mesajlar', value: `${deleteMessageDays} gün`, inline: true },
+                    { name: '📅 Tarih', value: new Date().toLocaleString('tr-TR'), inline: true }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [banEmbed] });
+
+            logger.info(`[Moderation] ${targetUser.tag} banned by ${interaction.user.tag} in ${interaction.guild.name}`);
+
+        } catch (error) {
+            logger.error('Ban işlemi hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Ban Hatası')
+                .setDescription('Yasaklama işlemi sırasında bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleKick(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+        const reason = interaction.options.getString('sebep') || 'Belirtilmedi';
+
+        await interaction.deferReply();
+
+        try {
+            const targetMember = await interaction.guild.members.fetch(targetUser.id);
+            
+            // Yetki kontrolü
+            if (targetMember.roles.highest.position >= interaction.member.roles.highest.position) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Yetkisiz İşlem')
+                    .setDescription('Bu kullanıcıyı atamazsınız! (Yüksek yetki)')
+                    .setTimestamp();
+                
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            // DM gönder
+            try {
+                const dmEmbed = new EmbedBuilder()
+                    .setColor('#ff8000')
+                    .setTitle(`👢 ${interaction.guild.name} - Sunucudan Atıldınız`)
+                    .setDescription(`Sunucudan atıldınız.`)
+                    .addFields(
+                        { name: '📝 Sebep', value: reason, inline: false },
+                        { name: '👮 Moderatör', value: interaction.user.username, inline: true }
+                    )
+                    .setTimestamp();
+
+                await targetUser.send({ embeds: [dmEmbed] });
+            } catch (error) {
+                // DM gönderilemedi
+            }
+
+            await targetMember.kick(`${interaction.user.tag}: ${reason}`);
+
+            const kickEmbed = new EmbedBuilder()
+                .setColor('#ff8000')
+                .setTitle('👢 Kullanıcı Atıldı')
+                .setDescription(`${targetUser} kullanıcısı sunucudan atıldı!`)
+                .addFields(
+                    { name: '👤 Atılan', value: `${targetUser.tag}`, inline: true },
+                    { name: '👮 Moderatör', value: interaction.user.username, inline: true },
+                    { name: '📝 Sebep', value: reason, inline: false }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [kickEmbed] });
+
+        } catch (error) {
+            logger.error('Kick işlemi hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Kick Hatası')
+                .setDescription('Kullanıcı atılırken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleTempBan(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+        const durationStr = interaction.options.getString('süre');
+        const reason = interaction.options.getString('sebep') || 'Belirtilmedi';
+        const deleteMessageDays = interaction.options.getInteger('mesaj-sil') || 0;
+
+        // Kendine ban kontrolü
+        if (targetUser.id === interaction.user.id) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Geçersiz İşlem')
+                .setDescription('Kendinizi yasaklayamazsınız!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
+        // Bot kontrolü
+        if (targetUser.bot) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Bot Kullanıcısı')
+                .setDescription('Bot kullanıcılarını yasaklayamazsınız!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], flags: 64 });
+        }
+
+        await interaction.deferReply();
+
+        try {
+            // Parse duration
+            const duration = this.parseDuration(durationStr);
+            if (!duration) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Geçersiz Süre')
+                    .setDescription('Geçersiz süre formatı! Örnek: 1h, 1d, 7d')
+                    .setTimestamp();
+                
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            // Max 30 days
+            const maxDuration = 30 * 24 * 60 * 60 * 1000;
+            if (duration > maxDuration) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Süre Çok Uzun')
+                    .setDescription('Maksimum geçici yasak süresi 30 gündür!')
+                    .setTimestamp();
+                
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            // Guild member kontrolü
+            const targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+            
+            if (targetMember) {
+                // Yetki kontrolü
+                if (targetMember.roles.highest.position >= interaction.member.roles.highest.position) {
+                    const errorEmbed = new EmbedBuilder()
+                        .setColor('#ff0000')
+                        .setTitle('❌ Yetkisiz İşlem')
+                        .setDescription('Bu kullanıcıyı yasaklayamazsınız! (Yüksek yetki)')
+                        .setTimestamp();
+                    
+                    return interaction.editReply({ embeds: [errorEmbed] });
+                }
+            }
+
+            // Calculate expiry
+            const expiresAt = Date.now() + duration;
+            const expiryDate = new Date(expiresAt);
+
+            // DM gönder (ban öncesi)
+            try {
+                const dmEmbed = new EmbedBuilder()
+                    .setColor('#ff8000')
+                    .setTitle(`⏰ ${interaction.guild.name} - Geçici Yasaklandınız`)
+                    .setDescription(`Sunucudan geçici olarak yasaklandınız.`)
+                    .addFields(
+                        { name: '📝 Sebep', value: reason, inline: false },
+                        { name: '⏱️ Süre', value: durationStr, inline: true },
+                        { name: '📅 Yasak Bitiş', value: expiryDate.toLocaleString('tr-TR'), inline: true },
+                        { name: '👮 Moderatör', value: interaction.user.username, inline: true }
+                    )
+                    .setFooter({
+                        text: 'Yasak süresi dolduğunda otomatik olarak kaldırılacaktır.',
+                        iconURL: interaction.guild.iconURL()
+                    })
+                    .setTimestamp();
+
+                await targetUser.send({ embeds: [dmEmbed] });
+            } catch (error) {
+                // DM gönderilemedi, devam et
+            }
+
+            // Ban işlemi
+            await interaction.guild.members.ban(targetUser, {
+                reason: `[TEMPBAN] ${interaction.user.tag}: ${reason} (Süre: ${durationStr})`,
+                deleteMessageSeconds: deleteMessageDays * 24 * 60 * 60
+            });
+
+            // Add to temp ban scheduler
+            const tempBanScheduler = interaction.client.tempBanScheduler;
+            if (tempBanScheduler) {
+                tempBanScheduler.addTempBan(targetUser.id, interaction.guild.id, expiresAt, reason);
+            }
+
+            const banEmbed = new EmbedBuilder()
+                .setColor('#ff8000')
+                .setTitle('⏰ Kullanıcı Geçici Yasaklandı')
+                .setDescription(`${targetUser} kullanıcısı geçici olarak sunucudan yasaklandı!`)
+                .addFields(
+                    { name: '👤 Yasaklanan', value: `${targetUser.tag}`, inline: true },
+                    { name: '👮 Moderatör', value: interaction.user.username, inline: true },
+                    { name: '⏱️ Süre', value: durationStr, inline: true },
+                    { name: '📝 Sebep', value: reason, inline: false },
+                    { name: '📅 Yasak Bitiş', value: expiryDate.toLocaleString('tr-TR'), inline: true },
+                    { name: '🗑️ Silinen Mesajlar', value: `${deleteMessageDays} gün`, inline: true }
+                )
+                .setFooter({ text: 'Yasak otomatik olarak kaldırılacaktır.' })
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [banEmbed] });
+
+            logger.info(`[Moderation] ${targetUser.tag} temp banned for ${durationStr} by ${interaction.user.tag} in ${interaction.guild.name}`);
+
+        } catch (error) {
+            logger.error('TempBan işlemi hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ TempBan Hatası')
+                .setDescription('Geçici yasaklama işlemi sırasında bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleUnban(interaction) {
+        const userId = interaction.options.getString('kullanıcı-id');
+        const reason = interaction.options.getString('sebep') || 'Belirtilmedi';
+
+        await interaction.deferReply();
+
+        try {
+            // Check and remove from temp bans if exists
+            const tempBanScheduler = interaction.client.tempBanScheduler;
+            if (tempBanScheduler) {
+                tempBanScheduler.removeTempBan(userId, interaction.guild.id);
+            }
+
+            await interaction.guild.members.unban(userId, `${interaction.user.tag}: ${reason}`);
+
+            const unbanEmbed = new EmbedBuilder()
+                .setColor('#00ff00')
+                .setTitle('🔓 Kullanıcı Yasağı Kaldırıldı')
+                .setDescription(`<@${userId}> kullanıcısının yasağı kaldırıldı!`)
+                .addFields(
+                    { name: '👤 Kullanıcı ID', value: userId, inline: true },
+                    { name: '👮 Moderatör', value: interaction.user.username, inline: true },
+                    { name: '📝 Sebep', value: reason, inline: false }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [unbanEmbed] });
+
+        } catch (error) {
+            logger.error('Unban işlemi hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Unban Hatası')
+                .setDescription('Yasak kaldırılırken bir hata oluştu! Kullanıcı ID\'sinin doğru olduğundan emin olun.')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleMute(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+        const durationStr = interaction.options.getString('süre');
+        const reason = interaction.options.getString('sebep') || 'Belirtilmedi';
+
+        await interaction.deferReply();
+
+        try {
+            const targetMember = await interaction.guild.members.fetch(targetUser.id);
+            
+            // Parse duration
+            const duration = this.parseDuration(durationStr);
+            if (!duration) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Geçersiz Süre')
+                    .setDescription('Geçersiz süre formatı! Örnek: 10m, 1h, 1d')
+                    .setTimestamp();
+                
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            // Discord timeout (max 28 days)
+            if (duration > 28 * 24 * 60 * 60 * 1000) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Süre Çok Uzun')
+                    .setDescription('Maksimum timeout süresi 28 gündür!')
+                    .setTimestamp();
+                
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            await targetMember.timeout(duration, `${interaction.user.tag}: ${reason}`);
+
+            const muteEmbed = new EmbedBuilder()
+                .setColor('#ffff00')
+                .setTitle('🔇 Kullanıcı Susturuldu')
+                .setDescription(`${targetUser} kullanıcısı susturuldu!`)
+                .addFields(
+                    { name: '👤 Susturulan', value: `${targetUser.tag}`, inline: true },
+                    { name: '⏱️ Süre', value: durationStr, inline: true },
+                    { name: '👮 Moderatör', value: interaction.user.username, inline: true },
+                    { name: '📝 Sebep', value: reason, inline: false }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [muteEmbed] });
+
+        } catch (error) {
+            logger.error('Mute işlemi hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Mute Hatası')
+                .setDescription('Susturma işlemi sırasında bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleUnmute(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+        const reason = interaction.options.getString('sebep') || 'Belirtilmedi';
+
+        await interaction.deferReply();
+
+        try {
+            const targetMember = await interaction.guild.members.fetch(targetUser.id);
+            await targetMember.timeout(null, `${interaction.user.tag}: ${reason}`);
+
+            const unmuteEmbed = new EmbedBuilder()
+                .setColor('#00ff00')
+                .setTitle('🔊 Kullanıcının Susturması Kaldırıldı')
+                .setDescription(`${targetUser} kullanıcısının susturması kaldırıldı!`)
+                .addFields(
+                    { name: '👤 Kullanıcı', value: `${targetUser.tag}`, inline: true },
+                    { name: '👮 Moderatör', value: interaction.user.username, inline: true },
+                    { name: '📝 Sebep', value: reason, inline: false }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [unmuteEmbed] });
+
+        } catch (error) {
+            logger.error('Unmute işlemi hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                .setTitle('❌ Unmute Hatası')
+                .setDescription('Susturma kaldırılırken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleTimeout(interaction) {
+        // Timeout aynı mute gibi çalışır
+        return this.handleMute(interaction);
+    },
+
+    async handleUntimeout(interaction) {
+        // Untimeout aynı unmute gibi çalışır
+        return this.handleUnmute(interaction);
+    },
+
+    async handleWarnings(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+
+        await interaction.deferReply();
+
+        try {
+            const warnings = await Warning.findAll({
+                where: {
+                    guildId: interaction.guild.id,
+                    userId: targetUser.id
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 10
+            });
+
+            if (warnings.length === 0) {
+                const noWarningsEmbed = new EmbedBuilder()
+                    .setColor('#00ff00')
+                    .setTitle('📋 Uyarılar')
+                    .setDescription(`${targetUser} kullanıcısının hiç uyarısı yok.`)
+                    .setTimestamp();
+
+                return interaction.editReply({ embeds: [noWarningsEmbed] });
+            }
+
+            const warningsEmbed = new EmbedBuilder()
+                .setColor('#ffff00')
+                .setTitle(`📋 ${targetUser.tag} - Uyarılar (${warnings.length})`)
+                .setDescription(`Son 10 uyarı gösteriliyor:`)
+                .setTimestamp();
+
+            warnings.forEach((warning, index) => {
+                const severityEmoji = {
+                    minor: '🟢',
+                    moderate: '🟡',
+                    severe: '🟠',
+                    critical: '🔴'
+                }[warning.severity] || '⚪';
+
+                warningsEmbed.addFields({
+                    name: `${severityEmoji} Uyarı #${warning.caseNumber}`,
+                    value: `**Sebep:** ${warning.reason}\n**Tarih:** ${new Date(warning.createdAt).toLocaleString('tr-TR')}`,
+                    inline: false
+                });
+            });
+
+            await interaction.editReply({ embeds: [warningsEmbed] });
+
+        } catch (error) {
+            logger.error('Warnings görüntüleme hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Hata')
+                .setDescription('Uyarılar yüklenirken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleClearWarnings(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+        const reason = interaction.options.getString('sebep') || 'Belirtilmedi';
+
+        await interaction.deferReply();
+
+        try {
+            const deletedCount = await Warning.destroy({
+                where: {
+                    guildId: interaction.guild.id,
+                    userId: targetUser.id
+                }
+            });
+
+            // GuildMember warnings sayısını sıfırla
+            await GuildMember.update(
+                { warnings: 0 },
+                {
+                    where: {
+                        guildId: interaction.guild.id,
+                        userId: targetUser.id
+                    }
+                }
+            );
+
+            const clearEmbed = new EmbedBuilder()
+                .setColor('#00ff00')
+                .setTitle('🗑️ Uyarılar Temizlendi')
+                .setDescription(`${targetUser} kullanıcısının ${deletedCount} uyarısı temizlendi!`)
+                .addFields(
+                    { name: '👤 Kullanıcı', value: `${targetUser.tag}`, inline: true },
+                    { name: '👮 Moderatör', value: interaction.user.username, inline: true },
+                    { name: '📝 Sebep', value: reason, inline: false }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [clearEmbed] });
+
+        } catch (error) {
+            logger.error('Clear warnings hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Hata')
+                .setDescription('Uyarılar temizlenirken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleCase(interaction) {
+        const caseNumber = interaction.options.getInteger('numara');
+
+        await interaction.deferReply();
+
+        try {
+            const moderationCase = await ModerationCase.findOne({
+                where: {
+                    guildId: interaction.guild.id,
+                    caseNumber: caseNumber
+                }
+            });
+
+            if (!moderationCase) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Case Bulunamadı')
+                    .setDescription(`#${caseNumber} numaralı moderasyon vakası bulunamadı.`)
+                    .setTimestamp();
+
+                return interaction.editReply({ embeds: [errorEmbed] });
+            }
+
+            const caseEmbed = new EmbedBuilder()
+                .setColor('#5865F2')
+                .setTitle(`📄 Case #${caseNumber}`)
+                .addFields(
+                    { name: '👤 Kullanıcı', value: `<@${moderationCase.userId}>`, inline: true },
+                    { name: '👮 Moderatör', value: `<@${moderationCase.moderatorId}>`, inline: true },
+                    { name: '⚙️ İşlem', value: moderationCase.type, inline: true },
+                    { name: '📝 Sebep', value: moderationCase.reason || 'Belirtilmedi', inline: false },
+                    { name: '📅 Tarih', value: new Date(moderationCase.createdAt).toLocaleString('tr-TR'), inline: true }
+                )
+                .setTimestamp();
+
+            if (moderationCase.details) {
+                caseEmbed.addFields({ name: '📋 Detaylar', value: moderationCase.details, inline: false });
+            }
+
+            await interaction.editReply({ embeds: [caseEmbed] });
+
+        } catch (error) {
+            logger.error('Case görüntüleme hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Hata')
+                .setDescription('Case yüklenirken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    async handleHistory(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı');
+
+        await interaction.deferReply();
+
+        try {
+            const cases = await ModerationCase.findAll({
+                where: {
+                    guildId: interaction.guild.id,
+                    userId: targetUser.id
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 15
+            });
+
+            if (cases.length === 0) {
+                const noHistoryEmbed = new EmbedBuilder()
+                    .setColor('#00ff00')
+                    .setTitle('📊 Moderasyon Geçmişi')
+                    .setDescription(`${targetUser} kullanıcısının moderasyon geçmişi temiz.`)
+                    .setTimestamp();
+
+                return interaction.editReply({ embeds: [noHistoryEmbed] });
+            }
+
+            const historyEmbed = new EmbedBuilder()
+                .setColor('#5865F2')
+                .setTitle(`📊 ${targetUser.tag} - Moderasyon Geçmişi`)
+                .setDescription(`Toplam ${cases.length} kayıt (son 15 gösteriliyor):`)
+                .setTimestamp();
+
+            cases.forEach((c, index) => {
+                const typeEmoji = {
+                    warn: '⚠️',
+                    kick: '👢',
+                    ban: '🔨',
+                    mute: '🔇',
+                    timeout: '⏰'
+                }[c.type] || '📋';
+
+                historyEmbed.addFields({
+                    name: `${typeEmoji} Case #${c.caseNumber} - ${c.type.toUpperCase()}`,
+                    value: `**Sebep:** ${c.reason || 'Belirtilmedi'}\n**Tarih:** ${new Date(c.createdAt).toLocaleString('tr-TR')}`,
+                    inline: true
+                });
+            });
+
+            await interaction.editReply({ embeds: [historyEmbed] });
+
+        } catch (error) {
+            logger.error('History görüntüleme hatası', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Hata')
+                .setDescription('Geçmiş yüklenirken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [errorEmbed] });
+        }
+    },
+
+    parseDuration(durationStr) {
+        const regex = /^(\d+)([smhd])$/;
+        const match = durationStr.match(regex);
+        
+        if (!match) return null;
+        
+        const value = parseInt(match[1]);
+        const unit = match[2];
+        
+        const multipliers = {
+            's': 1000,
+            'm': 60 * 1000,
+            'h': 60 * 60 * 1000,
+            'd': 24 * 60 * 60 * 1000
+        };
+        
+        return value * multipliers[unit];
+    }
 };
-
-
-
-
 
