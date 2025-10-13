@@ -105,6 +105,7 @@ const reactionRolesRoutes = require('./routes/reaction-roles');
 const auditLogRoutes = require('./routes/audit-log');
 const analyticsRoutes = require('./routes/analytics');
 const developerRoutes = require('./routes/developer');
+const cmsRoutes = require('./routes/cms');
 
 // Set up Audit Logger with Socket.IO
 const { getAuditLogger } = require('../src/utils/auditLogger');
@@ -138,15 +139,11 @@ app.use('/api/dev', developerRoutes);
 app.use('/api/bot', require('./routes/bot-proxy'));
 app.use('/api/contact', contactRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/cms', cmsRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    service: 'neuroviabot-backend',
-  });
-});
+// Health check route
+const healthRoutes = require('./routes/health');
+app.use('/api/health', healthRoutes);
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
@@ -215,11 +212,14 @@ io.on('connection', (socket) => {
 // Make io accessible to routes
 app.set('io', io);
 
-// Error handling
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+// Error handling middleware
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+
+// 404 handler - must be after all routes
+app.use(notFoundHandler);
+
+// Global error handler - must be last
+app.use(errorHandler);
 
 server.listen(PORT, () => {
   console.log(`[Backend] Server running on http://localhost:${PORT}`);

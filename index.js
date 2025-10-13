@@ -638,6 +638,8 @@ const { router: premiumRouter } = require('./src/routes/premium');
 const economyRouter = require('./src/routes/economy-api');
 const { router: developerBotRouter, setClient: setDeveloperBotClient } = require('./src/routes/developer-bot-api');
 const { router: botCommandsApiRouter, setClient: setBotCommandsClient } = require('./src/routes/bot-commands-api');
+const botFeaturesApiRouter = require('./src/routes/bot-features-api');
+const cmsApiRouter = require('./src/routes/cms-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -651,6 +653,8 @@ apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
 apiApp.use('/api/dev-bot', developerBotRouter);
 apiApp.use(botCommandsApiRouter);
+apiApp.use(botFeaturesApiRouter);
+apiApp.use(cmsApiRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {

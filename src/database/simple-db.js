@@ -38,7 +38,8 @@ class SimpleDatabase {
             tickets: new Map(),
             giveaways: new Map(),
             customCommands: new Map(),
-            settings: new Map()
+            settings: new Map(),
+            cmsContent: new Map() // New: section -> { content, lastUpdated, updatedBy }
         };
         
         this.ensureDirectory();

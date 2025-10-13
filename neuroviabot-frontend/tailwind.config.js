@@ -35,6 +35,7 @@ module.exports = {
         'float': 'float 3s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear infinite',
         'spin-slow': 'spin 3s linear infinite',
+        'shine': 'shine 1.5s ease-in-out',
       },
       keyframes: {
         fadeIn: {
@@ -76,6 +77,10 @@ module.exports = {
         shimmer: {
           '0%': { backgroundPosition: '-1000px 0' },
           '100%': { backgroundPosition: '1000px 0' },
+        },
+        shine: {
+          '0%': { left: '-100%' },
+          '100%': { left: '200%' },
         },
       },
       backgroundImage: {
