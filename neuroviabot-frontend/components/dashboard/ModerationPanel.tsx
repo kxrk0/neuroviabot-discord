@@ -354,7 +354,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({ guildId }) => {
                                                         <Badge className={getTypeColor(action.type)}>
                                                             {action.type.toUpperCase()}
                                                         </Badge>
-                                                        <Badge variant="outline" className="text-yellow-400 border-yellow-400/50">
+                                                        <Badge variant="warning" className="text-yellow-400">
                                                             {getTimeRemaining(action.expiresAt)}
                                                         </Badge>
                                                     </div>
@@ -392,7 +392,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({ guildId }) => {
                                             <p className="font-semibold text-white">Auto-Mod</p>
                                             <p className="text-sm text-gray-400">Otomatik moderasyon sistemi</p>
                                         </div>
-                                        <Button variant="outline" size="sm">
+                                        <Button variant="ghost" size="sm">
                                             Yapılandır
                                         </Button>
                                     </div>
@@ -404,7 +404,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({ guildId }) => {
                                             <p className="font-semibold text-white">Raid Protection</p>
                                             <p className="text-sm text-gray-400">Raid saldırılarına karşı koruma</p>
                                         </div>
-                                        <Button variant="outline" size="sm">
+                                        <Button variant="ghost" size="sm">
                                             Yapılandır
                                         </Button>
                                     </div>
@@ -416,7 +416,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({ guildId }) => {
                                             <p className="font-semibold text-white">Mod Log Kanalı</p>
                                             <p className="text-sm text-gray-400">Moderasyon loglarının gönderileceği kanal</p>
                                         </div>
-                                        <Button variant="outline" size="sm">
+                                        <Button variant="ghost" size="sm">
                                             Seç
                                         </Button>
                                     </div>
