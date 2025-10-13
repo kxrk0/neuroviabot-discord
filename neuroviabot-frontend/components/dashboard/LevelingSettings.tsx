@@ -194,14 +194,6 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
     }
   };
 
-  const showNotification = (message: string, type: 'success' | 'error') => {
-    const id = Date.now().toString();
-    setNotifications(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 5000);
-  };
-
   const updateConfig = (key: keyof LevelingConfig, value: any) => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
@@ -500,23 +492,6 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
         )}
         </button>
       </div>
-
-      {/* Notifications */}
-      {notifications.map((notification) => (
-        <motion.div
-          key={notification.id}
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -50 }}
-          className={`p-4 rounded-lg border ${
-            notification.type === 'success'
-              ? 'bg-green-900/20 border-green-500/30 text-green-300'
-              : 'bg-red-900/20 border-red-500/30 text-red-300'
-          }`}
-        >
-          {notification.message}
-        </motion.div>
-      ))}
     </div>
   );
 }
