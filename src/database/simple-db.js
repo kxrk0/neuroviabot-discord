@@ -31,6 +31,9 @@ class SimpleDatabase {
             userPremium: new Map(), // New: userId -> { plan, expiresAt, features }
             guildPremium: new Map(), // New: guildId -> { plan, expiresAt, features }
             auditLogs: new Map(), // New: guildId -> Array<AuditEntry>
+            guildTreasury: new Map(), // New: guildId -> { balance, totalEarned, transactions }
+            stakingPositions: new Map(), // New: stakingId -> staking position
+            loans: new Map(), // New: loanId -> loan details
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),
@@ -480,6 +483,301 @@ class SimpleDatabase {
     setLastActivityReward(userId, timestamp = Date.now()) {
         this.data.activityRewards.set(userId, timestamp);
         this.saveData();
+    }
+
+    // ==========================================
+    // Investment & Staking System
+    // ==========================================
+
+    getNRCBalance(userId) {
+        // Alias for getNeuroCoinBalance - returns total
+        const balance = this.getNeuroCoinBalance(userId);
+        return balance.wallet;
+    }
+
+    updateNRCBalance(userId, amount, reason = 'manual') {
+        // Alias for updateNeuroCoinBalance
+        this.updateNeuroCoinBalance(userId, amount, 'wallet');
+        
+        // Record transaction
+        if (amount > 0) {
+            this.recordTransaction('system', userId, amount, reason, {});
+        } else if (amount < 0) {
+            this.recordTransaction(userId, 'system', Math.abs(amount), reason, {});
+        }
+        
+        this.saveData();
+    }
+
+    createStakingPosition(userId, amount, duration) {
+        const balance = this.getNeuroCoinBalance(userId);
+        
+        if (balance.bank < amount) {
+            return { success: false, error: 'Yetersiz banka bakiyesi' };
+        }
+
+        // APY rates based on duration (days)
+        const apyRates = {
+            7: 5,    // 7 days = 5% APY
+            30: 10,  // 30 days = 10% APY
+            90: 15,  // 90 days = 15% APY
+            365: 20  // 365 days = 20% APY
+        };
+
+        const apy = apyRates[duration] || 5;
+        const stakingId = `stake_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const endsAt = Date.now() + (duration * 24 * 60 * 60 * 1000);
+        
+        // Calculate expected reward
+        const yearlyReward = amount * (apy / 100);
+        const dailyReward = yearlyReward / 365;
+        const totalReward = Math.floor(dailyReward * duration);
+
+        const stakingPosition = {
+            id: stakingId,
+            userId,
+            amount,
+            duration,
+            apy,
+            startedAt: Date.now(),
+            endsAt,
+            totalReward,
+            claimed: false,
+            earlyWithdraw: false
+        };
+
+        // Deduct from bank
+        this.updateNeuroCoinBalance(userId, -amount, 'bank');
+        
+        // Store staking position
+        if (!this.data.stakingPositions) {
+            this.data.stakingPositions = new Map();
+        }
+        this.data.stakingPositions.set(stakingId, stakingPosition);
+        
+        this.recordTransaction(userId, 'staking', amount, 'stake_created', {
+            stakingId,
+            duration,
+            apy,
+            expectedReward: totalReward
+        });
+        
+        this.saveData();
+        
+        return { success: true, staking: stakingPosition };
+    }
+
+    getUserStakingPositions(userId) {
+        if (!this.data.stakingPositions) {
+            this.data.stakingPositions = new Map();
+        }
+
+        const positions = [];
+        for (const [id, pos] of this.data.stakingPositions) {
+            if (pos.userId === userId && !pos.claimed) {
+                positions.push(pos);
+            }
+        }
+        return positions;
+    }
+
+    claimStaking(stakingId, userId) {
+        if (!this.data.stakingPositions) {
+            return { success: false, error: 'Staking bulunamadı' };
+        }
+
+        const position = this.data.stakingPositions.get(stakingId);
+        
+        if (!position) {
+            return { success: false, error: 'Staking pozisyonu bulunamadı' };
+        }
+
+        if (position.userId !== userId) {
+            return { success: false, error: 'Bu staking size ait değil' };
+        }
+
+        if (position.claimed) {
+            return { success: false, error: 'Bu staking zaten talep edilmiş' };
+        }
+
+        const now = Date.now();
+        const isEarly = now < position.endsAt;
+        
+        let returnAmount = position.amount;
+        let reward = 0;
+
+        if (isEarly) {
+            // Early withdrawal penalty: 20% of principal
+            const penalty = Math.floor(position.amount * 0.2);
+            returnAmount = position.amount - penalty;
+            
+            position.earlyWithdraw = true;
+            position.penalty = penalty;
+        } else {
+            // Full reward
+            reward = position.totalReward;
+            returnAmount = position.amount + reward;
+        }
+
+        // Return to bank
+        this.updateNeuroCoinBalance(userId, returnAmount, 'bank');
+        
+        // Mark as claimed
+        position.claimed = true;
+        position.claimedAt = now;
+        this.data.stakingPositions.set(stakingId, position);
+        
+        this.recordTransaction('staking', userId, returnAmount, 'stake_claimed', {
+            stakingId,
+            isEarly,
+            penalty: position.penalty || 0,
+            reward
+        });
+        
+        this.saveData();
+        
+        return { 
+            success: true, 
+            returnAmount, 
+            reward, 
+            isEarly, 
+            penalty: position.penalty || 0 
+        };
+    }
+
+    // ==========================================
+    // Loan System
+    // ==========================================
+
+    createLoan(userId, amount, durationDays, collateral = null) {
+        const balance = this.getNeuroCoinBalance(userId);
+        const userSettings = this.getUserSettings(userId) || {};
+        
+        // Check credit score
+        const creditScore = userSettings.creditScore || 100; // 0-100
+        
+        if (creditScore < 30) {
+            return { success: false, error: 'Kredi skorunuz çok düşük' };
+        }
+
+        // Interest rate based on credit score and duration
+        const baseRate = 10; // 10% base
+        const creditAdjustment = (100 - creditScore) / 10; // Lower score = higher rate
+        const durationAdjustment = durationDays / 30; // Longer = higher rate
+        const interestRate = baseRate + creditAdjustment + durationAdjustment;
+
+        const loanId = `loan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const dueDate = Date.now() + (durationDays * 24 * 60 * 60 * 1000);
+        const interestAmount = Math.floor(amount * (interestRate / 100));
+        const totalRepayment = amount + interestAmount;
+
+        const loan = {
+            id: loanId,
+            userId,
+            amount,
+            interestRate,
+            interestAmount,
+            totalRepayment,
+            durationDays,
+            createdAt: Date.now(),
+            dueDate,
+            status: 'active',
+            collateral,
+            repaid: false
+        };
+
+        // Initialize loans map if not exists
+        if (!this.data.loans) {
+            this.data.loans = new Map();
+        }
+
+        // Give loan to user (to wallet)
+        this.updateNeuroCoinBalance(userId, amount, 'wallet');
+        
+        this.data.loans.set(loanId, loan);
+        
+        this.recordTransaction('loan_system', userId, amount, 'loan_taken', {
+            loanId,
+            interestRate,
+            dueDate: new Date(dueDate).toISOString()
+        });
+        
+        this.saveData();
+        
+        return { success: true, loan };
+    }
+
+    getUserLoans(userId) {
+        if (!this.data.loans) {
+            this.data.loans = new Map();
+        }
+
+        const loans = [];
+        for (const [id, loan] of this.data.loans) {
+            if (loan.userId === userId && loan.status === 'active') {
+                loans.push(loan);
+            }
+        }
+        return loans;
+    }
+
+    repayLoan(loanId, userId, amount = null) {
+        if (!this.data.loans) {
+            return { success: false, error: 'Kredi bulunamadı' };
+        }
+
+        const loan = this.data.loans.get(loanId);
+        
+        if (!loan) {
+            return { success: false, error: 'Kredi bulunamadı' };
+        }
+
+        if (loan.userId !== userId) {
+            return { success: false, error: 'Bu kredi size ait değil' };
+        }
+
+        if (loan.status !== 'active') {
+            return { success: false, error: 'Bu kredi aktif değil' };
+        }
+
+        const repayAmount = amount || loan.totalRepayment;
+        const balance = this.getNeuroCoinBalance(userId);
+
+        if (balance.wallet < repayAmount) {
+            return { success: false, error: 'Yetersiz bakiye' };
+        }
+
+        // Deduct from wallet
+        this.updateNeuroCoinBalance(userId, -repayAmount, 'wallet');
+        
+        // Update loan status
+        loan.status = 'repaid';
+        loan.repaid = true;
+        loan.repaidAt = Date.now();
+        loan.repaidAmount = repayAmount;
+        this.data.loans.set(loanId, loan);
+        
+        // Update credit score (improve on successful repayment)
+        const userSettings = this.getUserSettings(userId) || {};
+        if (!userSettings.creditScore) {
+            userSettings.creditScore = 100;
+        }
+        
+        const isOnTime = Date.now() <= loan.dueDate;
+        if (isOnTime) {
+            userSettings.creditScore = Math.min(100, userSettings.creditScore + 5);
+        }
+        
+        this.setUserSettings(userId, userSettings);
+        
+        this.recordTransaction(userId, 'loan_system', repayAmount, 'loan_repaid', {
+            loanId,
+            onTime: isOnTime
+        });
+        
+        this.saveData();
+        
+        return { success: true, loan };
     }
 
     // Statistics

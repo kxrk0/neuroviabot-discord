@@ -19,6 +19,13 @@ module.exports = {
             return await handleSetupInteraction(interaction);
         }
 
+        // Shop purchase menü etkileşimlerini handle et
+        if (interaction.isStringSelectMenu() && interaction.customId === 'shop_purchase') {
+            const shopCommand = require('../commands/shop.js');
+            const selectedItem = interaction.values[0];
+            return await shopCommand.handlePurchase(interaction, selectedItem);
+        }
+
         // Sadece slash komutları için
         if (!interaction.isChatInputCommand()) return;
 

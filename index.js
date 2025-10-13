@@ -627,12 +627,14 @@ const { router: levelingRouter, setClient: setLevelingClient } = require('./src/
 const { router: botStatsRouter, setClient: setBotStatsClient } = require('./src/routes/bot-stats');
 const { router: reactionRolesRouter, setClient: setReactionRolesClient } = require('./src/routes/reactionRoles');
 const { router: premiumRouter } = require('./src/routes/premium');
+const economyRouter = require('./src/routes/economy-api');
 
 const apiApp = express();
 apiApp.use(express.json());
 apiApp.use('/api/bot', webApiRouter);
 apiApp.use('/api/bot/guilds', guildManagementRouter);
 apiApp.use('/api/bot/marketplace', marketplaceRouter);
+apiApp.use('/api/bot/economy', economyRouter);
 apiApp.use('/api/bot/leveling', levelingRouter);
 apiApp.use('/api/bot/stats', botStatsRouter);
 apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
@@ -679,6 +681,12 @@ client.once('clientReady', () => {
     const autoModHandler = new AutoModHandler(client);
     client.autoModHandler = autoModHandler;
     log('🛡️ Auto-Mod Handler initialized', 'SUCCESS');
+    
+    // Trading Handler'ı başlat
+    const TradingHandler = require('./src/handlers/tradingHandler');
+    const tradingHandler = new TradingHandler(client);
+    client.tradingHandler = tradingHandler;
+    log('💱 Trading Handler initialized', 'SUCCESS');
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();

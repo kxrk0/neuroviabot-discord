@@ -144,13 +144,66 @@ router.post('/purchase/:listingId', (req, res) => {
         }
         
         const db = getDatabase();
+        const listing = db.data.marketplaceListings.get(listingId);
+        
+        if (!listing) {
+            return res.status(400).json({
+                success: false,
+                error: 'Listing not found'
+            });
+        }
+        
+        // Get marketplace config for tax
+        const config = db.getServerMarketConfig(listing.guildId);
+        const taxRate = config.tax || 0; // 0-10%
+        const taxAmount = Math.floor(listing.price * (taxRate / 100));
+        const sellerAmount = listing.price - taxAmount;
+        
+        // Purchase listing
         const result = db.purchaseListing(listingId, buyerId);
         
         if (!result.success) {
             return res.status(400).json(result);
         }
         
-        res.json(result);
+        // Add tax to guild treasury
+        if (taxAmount > 0 && listing.guildId !== 'global') {
+            if (!db.data.guildTreasury) {
+                db.data.guildTreasury = new Map();
+            }
+            
+            const treasury = db.data.guildTreasury.get(listing.guildId) || {
+                balance: 0,
+                totalEarned: 0,
+                transactions: []
+            };
+            
+            treasury.balance += taxAmount;
+            treasury.totalEarned += taxAmount;
+            treasury.transactions.push({
+                type: 'marketplace_tax',
+                amount: taxAmount,
+                listingId,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Keep only last 100 transactions
+            if (treasury.transactions.length > 100) {
+                treasury.transactions = treasury.transactions.slice(-100);
+            }
+            
+            db.data.guildTreasury.set(listing.guildId, treasury);
+            db.saveData();
+        }
+        
+        res.json({
+            ...result,
+            tax: {
+                rate: taxRate,
+                amount: taxAmount,
+                sellerReceived: sellerAmount
+            }
+        });
     } catch (error) {
         logger.error('[Marketplace] Error purchasing item:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
@@ -371,6 +424,163 @@ router.post('/config/:guildId', (req, res) => {
         });
     } catch (error) {
         logger.error('[Marketplace] Error updating config:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+// ==========================================
+// GET /api/bot/marketplace/treasury/:guildId
+// Get guild treasury info
+// ==========================================
+router.get('/treasury/:guildId', (req, res) => {
+    try {
+        const { guildId } = req.params;
+        
+        const db = getDatabase();
+        if (!db.data.guildTreasury) {
+            db.data.guildTreasury = new Map();
+        }
+        
+        const treasury = db.data.guildTreasury.get(guildId) || {
+            balance: 0,
+            totalEarned: 0,
+            transactions: []
+        };
+        
+        res.json({
+            success: true,
+            treasury
+        });
+    } catch (error) {
+        logger.error('[Marketplace] Error fetching treasury:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+// ==========================================
+// POST /api/bot/marketplace/treasury/:guildId/withdraw
+// Withdraw from guild treasury (admin only)
+// ==========================================
+router.post('/treasury/:guildId/withdraw', (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { amount, userId, reason } = req.body;
+        
+        if (!amount || !userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields'
+            });
+        }
+        
+        const db = getDatabase();
+        if (!db.data.guildTreasury) {
+            db.data.guildTreasury = new Map();
+        }
+        
+        const treasury = db.data.guildTreasury.get(guildId);
+        
+        if (!treasury || treasury.balance < amount) {
+            return res.status(400).json({
+                success: false,
+                error: 'Insufficient treasury balance'
+            });
+        }
+        
+        // Deduct from treasury
+        treasury.balance -= amount;
+        treasury.transactions.push({
+            type: 'withdrawal',
+            amount: -amount,
+            userId,
+            reason: reason || 'Admin withdrawal',
+            timestamp: new Date().toISOString()
+        });
+        
+        // Keep only last 100 transactions
+        if (treasury.transactions.length > 100) {
+            treasury.transactions = treasury.transactions.slice(-100);
+        }
+        
+        db.data.guildTreasury.set(guildId, treasury);
+        db.saveData();
+        
+        res.json({
+            success: true,
+            newBalance: treasury.balance,
+            withdrawnAmount: amount
+        });
+    } catch (error) {
+        logger.error('[Marketplace] Error withdrawing from treasury:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+// ==========================================
+// POST /api/bot/marketplace/treasury/:guildId/deposit
+// Deposit to guild treasury
+// ==========================================
+router.post('/treasury/:guildId/deposit', (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { amount, userId, reason } = req.body;
+        
+        if (!amount || !userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields'
+            });
+        }
+        
+        const db = getDatabase();
+        
+        // Deduct from user
+        const balance = db.getNeuroCoinBalance(userId);
+        if (balance.wallet < amount) {
+            return res.status(400).json({
+                success: false,
+                error: 'Insufficient balance'
+            });
+        }
+        
+        db.updateNeuroCoinBalance(userId, -amount, 'wallet');
+        
+        // Add to treasury
+        if (!db.data.guildTreasury) {
+            db.data.guildTreasury = new Map();
+        }
+        
+        const treasury = db.data.guildTreasury.get(guildId) || {
+            balance: 0,
+            totalEarned: 0,
+            transactions: []
+        };
+        
+        treasury.balance += amount;
+        treasury.totalEarned += amount;
+        treasury.transactions.push({
+            type: 'deposit',
+            amount,
+            userId,
+            reason: reason || 'User deposit',
+            timestamp: new Date().toISOString()
+        });
+        
+        // Keep only last 100 transactions
+        if (treasury.transactions.length > 100) {
+            treasury.transactions = treasury.transactions.slice(-100);
+        }
+        
+        db.data.guildTreasury.set(guildId, treasury);
+        db.saveData();
+        
+        res.json({
+            success: true,
+            newBalance: treasury.balance,
+            depositedAmount: amount
+        });
+    } catch (error) {
+        logger.error('[Marketplace] Error depositing to treasury:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 });
