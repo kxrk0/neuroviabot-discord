@@ -179,7 +179,7 @@ export default function AnalyticsDashboard({ guildId }: AnalyticsDashboardProps)
               <Button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                variant={timeRange === range ? 'default' : 'outline'}
+                variant={timeRange === range ? 'primary' : 'ghost'}
                 size="sm"
                 className={timeRange === range ? 'bg-purple-600' : ''}
               >
@@ -190,7 +190,7 @@ export default function AnalyticsDashboard({ guildId }: AnalyticsDashboardProps)
           </div>
 
           {/* Export Buttons */}
-          <Button onClick={() => exportData('csv')} variant="outline" size="sm">
+          <Button onClick={() => exportData('csv')} variant="ghost" size="sm">
             <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
             CSV
           </Button>
