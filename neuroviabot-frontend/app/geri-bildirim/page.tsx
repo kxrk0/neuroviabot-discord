@@ -85,7 +85,7 @@ export default function FeedbackPage() {
 
   async function fetchStats() {
     try {
-      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://Neurovia.xyz';
+      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       const response = await axios.get(`${apiUrl}/api/feedback/stats`);
       if (response.data.success) {
         setStats(response.data.stats);
@@ -101,7 +101,7 @@ export default function FeedbackPage() {
     setSubmitStatus('idle');
 
     try {
-      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://Neurovia.xyz';
+      const apiUrl = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       const response = await fetch(`${apiUrl}/api/feedback`, {
         method: 'POST',
         headers: {

@@ -84,7 +84,7 @@ export default function Home() {
     
     const loadUser = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://Neurovia.xyz';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
         const response = await fetch(`${API_URL}/api/auth/user`, {
           credentials: 'include',
           headers: {
@@ -111,7 +111,7 @@ export default function Home() {
     // Load global stats
     const loadGlobalStats = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://Neurovia.xyz';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
         const response = await fetch(`${API_URL}/api/bot/stats/global`);
         if (response.ok) {
           const data = await response.json();
@@ -571,7 +571,7 @@ export default function Home() {
                 </div>
               ) : (
                 <motion.a
-                  href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2FNeurovia.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
+                  href={`https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="relative group flex items-center gap-2.5 px-6 py-3 text-sm font-bold overflow-hidden rounded-xl transition-all shadow-lg hover:shadow-xl"
@@ -956,7 +956,7 @@ export default function Home() {
             style={{ willChange: 'transform, opacity' }}
           >
             <motion.a
-              href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2FNeurovia.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
+              href={`https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`}
               whileHover={{ 
                 scale: 1.05,
                 boxShadow: "0 20px 40px rgba(88, 101, 242, 0.5)"
@@ -1405,7 +1405,7 @@ export default function Home() {
               Ve daha fazlası! <span className="text-white font-bold">50+ özellik</span> ile sunucunu kontrol et.
           </motion.p>
             <motion.a
-              href="https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2FNeurovia.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"
+              href={`https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`}
               whileHover={{ 
                 scale: 1.05,
                 transition: { duration: 0.2 }
@@ -1736,7 +1736,7 @@ export default function Home() {
                     transition={{ duration: 0.4, delay: 0.2 + i * 0.05 }}
                   >
                     <a 
-                      href={i === 0 ? "/ozellikler" : i === 1 ? "/servers" : "https://discord.com/oauth2/authorize?response_type=code&redirect_uri=https%3A%2F%2FNeurovia.xyz%2Fapi%2Fauth%2Fcallback&scope=identify%20email%20guilds&client_id=773539215098249246"} 
+                      href={i === 0 ? "/ozellikler" : i === 1 ? "/servers" : `https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`} 
                       className="text-gray-200 hover:text-white transition-all text-sm hover:translate-x-1 inline-block"
                     >
                       {item}
