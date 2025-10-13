@@ -277,33 +277,59 @@ export default function ServerDashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Socket.IO with real-time updates and notifications
-  useSocket({
-    guildId: serverId,
-    onSettingsUpdated: (data) => {
+  const { socket, on, off } = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleSettingsUpdated = (data: any) => {
       showNotification(`⚙️ ${data.setting || 'Ayar'} güncellendi!`, 'success');
       if (activeCategory === data.category || !data.category) {
         fetchGuildSettings();
       }
-    },
-    onMemberAction: (data) => {
+    };
+
+    const handleMemberAction = (data: any) => {
       showNotification(`👤 ${data.action}: ${data.memberName || 'Üye'}`, 'info');
       if (activeCategory === 'members') {
         // Trigger re-fetch in MemberManagement component
       }
-    },
-    onRoleUpdate: (data) => {
+    };
+
+    const handleRoleUpdate = (data: any) => {
       showNotification(`🎭 Rol güncellendi: ${data.roleName || 'Rol'}`, 'info');
       if (activeCategory === 'roles') {
         // Trigger re-fetch in RoleEditor component
       }
-    },
-    onChannelUpdate: (data) => {
+    };
+
+    const handleChannelUpdate = (data: any) => {
       showNotification(`#️⃣ Kanal güncellendi: ${data.channelName || 'Kanal'}`, 'info');
       if (activeCategory === 'channels') {
         // Trigger re-fetch in ChannelManager component
       }
-    },
-  });
+    };
+
+    // Join guild room
+    socket.emit('join_guild', serverId);
+
+    // Listen to events
+    on('settings_updated', handleSettingsUpdated);
+    on('member_action', handleMemberAction);
+    on('role_update', handleRoleUpdate);
+    on('channel_update', handleChannelUpdate);
+
+    return () => {
+      // Leave guild room
+      socket.emit('leave_guild', serverId);
+      
+      // Clean up listeners
+      off('settings_updated', handleSettingsUpdated);
+      off('member_action', handleMemberAction);
+      off('role_update', handleRoleUpdate);
+      off('channel_update', handleChannelUpdate);
+    };
+  }, [socket, serverId, activeCategory]);
 
   useEffect(() => {
     // Initial data load
