@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeftIcon, SparklesIcon, UsersIcon, RocketIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, SparklesIcon, UsersIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
 
 export default function AboutPage() {
   return (
@@ -45,7 +45,7 @@ export default function AboutPage() {
             transition={{ delay: 0.2 }}
             className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-8"
           >
-            <RocketIcon className="w-12 h-12 text-purple-400 mb-4" />
+            <RocketLaunchIcon className="w-12 h-12 text-purple-400 mb-4" />
             <h2 className="text-2xl font-bold mb-4">Vizyonumuz</h2>
             <p className="text-gray-300 leading-relaxed">
               Neurovia, Discord topluluklarını daha etkileşimli, güvenli ve yönetilebilir hale getirmek için geliştirilmiştir.

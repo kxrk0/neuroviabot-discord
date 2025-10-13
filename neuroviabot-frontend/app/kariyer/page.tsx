@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeftIcon, BriefcaseIcon, RocketIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, BriefcaseIcon, RocketLaunchIcon, HeartIcon } from '@heroicons/react/24/outline';
 
 export default function CareersPage() {
   return (
@@ -26,7 +26,7 @@ export default function CareersPage() {
 
         <div className="grid md:grid-cols-3 gap-6 mb-16">
           <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6">
-            <RocketIcon className="w-10 h-10 text-purple-400 mb-4" />
+            <RocketLaunchIcon className="w-10 h-10 text-purple-400 mb-4" />
             <h3 className="text-xl font-bold mb-2">İnovasyon</h3>
             <p className="text-gray-400">Yeni teknolojilerle çalışın ve Discord ekosistemini geliştirin</p>
           </div>
