@@ -15,6 +15,7 @@ import EmptyState from '../EmptyState';
 import LoadingSkeleton from '../LoadingSkeleton';
 import ConfirmDialog from './shared/ConfirmDialog';
 import SearchBar from '../ui/SearchBar';
+import { useSocket } from '@/hooks/useSocket';
 
 interface Channel {
   id: string;
@@ -56,6 +57,9 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
     channelName: ''
   });
 
+  // Socket.IO for real-time updates
+  const { socket } = useSocket();
+
   // Filter channels based on search query
   const filteredChannels = useMemo(() => {
     if (!searchQuery.trim()) return channels;
@@ -70,6 +74,41 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
   useEffect(() => {
     fetchChannels();
   }, [guildId]);
+
+  // Real-time channel updates via Socket.IO
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleChannelCreated = (data: any) => {
+      if (data.guildId === guildId) {
+        setChannels(prev => [...prev, data.channel].sort((a, b) => a.position - b.position));
+      }
+    };
+
+    const handleChannelUpdated = (data: any) => {
+      if (data.guildId === guildId) {
+        setChannels(prev => prev.map(ch => 
+          ch.id === data.channel.id ? { ...ch, ...data.channel } : ch
+        ).sort((a, b) => a.position - b.position));
+      }
+    };
+
+    const handleChannelDeleted = (data: any) => {
+      if (data.guildId === guildId) {
+        setChannels(prev => prev.filter(ch => ch.id !== data.channelId));
+      }
+    };
+
+    socket.on('channel_created', handleChannelCreated);
+    socket.on('channel_updated', handleChannelUpdated);
+    socket.on('channel_deleted', handleChannelDeleted);
+
+    return () => {
+      socket.off('channel_created', handleChannelCreated);
+      socket.off('channel_updated', handleChannelUpdated);
+      socket.off('channel_deleted', handleChannelDeleted);
+    };
+  }, [socket, guildId]);
 
   const fetchChannels = async () => {
     try {

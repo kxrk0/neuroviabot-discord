@@ -148,7 +148,7 @@ export default function MemberManagement({ guildId, userId }: MemberManagementPr
                     src={
                       member.avatar
                         ? `https://cdn.discordapp.com/avatars/${member.id}/${member.avatar}.png?size=64`
-                        : `https://cdn.discordapp.com/embed/avatars/${parseInt(member.discriminator) % 5}.png`
+                        : `https://cdn.discordapp.com/embed/avatars/${member.discriminator && member.discriminator !== "0" ? parseInt(member.discriminator) % 5 : parseInt(member.id) % 5}.png`
                     }
                     alt={member.username}
                     className="w-12 h-12 rounded-full"
@@ -160,7 +160,9 @@ export default function MemberManagement({ guildId, userId }: MemberManagementPr
                       <span className="text-white font-semibold">
                         {member.nickname || member.username}
                       </span>
-                      <span className="text-gray-500 text-sm">#{member.discriminator}</span>
+                      {member.discriminator && member.discriminator !== "0" && (
+                        <span className="text-gray-500 text-sm">#{member.discriminator}</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       {member.roles.slice(0, 3).map((role) => (

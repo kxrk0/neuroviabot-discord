@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const { getIO } = require('../socket');
 
 // Bot sunucusu API URL'i
 const BOT_API_URL = process.env.BOT_API_URL || 'http://localhost:3002';
@@ -210,6 +211,15 @@ router.post('/:guildId/roles', requireAuth, async (req, res) => {
       }
     );
     
+    // Emit Socket.IO event for real-time update
+    const io = getIO();
+    if (io && response.data.role) {
+      io.emit('role_created', {
+        guildId,
+        role: response.data.role
+      });
+    }
+    
     res.json(response.data);
   } catch (error) {
     console.error('[Backend API] Error creating role:', error.message);
@@ -237,6 +247,15 @@ router.patch('/:guildId/roles/:roleId', requireAuth, async (req, res) => {
       }
     );
     
+    // Emit Socket.IO event for real-time update
+    const io = getIO();
+    if (io && response.data.role) {
+      io.emit('role_updated', {
+        guildId,
+        role: response.data.role
+      });
+    }
+    
     res.json(response.data);
   } catch (error) {
     console.error('[Backend API] Error updating role:', error.message);
@@ -262,6 +281,15 @@ router.delete('/:guildId/roles/:roleId', requireAuth, async (req, res) => {
         timeout: 5000,
       }
     );
+    
+    // Emit Socket.IO event for real-time update
+    const io = getIO();
+    if (io) {
+      io.emit('role_deleted', {
+        guildId,
+        roleId
+      });
+    }
     
     res.json(response.data);
   } catch (error) {
@@ -366,6 +394,15 @@ router.post('/:guildId/channels', requireAuth, async (req, res) => {
       }
     );
     
+    // Emit Socket.IO event for real-time update
+    const io = getIO();
+    if (io && response.data.channel) {
+      io.emit('channel_created', {
+        guildId,
+        channel: response.data.channel
+      });
+    }
+    
     res.json(response.data);
   } catch (error) {
     console.error('[Backend API] Error creating channel:', error.message);
@@ -393,6 +430,15 @@ router.patch('/:guildId/channels/:channelId', requireAuth, async (req, res) => {
       }
     );
     
+    // Emit Socket.IO event for real-time update
+    const io = getIO();
+    if (io && response.data.channel) {
+      io.emit('channel_updated', {
+        guildId,
+        channel: response.data.channel
+      });
+    }
+    
     res.json(response.data);
   } catch (error) {
     console.error('[Backend API] Error updating channel:', error.message);
@@ -418,6 +464,15 @@ router.delete('/:guildId/channels/:channelId', requireAuth, async (req, res) => 
         timeout: 5000,
       }
     );
+    
+    // Emit Socket.IO event for real-time update
+    const io = getIO();
+    if (io) {
+      io.emit('channel_deleted', {
+        guildId,
+        channelId
+      });
+    }
     
     res.json(response.data);
   } catch (error) {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSocket } from '@/hooks/useSocket';
 import { 
   ShieldCheckIcon, 
   PlusIcon, 
@@ -37,6 +38,9 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Socket.IO for real-time updates
+  const { socket } = useSocket();
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [creatingRole, setCreatingRole] = useState(false);
   const [newRole, setNewRole] = useState({ name: '', color: '#99AAB5', hoist: false, mentionable: false });
@@ -60,6 +64,41 @@ export default function RoleEditor({ guildId, userId }: RoleEditorProps) {
   useEffect(() => {
     fetchRoles();
   }, [guildId]);
+
+  // Real-time role updates via Socket.IO
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRoleCreated = (data: any) => {
+      if (data.guildId === guildId) {
+        setRoles(prev => [...prev, data.role].sort((a, b) => b.position - a.position));
+      }
+    };
+
+    const handleRoleUpdated = (data: any) => {
+      if (data.guildId === guildId) {
+        setRoles(prev => prev.map(role => 
+          role.id === data.role.id ? { ...role, ...data.role } : role
+        ).sort((a, b) => b.position - a.position));
+      }
+    };
+
+    const handleRoleDeleted = (data: any) => {
+      if (data.guildId === guildId) {
+        setRoles(prev => prev.filter(role => role.id !== data.roleId));
+      }
+    };
+
+    socket.on('role_created', handleRoleCreated);
+    socket.on('role_updated', handleRoleUpdated);
+    socket.on('role_deleted', handleRoleDeleted);
+
+    return () => {
+      socket.off('role_created', handleRoleCreated);
+      socket.off('role_updated', handleRoleUpdated);
+      socket.off('role_deleted', handleRoleDeleted);
+    };
+  }, [socket, guildId]);
 
   const fetchRoles = async () => {
     try {
