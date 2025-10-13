@@ -9,7 +9,6 @@ on:
       - 'src/**'
       - 'package.json'
       - 'package-lock.json'
-      - 'neuroviabot-backend/**'
       - '.github/workflows/deploy-bot.yml'
   workflow_dispatch: # Manuel deployment
 
@@ -94,23 +93,6 @@ jobs:
             echo "✅ Dependencies installed"
             echo ""
 
-      - name: 📦 Install Backend Dependencies
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📦 BACKEND: Installing Dependencies"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            cd /root/neuroviabot/bot/neuroviabot-backend
-            npm install --production
-            echo "✅ Backend dependencies installed"
-            echo ""
-
       - name: 🔄 Restart Bot Service
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -129,23 +111,6 @@ jobs:
             echo "✅ Bot restarted"
             echo ""
 
-      - name: 🔄 Restart Backend Service
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔄 PM2: Restarting Backend"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            pm2 restart neuroviabot-backend --update-env
-            sleep 3
-            echo "✅ Backend restarted"
-            echo ""
-
       - name: 💾 Save PM2 Configuration
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -162,7 +127,7 @@ jobs:
             echo "✅ Configuration saved"
             echo ""
 
-      - name: ✅ Verify Services Status
+      - name: ✅ Verify Bot Status
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -172,31 +137,28 @@ jobs:
           command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "✅ BOT & BACKEND DEPLOYMENT COMPLETED!"
+            echo "✅ BOT DEPLOYMENT COMPLETED!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
-            echo "📊 Services Status:"
-            pm2 status
+            echo "📊 Bot Status:"
+            pm2 status neuroviabot
             echo ""
-            echo "📋 Bot Logs:"
-            pm2 logs neuroviabot --lines 10 --nostream
+            echo "📋 Recent Logs:"
+            pm2 logs neuroviabot --lines 15 --nostream
             echo ""
-            echo "📋 Backend Logs:"
-            pm2 logs neuroviabot-backend --lines 10 --nostream
-            echo ""
-            echo "🎉 All services are running!"
+            echo "🎉 Bot is running!"
 
       - name: 📊 Deployment Summary
         if: always()
         run: |
-          echo "### 🤖 Bot & Backend Deployment Completed!" >> $GITHUB_STEP_SUMMARY
+          echo "### 🤖 Bot Deployment Completed!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| 🤖 Discord Bot | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
-          echo "| 💾 Backend API | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** main" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
 
