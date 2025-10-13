@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import UserDropdown from '@/components/auth/UserDropdown';
 import NeuroCoinBadge from './NeuroCoinBadge';
+import DeveloperMenu from './DeveloperMenu';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useUser } from '@/hooks/useUser';
 
@@ -77,6 +78,9 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
         <div className="navbar-actions">
           {/* NeuroCoin Balance (only when logged in) */}
           {user && <NeuroCoinBadge />}
+          
+          {/* Developer Menu (only visible to developers) */}
+          <DeveloperMenu />
           
           {/* Notifications */}
           <button 

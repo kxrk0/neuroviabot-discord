@@ -628,6 +628,7 @@ const { router: botStatsRouter, setClient: setBotStatsClient } = require('./src/
 const { router: reactionRolesRouter, setClient: setReactionRolesClient } = require('./src/routes/reactionRoles');
 const { router: premiumRouter } = require('./src/routes/premium');
 const economyRouter = require('./src/routes/economy-api');
+const { router: developerBotRouter, setClient: setDeveloperBotClient } = require('./src/routes/developer-bot-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -639,6 +640,7 @@ apiApp.use('/api/bot/leveling', levelingRouter);
 apiApp.use('/api/bot/stats', botStatsRouter);
 apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
+apiApp.use('/api/dev-bot', developerBotRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
@@ -654,6 +656,7 @@ client.once('clientReady', () => {
     setLevelingClient(client);
     setBotStatsClient(client);
     setReactionRolesClient(client);
+    setDeveloperBotClient(client);
     
     // Activity Reward Handler'ı başlat
     activityRewardHandler = new ActivityRewardHandler(client);

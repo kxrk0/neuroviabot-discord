@@ -104,12 +104,18 @@ const premiumRoutes = require('./routes/premium');
 const reactionRolesRoutes = require('./routes/reaction-roles');
 const auditLogRoutes = require('./routes/audit-log');
 const analyticsRoutes = require('./routes/analytics');
+const developerRoutes = require('./routes/developer');
 
 // Set up Audit Logger with Socket.IO
 const { getAuditLogger } = require('../src/utils/auditLogger');
 const auditLogger = getAuditLogger();
 auditLogger.setIO(io);
 console.log('[Backend] Audit Logger configured with Socket.IO');
+
+// Set up Developer Events with Socket.IO
+const { initDeveloperEvents } = require('./socket/developerEvents');
+initDeveloperEvents(io);
+console.log('[Backend] Developer Events configured with Socket.IO');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
@@ -126,6 +132,7 @@ app.use('/api/premium', premiumRoutes);
 app.use('/api/reaction-roles', reactionRolesRoutes);
 app.use('/api/audit', auditLogRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/dev', developerRoutes);
 
 // Bot API proxy routes
 app.use('/api/bot', require('./routes/bot-proxy'));
