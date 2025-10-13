@@ -1,18 +1,19 @@
-const { getDatabase } = require('../database/simple-db');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { logger } = require('../utils/logger');
-const { getAuditLogger } = require('../utils/auditLogger');
+const { getDatabase } = require('../database/simple-db');
 
 class ReactionRoleHandler {
     constructor(client) {
         this.client = client;
         this.db = getDatabase();
-        this.auditLogger = getAuditLogger();
+        this.activeSetups = new Map(); // messageId -> setup data
         
         this.setupListeners();
         logger.info('✅ Reaction Role Handler initialized');
     }
 
     setupListeners() {
+        // Listen for message reactions
         this.client.on('messageReactionAdd', async (reaction, user) => {
             if (user.bot) return;
             await this.handleReactionAdd(reaction, user);
@@ -24,6 +25,79 @@ class ReactionRoleHandler {
         });
     }
 
+    async createReactionRoleMessage(guildId, channelId, config) {
+        try {
+            const guild = this.client.guilds.cache.get(guildId);
+            if (!guild) {
+                throw new Error('Guild not found');
+            }
+
+            const channel = guild.channels.cache.get(channelId);
+            if (!channel) {
+                throw new Error('Channel not found');
+            }
+
+            // Create embed
+            const embed = new EmbedBuilder()
+                .setTitle(config.title || '⭐ Rol Seçimi')
+                .setDescription(config.description || 'Aşağıdaki reaksiyonlara tıklayarak rol alabilirsiniz!')
+                .setColor(config.color || '#5865F2')
+                .setTimestamp();
+
+            // Add role information to embed
+            if (config.roles && config.roles.length > 0) {
+                const roleList = config.roles.map(r => `${r.emoji} - <@&${r.roleId}>`).join('\n');
+                embed.addFields({
+                    name: 'Roller',
+                    value: roleList
+                });
+            }
+
+            // Send message
+            const message = await channel.send({ embeds: [embed] });
+
+            // Add reactions
+            if (config.roles && config.roles.length > 0) {
+                for (const roleConfig of config.roles) {
+                    try {
+                        await message.react(roleConfig.emoji);
+                    } catch (error) {
+                        logger.error(`Failed to add reaction ${roleConfig.emoji}:`, error);
+                    }
+                }
+            }
+
+            // Save to database
+            const setup = {
+                guildId,
+                channelId,
+                messageId: message.id,
+                ...config,
+                createdAt: Date.now()
+            };
+
+            if (!this.db.data.reactionRoles) {
+                this.db.data.reactionRoles = new Map();
+            }
+
+            this.db.data.reactionRoles.set(message.id, setup);
+            this.activeSetups.set(message.id, setup);
+            this.db.save();
+
+            logger.info(`[ReactionRole] Created reaction role message ${message.id} in ${guildId}`);
+
+            return {
+                success: true,
+                messageId: message.id,
+                channelId: channel.id,
+                messageUrl: message.url
+            };
+        } catch (error) {
+            logger.error('[ReactionRole] Error creating message:', error);
+            throw error;
+        }
+    }
+
     async handleReactionAdd(reaction, user) {
         try {
             // Fetch partial reactions
@@ -31,140 +105,123 @@ class ReactionRoleHandler {
                 await reaction.fetch();
             }
 
-            const { message } = reaction;
-            const guildId = message.guild?.id;
-            if (!guildId) return;
+            const messageId = reaction.message.id;
+            const setup = this.activeSetups.get(messageId) || 
+                          this.db.data.reactionRoles?.get(messageId);
 
-            // ONLY listen to reactions on bot messages (1A choice)
-            if (message.author.id !== this.client.user.id) return;
+            if (!setup) return;
 
-            // Check if this message has reaction role config
-            const config = this.getReactionRoleConfig(guildId, message.id, reaction.emoji.name || reaction.emoji.id);
-            if (!config) return;
+            // Find matching role
+            const roleConfig = setup.roles?.find(r => r.emoji === reaction.emoji.name || r.emoji === reaction.emoji.id);
+            if (!roleConfig) return;
 
-            // Get member
-            const member = await message.guild.members.fetch(user.id);
-            if (!member) return;
+            const guild = reaction.message.guild;
+            const member = await guild.members.fetch(user.id);
+            const role = guild.roles.cache.get(roleConfig.roleId);
 
-            // Add role
-            const role = message.guild.roles.cache.get(config.roleId);
             if (!role) {
-                logger.warn(`[ReactionRole] Role ${config.roleId} not found in guild ${guildId}`);
+                logger.warn(`[ReactionRole] Role ${roleConfig.roleId} not found`);
                 return;
             }
 
-            await member.roles.add(role);
-            logger.info(`[ReactionRole] Added role ${role.name} to ${user.tag} in ${message.guild.name}`);
-
-            // Log to audit
-            this.auditLogger.log(
-                guildId,
-                'ROLE_ADD',
-                user.id,
-                role.id,
-                `Reaction role added: ${role.name}`,
-                { method: 'reaction', emoji: reaction.emoji.name },
-                'info'
-            );
-
+            // Add role
+            if (!member.roles.cache.has(role.id)) {
+                await member.roles.add(role);
+                logger.info(`[ReactionRole] Added role ${role.name} to ${user.tag}`);
+            }
         } catch (error) {
-            logger.error('[ReactionRole] Error adding role:', error);
+            logger.error('[ReactionRole] Error handling reaction add:', error);
         }
     }
 
     async handleReactionRemove(reaction, user) {
         try {
+            // Fetch partial reactions
             if (reaction.partial) {
                 await reaction.fetch();
             }
 
-            const { message } = reaction;
-            const guildId = message.guild?.id;
-            if (!guildId) return;
+            const messageId = reaction.message.id;
+            const setup = this.activeSetups.get(messageId) || 
+                          this.db.data.reactionRoles?.get(messageId);
 
-            // ONLY listen to reactions on bot messages
-            if (message.author.id !== this.client.user.id) return;
+            if (!setup) return;
 
-            const config = this.getReactionRoleConfig(guildId, message.id, reaction.emoji.name || reaction.emoji.id);
-            if (!config) return;
+            // Find matching role
+            const roleConfig = setup.roles?.find(r => r.emoji === reaction.emoji.name || r.emoji === reaction.emoji.id);
+            if (!roleConfig) return;
 
-            const member = await message.guild.members.fetch(user.id);
-            if (!member) return;
+            const guild = reaction.message.guild;
+            const member = await guild.members.fetch(user.id);
+            const role = guild.roles.cache.get(roleConfig.roleId);
 
-            const role = message.guild.roles.cache.get(config.roleId);
-            if (!role) return;
+            if (!role) {
+                logger.warn(`[ReactionRole] Role ${roleConfig.roleId} not found`);
+                return;
+            }
 
-            await member.roles.remove(role);
-            logger.info(`[ReactionRole] Removed role ${role.name} from ${user.tag} in ${message.guild.name}`);
-
-            this.auditLogger.log(
-                guildId,
-                'ROLE_REMOVE',
-                user.id,
-                role.id,
-                `Reaction role removed: ${role.name}`,
-                { method: 'reaction', emoji: reaction.emoji.name },
-                'info'
-            );
-
+            // Remove role
+            if (member.roles.cache.has(role.id)) {
+                await member.roles.remove(role);
+                logger.info(`[ReactionRole] Removed role ${role.name} from ${user.tag}`);
+            }
         } catch (error) {
-            logger.error('[ReactionRole] Error removing role:', error);
+            logger.error('[ReactionRole] Error handling reaction remove:', error);
         }
     }
 
-    getReactionRoleConfig(guildId, messageId, emoji) {
-        const guildSettings = this.db.getGuildSettings(guildId);
-        const reactionRoles = guildSettings.reactionRoles || [];
-        
-        // Find the message config
-        const messageConfig = reactionRoles.find(config => config.messageId === messageId);
-        if (!messageConfig || !messageConfig.roles) return null;
-        
-        // Check if this emoji has a role mapping
-        const roleId = messageConfig.roles[emoji];
-        if (!roleId) return null;
-        
-        return {
-            messageId,
-            emoji,
-            roleId,
-            guildId
-        };
+    async deleteReactionRoleMessage(messageId) {
+        try {
+            const setup = this.db.data.reactionRoles?.get(messageId);
+            if (!setup) {
+                throw new Error('Reaction role message not found');
+            }
+
+            const guild = this.client.guilds.cache.get(setup.guildId);
+            if (guild) {
+                const channel = guild.channels.cache.get(setup.channelId);
+                if (channel) {
+                    const message = await channel.messages.fetch(messageId).catch(() => null);
+                    if (message) {
+                        await message.delete();
+                    }
+                }
+            }
+
+            this.db.data.reactionRoles.delete(messageId);
+            this.activeSetups.delete(messageId);
+            this.db.save();
+
+            logger.info(`[ReactionRole] Deleted reaction role message ${messageId}`);
+            return { success: true };
+        } catch (error) {
+            logger.error('[ReactionRole] Error deleting message:', error);
+            throw error;
+        }
     }
 
-    addReactionRole(guildId, config) {
-        const guildSettings = this.db.getGuildSettings(guildId);
-        const reactionRoles = guildSettings.reactionRoles || [];
-        
-        reactionRoles.push({
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            ...config,
-            enabled: true,
-            createdAt: new Date().toISOString()
+    getActiveSetups(guildId) {
+        if (!this.db.data.reactionRoles) return [];
+
+        const setups = [];
+        this.db.data.reactionRoles.forEach((setup, messageId) => {
+            if (setup.guildId === guildId) {
+                setups.push({ messageId, ...setup });
+            }
         });
 
-        this.db.updateGuildSettingsCategory(guildId, 'reactionRoles', reactionRoles);
-        logger.info(`[ReactionRole] Added reaction role config in guild ${guildId}`);
-        
-        return { success: true };
+        return setups;
     }
 
-    removeReactionRole(guildId, configId) {
-        const guildSettings = this.db.getGuildSettings(guildId);
-        let reactionRoles = guildSettings.reactionRoles || [];
-        
-        reactionRoles = reactionRoles.filter(config => config.id !== configId);
-        this.db.updateGuildSettingsCategory(guildId, 'reactionRoles', reactionRoles);
-        
-        logger.info(`[ReactionRole] Removed reaction role config ${configId} in guild ${guildId}`);
-        return { success: true };
-    }
+    async loadActiveSetups() {
+        if (!this.db.data.reactionRoles) return;
 
-    getReactionRoles(guildId) {
-        const guildSettings = this.db.getGuildSettings(guildId);
-        return guildSettings.reactionRoles || [];
+        this.db.data.reactionRoles.forEach((setup, messageId) => {
+            this.activeSetups.set(messageId, setup);
+        });
+
+        logger.info(`[ReactionRole] Loaded ${this.activeSetups.size} active setups`);
     }
 }
 
 module.exports = ReactionRoleHandler;
-

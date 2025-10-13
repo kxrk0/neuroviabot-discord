@@ -39,7 +39,10 @@ class SimpleDatabase {
             giveaways: new Map(),
             customCommands: new Map(),
             settings: new Map(),
-            cmsContent: new Map() // New: section -> { content, lastUpdated, updatedBy }
+            cmsContent: new Map(), // New: section -> { content, lastUpdated, updatedBy }
+            automodSettings: new Map(), // New: guildId -> automod config
+            automodViolations: new Map(), // New: violationId -> violation data
+            reactionRoles: new Map() // New: messageId -> reaction role setup
         };
         
         this.ensureDirectory();

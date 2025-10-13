@@ -9,6 +9,7 @@ import {
   Cog6ToothIcon,
   StarIcon,
 } from '@heroicons/react/24/outline';
+import { useSocket } from '@/hooks/useSocket';
 
 interface LevelingSettingsProps {
   guildId: string;
@@ -46,12 +47,35 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
   const [channels, setChannels] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'success' | 'error'}>>([]);
+  const socket = useSocket();
 
   useEffect(() => {
     fetchSettings();
     fetchChannels();
     fetchRoles();
   }, [guildId]);
+
+  // Socket.IO listener for real-time leveling settings updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleLevelingUpdate = (data: any) => {
+      if (data.guildId === guildId) {
+        console.log('[LevelingSettings] Real-time update received:', data);
+        setConfig(prev => ({
+          ...prev,
+          ...data.settings
+        }));
+        addNotification('success', 'Seviye ayarları güncellendi');
+      }
+    };
+
+    socket.on('leveling_settings_update', handleLevelingUpdate);
+
+    return () => {
+      socket.off('leveling_settings_update', handleLevelingUpdate);
+    };
+  }, [socket, guildId]);
 
   const fetchSettings = async () => {
     try {

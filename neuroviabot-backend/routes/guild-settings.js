@@ -165,6 +165,14 @@ router.post('/:guildId/settings/leveling', requireAuth, async (req, res) => {
         category: 'leveling',
         timestamp: new Date().toISOString()
       });
+      
+      // Emit specific leveling settings update event
+      io.to(`guild_${guildId}`).emit('leveling_settings_update', {
+        guildId,
+        settings,
+        timestamp: new Date().toISOString()
+      });
+      console.log(`[LevelingSettings] Emitted leveling_settings_update for guild ${guildId}`);
     }
     
     res.json({ success: true, message: 'Leveling settings saved successfully' });

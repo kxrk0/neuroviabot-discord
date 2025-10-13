@@ -712,6 +712,19 @@ client.once('clientReady', () => {
     client.feedbackHandler = feedbackHandler;
     log('💬 Feedback Handler initialized', 'SUCCESS');
     
+    // Reaction Role Handler'ı başlat
+    const ReactionRoleHandler = require('./src/handlers/reactionRoleHandler');
+    const reactionRoleHandler = new ReactionRoleHandler(client);
+    client.reactionRoleHandler = reactionRoleHandler;
+    await reactionRoleHandler.loadActiveSetups();
+    log('⭐ Reaction Role Handler initialized', 'SUCCESS');
+    
+    // Auto-Mod Handler'ı başlat
+    const AutoModHandler = require('./src/handlers/autoModHandler');
+    const autoModHandler = new AutoModHandler(client);
+    client.autoModHandler = autoModHandler;
+    log('🛡️ Auto-Mod Handler initialized', 'SUCCESS');
+    
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();
     log('📊 Monitoring Service initialized', 'SUCCESS');

@@ -1,22 +1,13 @@
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
-const { getAuditLogger } = require('../utils/auditLogger');
+const { getDatabase } = require('../database/simple-db');
 
 class AutoModHandler {
     constructor(client) {
         this.client = client;
         this.db = getDatabase();
-        this.auditLogger = getAuditLogger();
-        
-        // Track user message rates: Map<userId:guildId, Array<timestamp>>
-        this.messageHistory = new Map();
-        
-        // Track user violations: Map<userId:guildId, count>
-        this.violations = new Map();
-        
-        // Cleanup interval
-        this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
+        this.userMessageCache = new Map(); // userId -> [{content, timestamp}]
+        this.violationCache = new Map(); // userId -> {count, lastViolation}
         
         this.setupListeners();
         logger.info('✅ Auto-Moderation Handler initialized');
@@ -25,407 +16,338 @@ class AutoModHandler {
     setupListeners() {
         this.client.on('messageCreate', async (message) => {
             if (message.author.bot || !message.guild) return;
-            await this.handleMessage(message);
+            await this.checkMessage(message);
         });
     }
 
-    async handleMessage(message) {
+    async checkMessage(message) {
         try {
             const guildId = message.guild.id;
-            const userId = message.user.id;
-            
-            // Get automod settings
             const settings = this.getAutoModSettings(guildId);
-            if (!settings || !settings.enabled) return;
+            
+            if (!settings.enabled) return;
 
-            // Check spam
-            if (settings.antiSpam?.enabled) {
-                const isSpam = await this.checkSpam(message, settings.antiSpam);
-                if (isSpam) return; // Message was deleted
+            // Skip if user has moderator permissions
+            if (message.member.permissions.has(PermissionFlagsBits.ManageMessages)) return;
+
+            // Check for spam
+            if (settings.antiSpam.enabled) {
+                const isSpam = await this.checkSpam(message);
+                if (isSpam) {
+                    await this.handleViolation(message, 'spam', settings);
+                    return;
+                }
             }
 
-            // Check links
-            if (settings.linkFilter?.enabled) {
-                const hasBlockedLink = await this.checkLinks(message, settings.linkFilter);
-                if (hasBlockedLink) return;
+            // Check for links
+            if (settings.linkFilter.enabled) {
+                const hasInvalidLink = this.checkLinks(message.content, settings.linkFilter);
+                if (hasInvalidLink) {
+                    await this.handleViolation(message, 'link', settings);
+                    return;
+                }
             }
 
-            // Check words
-            if (settings.wordFilter?.enabled) {
-                const hasBlockedWord = await this.checkWords(message, settings.wordFilter);
-                if (hasBlockedWord) return;
+            // Check for blocked words
+            if (settings.wordFilter.enabled) {
+                const hasBlockedWord = this.checkWords(message.content, settings.wordFilter.blockedWords);
+                if (hasBlockedWord) {
+                    await this.handleViolation(message, 'word', settings);
+                    return;
+                }
+            }
+
+            // Check for excessive mentions
+            if (settings.mentionSpam.enabled) {
+                const hasMentionSpam = this.checkMentions(message, settings.mentionSpam.max);
+                if (hasMentionSpam) {
+                    await this.handleViolation(message, 'mention_spam', settings);
+                    return;
+                }
             }
 
         } catch (error) {
-            logger.error('[AutoMod] Error handling message:', error);
+            logger.error('[AutoMod] Error checking message:', error);
         }
     }
 
-    async checkSpam(message, spamSettings) {
-        const key = `${message.author.id}:${message.guild.id}`;
+    async checkSpam(message) {
+        const userId = message.author.id;
         const now = Date.now();
         
-        // Get or create message history
-        if (!this.messageHistory.has(key)) {
-            this.messageHistory.set(key, []);
+        if (!this.userMessageCache.has(userId)) {
+            this.userMessageCache.set(userId, []);
         }
-        
-        const history = this.messageHistory.get(key);
+
+        const userMessages = this.userMessageCache.get(userId);
         
         // Add current message
-        history.push({
-            timestamp: now,
+        userMessages.push({
             content: message.content,
-            channelId: message.channel.id
+            timestamp: now
         });
-        
-        // Remove messages older than timeframe
-        const timeframe = spamSettings.timeframe || 5000; // 5 seconds default
-        const recentMessages = history.filter(m => now - m.timestamp < timeframe);
-        this.messageHistory.set(key, recentMessages);
-        
-        // Check message rate
-        const maxMessages = spamSettings.maxMessages || 5;
-        if (recentMessages.length > maxMessages) {
-            await this.handleSpamViolation(message, spamSettings);
+
+        // Clean old messages (older than 10 seconds)
+        const recentMessages = userMessages.filter(msg => now - msg.timestamp < 10000);
+        this.userMessageCache.set(userId, recentMessages);
+
+        // Check for rapid messaging (5+ messages in 5 seconds)
+        const veryRecentMessages = recentMessages.filter(msg => now - msg.timestamp < 5000);
+        if (veryRecentMessages.length >= 5) {
             return true;
         }
-        
-        // Check duplicate messages
-        if (spamSettings.checkDuplicates) {
-            const duplicateCount = recentMessages.filter(m => 
-                m.content === message.content
-            ).length;
-            
-            if (duplicateCount >= 3) {
-                await this.handleSpamViolation(message, spamSettings, 'duplicate');
-                return true;
-            }
+
+        // Check for duplicate messages (3+ identical in 30 seconds)
+        const last30s = recentMessages.filter(msg => now - msg.timestamp < 30000);
+        const duplicates = last30s.filter(msg => msg.content === message.content);
+        if (duplicates.length >= 3) {
+            return true;
         }
-        
+
         return false;
     }
 
-    async checkLinks(message, linkSettings) {
-        // URL regex
+    checkLinks(content, linkFilter) {
         const urlRegex = /(https?:\/\/[^\s]+)/gi;
-        const urls = message.content.match(urlRegex) || [];
+        const links = content.match(urlRegex);
         
-        if (urls.length === 0) return false;
-        
-        // Check whitelist first
-        if (linkSettings.whitelist && linkSettings.whitelist.length > 0) {
-            const isWhitelisted = urls.every(url => 
-                linkSettings.whitelist.some(allowed => url.includes(allowed))
-            );
-            
-            if (!isWhitelisted) {
-                await this.handleLinkViolation(message, linkSettings, urls);
-                return true;
+        if (!links) return false;
+
+        // Whitelist check
+        if (linkFilter.whitelist && linkFilter.whitelist.length > 0) {
+            for (const link of links) {
+                const isWhitelisted = linkFilter.whitelist.some(domain => 
+                    link.toLowerCase().includes(domain.toLowerCase())
+                );
+                if (!isWhitelisted) return true;
+            }
+            return false;
+        }
+
+        // Blacklist check
+        if (linkFilter.blacklist && linkFilter.blacklist.length > 0) {
+            for (const link of links) {
+                const isBlacklisted = linkFilter.blacklist.some(domain => 
+                    link.toLowerCase().includes(domain.toLowerCase())
+                );
+                if (isBlacklisted) return true;
             }
         }
-        
-        // Check blacklist
-        if (linkSettings.blacklist && linkSettings.blacklist.length > 0) {
-            const hasBlacklisted = urls.some(url => 
-                linkSettings.blacklist.some(blocked => url.includes(blocked))
-            );
-            
-            if (hasBlacklisted) {
-                await this.handleLinkViolation(message, linkSettings, urls);
-                return true;
-            }
-        }
-        
+
         return false;
     }
 
-    async checkWords(message, wordSettings) {
-        const blockedWords = wordSettings.blockedWords || [];
-        if (blockedWords.length === 0) return false;
+    checkWords(content, blockedWords) {
+        if (!blockedWords || blockedWords.length === 0) return false;
+
+        const lowerContent = content.toLowerCase();
         
-        const content = message.content.toLowerCase();
-        
-        for (const word of blockedWords) {
-            const regex = new RegExp(`\\b${word.toLowerCase()}\\b`, 'i');
-            if (regex.test(content)) {
-                await this.handleWordViolation(message, wordSettings, word);
-                return true;
-            }
-        }
-        
-        return false;
+        return blockedWords.some(word => {
+            const lowerWord = word.toLowerCase();
+            // Check whole word match with word boundaries
+            const regex = new RegExp(`\\b${lowerWord}\\b`, 'i');
+            return regex.test(lowerContent);
+        });
     }
 
-    async handleSpamViolation(message, settings, type = 'rate') {
+    checkMentions(message, maxMentions) {
+        const totalMentions = message.mentions.users.size + message.mentions.roles.size;
+        return totalMentions > maxMentions;
+    }
+
+    async handleViolation(message, type, settings) {
         try {
             // Delete message
             await message.delete().catch(() => {});
-            
+
+            const userId = message.author.id;
+            const guildId = message.guild.id;
+
             // Track violation
-            await this.trackViolation(message.author.id, message.guild.id, 'SPAM', {
-                type,
-                channel: message.channel.name
-            });
-            
-            // Get violation count
-            const key = `${message.author.id}:${message.guild.id}`;
-            const violationCount = this.violations.get(key) || 0;
-            
-            // Take action based on settings and violation count
-            const action = this.getAction(violationCount, settings.actions);
-            
-            if (action === 'mute') {
-                await this.muteUser(message.member, settings.muteDuration || 600000); // 10 min default
-            } else if (action === 'kick') {
-                await message.member.kick('Auto-mod: Spam');
-            } else if (action === 'ban') {
-                await message.member.ban({ reason: 'Auto-mod: Spam', deleteMessageSeconds: 86400 });
+            if (!this.violationCache.has(userId)) {
+                this.violationCache.set(userId, { count: 0, lastViolation: Date.now() });
             }
-            
-            // Send warning DM
-            const embed = new EmbedBuilder()
-                .setColor('#ef4444')
-                .setTitle('⚠️ Spam Uyarısı')
-                .setDescription(`${message.guild.name} sunucusunda spam tespit edildi.\n\n**Sebep:** ${type === 'rate' ? 'Çok hızlı mesaj' : 'Tekrarlayan mesajlar'}\n**İşlem:** ${action || 'Uyarı'}`)
-                .setTimestamp();
-            
-            await message.author.send({ embeds: [embed] }).catch(() => {});
-            
-            // Log to channel
-            if (settings.logChannel) {
-                const logChannel = message.guild.channels.cache.get(settings.logChannel);
-                if (logChannel) {
-                    const logEmbed = new EmbedBuilder()
-                        .setColor('#ef4444')
-                        .setTitle('🚫 Auto-Mod: Spam')
-                        .addFields(
-                            { name: 'Kullanıcı', value: `${message.author} (${message.author.tag})`, inline: true },
-                            { name: 'Kanal', value: `${message.channel}`, inline: true },
-                            { name: 'İhlal Sayısı', value: `${violationCount}`, inline: true },
-                            { name: 'İşlem', value: action || 'Uyarı', inline: true },
-                            { name: 'Mesaj', value: message.content.substring(0, 1024) || 'N/A', inline: false }
-                        )
-                        .setTimestamp();
-                    
-                    await logChannel.send({ embeds: [logEmbed] });
-                }
-            }
-            
-            // Audit log
-            this.auditLogger.log({
-                guildId: message.guild.id,
-                action: 'AUTOMOD_SPAM',
-                executor: { id: this.client.user.id, username: 'AutoMod' },
-                target: { id: message.author.id, name: message.author.tag, type: 'user' },
-                changes: { violationCount, action: action || 'warning', type },
-                reason: `Spam detected: ${type}`
-            });
-            
-        } catch (error) {
-            logger.error('[AutoMod] Error handling spam violation:', error);
-        }
-    }
 
-    async handleLinkViolation(message, settings, urls) {
-        try {
-            await message.delete().catch(() => {});
-            
-            await this.trackViolation(message.author.id, message.guild.id, 'LINK', {
-                urls,
-                channel: message.channel.name
-            });
-            
-            const key = `${message.author.id}:${message.guild.id}`;
-            const violationCount = this.violations.get(key) || 0;
-            const action = this.getAction(violationCount, settings.actions);
-            
-            if (action === 'mute') {
-                await this.muteUser(message.member, settings.muteDuration || 600000);
-            } else if (action === 'kick') {
-                await message.member.kick('Auto-mod: Yasak link');
-            } else if (action === 'ban') {
-                await message.member.ban({ reason: 'Auto-mod: Yasak link' });
-            }
-            
-            const embed = new EmbedBuilder()
-                .setColor('#ef4444')
-                .setTitle('⚠️ Link Uyarısı')
-                .setDescription(`${message.guild.name} sunucusunda yasak link tespit edildi.\n\n**İşlem:** ${action || 'Uyarı'}`)
-                .setTimestamp();
-            
-            await message.author.send({ embeds: [embed] }).catch(() => {});
-            
-            this.auditLogger.log({
-                guildId: message.guild.id,
-                action: 'AUTOMOD_LINK',
-                executor: { id: this.client.user.id, username: 'AutoMod' },
-                target: { id: message.author.id, name: message.author.tag, type: 'user' },
-                changes: { violationCount, action: action || 'warning', urls },
-                reason: 'Blocked link detected'
-            });
-            
-        } catch (error) {
-            logger.error('[AutoMod] Error handling link violation:', error);
-        }
-    }
+            const violations = this.violationCache.get(userId);
+            violations.count++;
+            violations.lastViolation = Date.now();
 
-    async handleWordViolation(message, settings, word) {
-        try {
-            await message.delete().catch(() => {});
-            
-            await this.trackViolation(message.author.id, message.guild.id, 'WORD', {
-                word,
-                channel: message.channel.name
-            });
-            
-            const key = `${message.author.id}:${message.guild.id}`;
-            const violationCount = this.violations.get(key) || 0;
-            const action = this.getAction(violationCount, settings.actions);
-            
-            if (action === 'mute') {
-                await this.muteUser(message.member, settings.muteDuration || 600000);
-            } else if (action === 'kick') {
-                await message.member.kick('Auto-mod: Uygunsuz kelime');
-            } else if (action === 'ban') {
-                await message.member.ban({ reason: 'Auto-mod: Uygunsuz kelime' });
+            // Save to database
+            this.saveViolation(guildId, userId, type);
+
+            // Determine action based on violation count
+            let action = 'warn';
+            let actionTaken = 'Uyarıldı';
+
+            if (violations.count >= settings.actions.banThreshold) {
+                action = 'ban';
+                actionTaken = 'Yasaklandı';
+                await message.member.ban({ reason: `Auto-mod: ${this.getViolationName(type)} (${violations.count} ihlal)` });
+            } else if (violations.count >= settings.actions.kickThreshold) {
+                action = 'kick';
+                actionTaken = 'Atıldı';
+                await message.member.kick(`Auto-mod: ${this.getViolationName(type)} (${violations.count} ihlal)`);
+            } else if (violations.count >= settings.actions.muteThreshold) {
+                action = 'mute';
+                actionTaken = 'Susturuldu';
+                await this.muteUser(message.member, settings.actions.muteDuration);
             }
-            
-            const embed = new EmbedBuilder()
-                .setColor('#ef4444')
-                .setTitle('⚠️ Kelime Filtresi')
-                .setDescription(`${message.guild.name} sunucusunda uygunsuz kelime tespit edildi.\n\n**İşlem:** ${action || 'Uyarı'}`)
+
+            // Send warning message to user
+            const warningEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('⚠️ Auto-Moderasyon')
+                .setDescription(`Mesajınız **${this.getViolationName(type)}** nedeniyle silindi.`)
+                .addFields(
+                    { name: 'İhlal Sayısı', value: `${violations.count}`, inline: true },
+                    { name: 'İşlem', value: actionTaken, inline: true }
+                )
                 .setTimestamp();
-            
-            await message.author.send({ embeds: [embed] }).catch(() => {});
-            
-            this.auditLogger.log({
-                guildId: message.guild.id,
-                action: 'AUTOMOD_WORD',
-                executor: { id: this.client.user.id, username: 'AutoMod' },
-                target: { id: message.author.id, name: message.author.tag, type: 'user' },
-                changes: { violationCount, action: action || 'warning' },
-                reason: 'Blocked word detected'
-            });
-            
+
+            await message.channel.send({ 
+                content: `${message.author}`, 
+                embeds: [warningEmbed] 
+            }).then(msg => setTimeout(() => msg.delete().catch(() => {}), 10000));
+
+            // Log to mod channel
+            await this.logViolation(message.guild, message.author, type, action, violations.count);
+
+            logger.info(`[AutoMod] ${type} violation by ${message.author.tag} - Action: ${action}`);
+
         } catch (error) {
-            logger.error('[AutoMod] Error handling word violation:', error);
+            logger.error('[AutoMod] Error handling violation:', error);
         }
     }
 
     async muteUser(member, duration) {
         try {
-            // Try to use timeout first (native Discord feature)
-            if (member.moderatable) {
-                await member.timeout(duration, 'Auto-mod violation');
-                return;
-            }
+            // Find muted role or create it
+            let mutedRole = member.guild.roles.cache.find(r => r.name === 'Muted');
             
-            // Fallback: Add mute role
-            const muteRole = member.guild.roles.cache.find(r => r.name === 'Muted' || r.name === 'Susturuldu');
-            if (muteRole) {
-                await member.roles.add(muteRole);
-                
-                // Auto-unmute after duration
-                setTimeout(async () => {
-                    try {
-                        await member.roles.remove(muteRole);
-                    } catch (error) {
-                        logger.error('[AutoMod] Error removing mute role:', error);
-                    }
-                }, duration);
+            if (!mutedRole) {
+                mutedRole = await member.guild.roles.create({
+                    name: 'Muted',
+                    color: '#808080',
+                    permissions: []
+                });
+
+                // Set permissions for all channels
+                member.guild.channels.cache.forEach(async channel => {
+                    await channel.permissionOverwrites.create(mutedRole, {
+                        SendMessages: false,
+                        AddReactions: false,
+                        Speak: false
+                    });
+                });
             }
+
+            await member.roles.add(mutedRole);
+
+            // Auto-unmute after duration
+            setTimeout(async () => {
+                await member.roles.remove(mutedRole).catch(() => {});
+            }, duration);
+
         } catch (error) {
             logger.error('[AutoMod] Error muting user:', error);
         }
     }
 
-    async trackViolation(userId, guildId, type, data) {
-        const key = `${userId}:${guildId}`;
-        const currentCount = this.violations.get(key) || 0;
-        this.violations.set(key, currentCount + 1);
-        
-        // Save to database
-        const settings = this.db.getGuildSettings(guildId) || {};
-        if (!settings.automod_violations) {
-            settings.automod_violations = [];
+    async logViolation(guild, user, type, action, count) {
+        try {
+            const logChannel = guild.channels.cache.find(c => 
+                c.name.includes('mod-log') || c.name.includes('auto-mod')
+            );
+
+            if (!logChannel) return;
+
+            const embed = new EmbedBuilder()
+                .setColor('#ff6b6b')
+                .setTitle('🛡️ Auto-Mod İhlali')
+                .addFields(
+                    { name: 'Kullanıcı', value: `${user} (${user.tag})`, inline: true },
+                    { name: 'İhlal Türü', value: this.getViolationName(type), inline: true },
+                    { name: 'İşlem', value: action.toUpperCase(), inline: true },
+                    { name: 'Toplam İhlal', value: `${count}`, inline: true }
+                )
+                .setThumbnail(user.displayAvatarURL())
+                .setTimestamp();
+
+            await logChannel.send({ embeds: [embed] });
+        } catch (error) {
+            logger.error('[AutoMod] Error logging violation:', error);
         }
-        
-        settings.automod_violations.push({
-            userId,
-            type,
-            data,
-            timestamp: new Date().toISOString(),
-            count: currentCount + 1
-        });
-        
-        // Keep only last 100 violations
-        if (settings.automod_violations.length > 100) {
-            settings.automod_violations = settings.automod_violations.slice(-100);
-        }
-        
-        this.db.setGuildSettings(guildId, settings);
     }
 
-    getAction(violationCount, actions) {
-        if (!actions) return null;
-        
-        // Actions format: { 1: 'warn', 3: 'mute', 5: 'kick', 10: 'ban' }
-        const counts = Object.keys(actions).map(Number).sort((a, b) => b - a);
-        
-        for (const count of counts) {
-            if (violationCount >= count) {
-                return actions[count];
-            }
+    getViolationName(type) {
+        const names = {
+            spam: 'Spam',
+            link: 'İzinsiz Link',
+            word: 'Yasaklı Kelime',
+            mention_spam: 'Mention Spam'
+        };
+        return names[type] || type;
+    }
+
+    saveViolation(guildId, userId, type) {
+        if (!this.db.data.automodViolations) {
+            this.db.data.automodViolations = new Map();
         }
-        
-        return null;
+
+        const violationId = `${guildId}_${userId}_${Date.now()}`;
+        this.db.data.automodViolations.set(violationId, {
+            guildId,
+            userId,
+            type,
+            timestamp: Date.now()
+        });
+
+        this.db.save();
     }
 
     getAutoModSettings(guildId) {
-        const settings = this.db.getGuildSettings(guildId);
-        return settings?.automod_settings || null;
+        if (!this.db.data.automodSettings) {
+            this.db.data.automodSettings = new Map();
+        }
+
+        if (!this.db.data.automodSettings.has(guildId)) {
+            // Default settings
+            return {
+                enabled: false,
+                antiSpam: { enabled: true },
+                linkFilter: { 
+                    enabled: false, 
+                    whitelist: [], 
+                    blacklist: [] 
+                },
+                wordFilter: { 
+                    enabled: false, 
+                    blockedWords: [] 
+                },
+                mentionSpam: { 
+                    enabled: true, 
+                    max: 5 
+                },
+                actions: {
+                    muteThreshold: 3,
+                    kickThreshold: 5,
+                    banThreshold: 10,
+                    muteDuration: 600000 // 10 minutes
+                }
+            };
+        }
+
+        return this.db.data.automodSettings.get(guildId);
     }
 
-    cleanup() {
-        const now = Date.now();
-        const maxAge = 60000; // 1 minute
-        
-        // Clean message history
-        for (const [key, history] of this.messageHistory.entries()) {
-            const recent = history.filter(m => now - m.timestamp < maxAge);
-            if (recent.length === 0) {
-                this.messageHistory.delete(key);
-            } else {
-                this.messageHistory.set(key, recent);
-            }
+    updateAutoModSettings(guildId, settings) {
+        if (!this.db.data.automodSettings) {
+            this.db.data.automodSettings = new Map();
         }
-        
-        // Reset violations older than 1 hour
-        const violationMaxAge = 3600000; // 1 hour
-        for (const [key, count] of this.violations.entries()) {
-            const [userId, guildId] = key.split(':');
-            const settings = this.db.getGuildSettings(guildId);
-            const violations = settings?.automod_violations || [];
-            
-            const recentViolations = violations.filter(v => 
-                v.userId === userId && 
-                Date.now() - new Date(v.timestamp).getTime() < violationMaxAge
-            );
-            
-            if (recentViolations.length === 0) {
-                this.violations.delete(key);
-            }
-        }
-    }
 
-    destroy() {
-        clearInterval(this.cleanupInterval);
-        this.messageHistory.clear();
-        this.violations.clear();
-        logger.info('[AutoMod] Handler destroyed');
+        this.db.data.automodSettings.set(guildId, settings);
+        this.db.save();
     }
 }
 
 module.exports = AutoModHandler;
-
