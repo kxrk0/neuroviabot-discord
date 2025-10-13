@@ -674,6 +674,12 @@ client.once('clientReady', () => {
     client.analyticsHandler = analyticsHandler;
     log('📊 Analytics Handler initialized', 'SUCCESS');
     
+    // Auto-Mod Handler'ı başlat
+    const AutoModHandler = require('./src/handlers/autoModHandler');
+    const autoModHandler = new AutoModHandler(client);
+    client.autoModHandler = autoModHandler;
+    log('🛡️ Auto-Mod Handler initialized', 'SUCCESS');
+    
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();
     log('📊 Monitoring Service initialized', 'SUCCESS');
