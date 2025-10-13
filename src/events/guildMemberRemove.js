@@ -5,6 +5,7 @@
 const { EmbedBuilder } = require('discord.js');
 const { logger } = require('../utils/logger');
 const config = require('../config.js');
+const { getEventDeduplicator } = require('../utils/eventDeduplicator');
 
 module.exports = {
     name: 'guildMemberRemove',
@@ -12,6 +13,14 @@ module.exports = {
     async execute(member, client) {
         try {
             const guild = member.guild;
+            const deduplicator = getEventDeduplicator();
+            
+            // Deduplicate event - combine guildId and userId for unique key
+            const eventKey = `${guild.id}:${member.user.id}`;
+            if (deduplicator.isDuplicate('memberLeave', eventKey, 5000)) {
+                // Skip duplicate event (within 5 seconds)
+                return;
+            }
             
             // Log member leave
             logger.info(`Üye ayrıldı: ${member.user.tag} (${member.user.id})`, {

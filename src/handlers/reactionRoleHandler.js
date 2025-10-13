@@ -35,8 +35,11 @@ class ReactionRoleHandler {
             const guildId = message.guild?.id;
             if (!guildId) return;
 
+            // ONLY listen to reactions on bot messages (1A choice)
+            if (message.author.id !== this.client.user.id) return;
+
             // Check if this message has reaction role config
-            const config = this.getReactionRoleConfig(guildId, message.id, reaction.emoji.name);
+            const config = this.getReactionRoleConfig(guildId, message.id, reaction.emoji.name || reaction.emoji.id);
             if (!config) return;
 
             // Get member
@@ -79,7 +82,10 @@ class ReactionRoleHandler {
             const guildId = message.guild?.id;
             if (!guildId) return;
 
-            const config = this.getReactionRoleConfig(guildId, message.id, reaction.emoji.name);
+            // ONLY listen to reactions on bot messages
+            if (message.author.id !== this.client.user.id) return;
+
+            const config = this.getReactionRoleConfig(guildId, message.id, reaction.emoji.name || reaction.emoji.id);
             if (!config) return;
 
             const member = await message.guild.members.fetch(user.id);
@@ -110,11 +116,20 @@ class ReactionRoleHandler {
         const guildSettings = this.db.getGuildSettings(guildId);
         const reactionRoles = guildSettings.reactionRoles || [];
         
-        return reactionRoles.find(config => 
-            config.messageId === messageId && 
-            config.emoji === emoji &&
-            config.enabled !== false
-        );
+        // Find the message config
+        const messageConfig = reactionRoles.find(config => config.messageId === messageId);
+        if (!messageConfig || !messageConfig.roles) return null;
+        
+        // Check if this emoji has a role mapping
+        const roleId = messageConfig.roles[emoji];
+        if (!roleId) return null;
+        
+        return {
+            messageId,
+            emoji,
+            roleId,
+            guildId
+        };
     }
 
     addReactionRole(guildId, config) {
