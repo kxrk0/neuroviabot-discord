@@ -57,6 +57,11 @@ export function CardBody({ children, className }: { children: React.ReactNode; c
   return <div className={clsx('card-body', className)}>{children}</div>;
 }
 
+// Alias for CardBody (commonly used in shadcn/ui)
+export function CardContent({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={clsx('card-body', className)}>{children}</div>;
+}
+
 export function CardFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={clsx('card-footer', className)}>{children}</div>;
 }
