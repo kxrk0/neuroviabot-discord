@@ -10,6 +10,7 @@ import {
   StarIcon,
 } from '@heroicons/react/24/outline';
 import { useSocket } from '@/hooks/useSocket';
+import { useNotification } from '@/contexts/NotificationContext';
 
 interface LevelingSettingsProps {
   guildId: string;
@@ -46,8 +47,8 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
   const [saving, setSaving] = useState(false);
   const [channels, setChannels] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'success' | 'error'}>>([]);
   const socket = useSocket();
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     fetchSettings();
@@ -66,7 +67,7 @@ export default function LevelingSettings({ guildId, userId }: LevelingSettingsPr
           ...prev,
           ...data.settings
         }));
-        addNotification('success', 'Seviye ayarları güncellendi');
+        showNotification('Seviye ayarları güncellendi', 'success');
       }
     };
 
