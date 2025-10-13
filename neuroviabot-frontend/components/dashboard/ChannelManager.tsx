@@ -182,9 +182,9 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
     return <EmptyState type="default" title="Kanal Bulunamadı" description="Bu sunucuda henüz kanal bulunmuyor." />;
   }
 
-  const categories = channels.filter(c => c.type === 4);
-  const textChannels = channels.filter(c => c.type === 0);
-  const voiceChannels = channels.filter(c => c.type === 2);
+  const categories = filteredChannels.filter(c => c.type === 4);
+  const textChannels = filteredChannels.filter(c => c.type === 0);
+  const voiceChannels = filteredChannels.filter(c => c.type === 2);
 
   return (
     <div className="space-y-4">
@@ -304,7 +304,7 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
             </h3>
             <div className="space-y-2">
               {categories.map((channel) => (
-                <ChannelItem key={channel.id} channel={channel} onDelete={handleDeleteChannel} />
+                <ChannelItem key={channel.id} channel={channel} onDelete={openDeleteConfirm} />
               ))}
             </div>
           </div>
@@ -338,6 +338,8 @@ export default function ChannelManager({ guildId, userId }: ChannelManagerProps)
               ))}
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
 
