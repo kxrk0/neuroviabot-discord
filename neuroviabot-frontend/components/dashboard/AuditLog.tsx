@@ -68,9 +68,12 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   const { showNotification } = useNotification();
 
   // Socket.IO real-time updates
-  useSocket({
-    guildId,
-    onAuditLogEntry: (entry: AuditEntry) => {
+  const { socket, on, off } = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleAuditLogEntry = (entry: AuditEntry) => {
       console.log('📋 New audit log entry received:', entry);
       
       // Add new entry to the top of the list
@@ -81,8 +84,22 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
         const notificationType = entry.severity === 'danger' ? 'error' : 'warning';
         showNotification(`Yeni Denetim Kaydı: ${entry.action}`, notificationType);
       }
-    },
-  });
+    };
+
+    // Join guild room
+    socket.emit('join_guild', guildId);
+
+    // Listen for audit log entries
+    on('audit_log_entry', handleAuditLogEntry);
+
+    return () => {
+      // Leave guild room
+      socket.emit('leave_guild', guildId);
+      
+      // Clean up listener
+      off('audit_log_entry', handleAuditLogEntry);
+    };
+  }, [socket, guildId]);
 
   useEffect(() => {
     fetchLogs();
