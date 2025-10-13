@@ -111,6 +111,11 @@ module.exports = {
             // Komutu çalıştır
             await command.execute(interaction);
             
+            // Track command usage
+            if (command.usageCount !== undefined) {
+                command.usageCount++;
+            }
+            
             const endTime = Date.now();
             const executionTime = endTime - startTime;
 

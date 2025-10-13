@@ -1,10 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeftIcon,
-  MusicalNoteIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
@@ -22,6 +22,7 @@ interface Command {
   usage: string;
   permissions?: string;
   premium?: boolean;
+  usageCount?: number;
 }
 
 interface Category {
@@ -31,184 +32,6 @@ interface Category {
   color: string;
   commands: Command[];
 }
-
-const commandCategories: Category[] = [
-  {
-    id: 'music',
-    name: 'Müzik Komutları',
-    icon: <MusicalNoteIcon className="w-6 h-6" />,
-    color: 'green',
-    commands: [
-      { name: '/play', description: 'YouTube veya Spotify\'dan müzik çalar', usage: '/play <şarkı adı veya URL>' },
-      { name: '/play-simple', description: 'Basit müzik çalıcı', usage: '/play-simple <şarkı adı>' },
-      { name: '/pause', description: 'Müziği duraklatır', usage: '/pause' },
-      { name: '/resume', description: 'Duraklatılmış müziği devam ettirir', usage: '/resume' },
-      { name: '/stop', description: 'Müziği durdurur ve kuyruğu temizler', usage: '/stop' },
-      { name: '/skip', description: 'Şu anki şarkıyı atlar', usage: '/skip' },
-      { name: '/queue', description: 'Müzik kuyruğunu gösterir', usage: '/queue' },
-      { name: '/nowplaying', description: 'Çalan şarkı bilgilerini gösterir', usage: '/nowplaying' },
-      { name: '/volume', description: 'Ses seviyesini ayarlar', usage: '/volume <0-100>' },
-      { name: '/loop', description: 'Şarkı veya kuyruk tekrarını ayarlar', usage: '/loop <mode>' },
-      { name: '/shuffle', description: 'Kuyruğu karıştırır', usage: '/shuffle' },
-      { name: '/seek', description: 'Şarkının belirli bir yerine atlar', usage: '/seek <saniye>' },
-      { name: '/remove', description: 'Kuyruktan şarkı çıkarır', usage: '/remove <numara>' },
-      { name: '/join', description: 'Botu ses kanalına çağırır', usage: '/join' },
-      { name: '/leave', description: 'Botu ses kanalından çıkarır', usage: '/leave' },
-      { name: '/move', description: 'Botu başka kanala taşır', usage: '/move' },
-      { name: '/playlist', description: 'Spotify veya YouTube playlist çalar', usage: '/playlist <URL>' }
-    ]
-  },
-  {
-    id: 'moderation',
-    name: 'Moderasyon Komutları',
-    icon: <ShieldCheckIcon className="w-6 h-6" />,
-    color: 'red',
-    commands: [
-      { name: '/moderation', description: 'Moderasyon ayarlarını yapılandırır', usage: '/moderation', permissions: 'Yönetici' },
-      { name: '/clear', description: 'Belirtilen sayıda mesajı siler', usage: '/clear <miktar>', permissions: 'Mesajları Yönet' },
-      { name: '/clear-messages', description: 'Kullanıcı mesajlarını temizler', usage: '/clear-messages <kullanıcı> <miktar>', permissions: 'Mesajları Yönet' },
-      { name: '/guard', description: 'Sunucu koruma sistemini yönetir', usage: '/guard <ayar>', permissions: 'Yönetici' }
-    ]
-  },
-  {
-    id: 'neurocoin',
-    name: '🪙 NeuroCoin (NRC)',
-    icon: <CurrencyDollarIcon className="w-6 h-6" />,
-    color: 'purple',
-    commands: [
-      { name: '/economy balance', description: 'NeuroCoin bakiyeni görüntüle', usage: '/economy balance [kullanıcı]' },
-      { name: '/economy daily', description: 'Günlük NRC ödülünü al (500-1000 NRC)', usage: '/economy daily' },
-      { name: '/economy work', description: 'Çalış ve NRC kazan (200-500 NRC)', usage: '/economy work' },
-      { name: '/economy transfer', description: 'Başka kullanıcıya NRC gönder', usage: '/economy transfer <kullanıcı> <miktar>' },
-      { name: '/economy deposit', description: 'Bankaya NRC yatır', usage: '/economy deposit <miktar>' },
-      { name: '/economy withdraw', description: 'Bankadan NRC çek', usage: '/economy withdraw <miktar>' },
-      { name: '/economy leaderboard', description: 'NRC zenginlik sıralaması', usage: '/economy leaderboard [tür]' },
-      { name: '/economy stats', description: 'NRC istatistikleri', usage: '/economy stats [kullanıcı]' },
-      { name: '/economy convert', description: 'Eski coinleri NRC\'ye çevir', usage: '/economy convert' },
-      { name: '/economy portfolio', description: 'NRC portföyünü görüntüle', usage: '/economy portfolio' }
-    ]
-  },
-  {
-    id: 'quest',
-    name: '🗺️ Görevler & Başarılar',
-    icon: <SparklesIcon className="w-6 h-6" />,
-    color: 'blue',
-    commands: [
-      { name: '/quest list', description: 'Mevcut görevleri görüntüle', usage: '/quest list [tür]' },
-      { name: '/quest progress', description: 'Görev ilerlemeni kontrol et', usage: '/quest progress' },
-      { name: '/quest claim', description: 'Tamamlanan görev ödülünü al', usage: '/quest claim <görev-id>' },
-      { name: '/quest daily', description: 'Günlük görevleri görüntüle', usage: '/quest daily' }
-    ]
-  },
-  {
-    id: 'profile',
-    name: '👤 Profil & Sosyal',
-    icon: <SparklesIcon className="w-6 h-6" />,
-    color: 'pink',
-    commands: [
-      { name: '/profile view', description: 'Profil görüntüle', usage: '/profile view [kullanıcı]' },
-      { name: '/profile bio', description: 'Bio ayarla', usage: '/profile bio <metin>' },
-      { name: '/profile color', description: 'Profil rengi ayarla', usage: '/profile color <renk>' },
-      { name: '/profile badge', description: 'Rozet yönetimi', usage: '/profile badge <işlem> [rozet]' },
-      { name: '/leaderboard neurocoin', description: 'NRC sıralaması', usage: '/leaderboard neurocoin [kapsam]' },
-      { name: '/leaderboard activity', description: 'Aktivite sıralaması', usage: '/leaderboard activity <tür>' },
-      { name: '/leaderboard trading', description: 'Ticaret hacmi sıralaması', usage: '/leaderboard trading' },
-      { name: '/leaderboard quests', description: 'Görev tamamlama sıralaması', usage: '/leaderboard quests' },
-      { name: '/leaderboard streak', description: 'En uzun streak sıralaması', usage: '/leaderboard streak' }
-    ]
-  },
-  {
-    id: 'marketplace',
-    name: '🛒 Pazar Yeri',
-    icon: <CurrencyDollarIcon className="w-6 h-6" />,
-    color: 'yellow',
-    commands: [
-      { name: '/market-config enable', description: 'Sunucu pazar yerini aç/kapat', usage: '/market-config enable <durum>', permissions: 'Yönetici' },
-      { name: '/market-config tax', description: 'İşlem vergisi ayarla', usage: '/market-config tax <oran>', permissions: 'Yönetici' },
-      { name: '/market-config allow-global', description: 'Global pazar erişimi', usage: '/market-config allow-global <durum>', permissions: 'Yönetici' },
-      { name: '/market-config min-price', description: 'Minimum ilan fiyatı', usage: '/market-config min-price <fiyat>', permissions: 'Yönetici' },
-      { name: '/market-config max-price', description: 'Maximum ilan fiyatı', usage: '/market-config max-price <fiyat>', permissions: 'Yönetici' },
-      { name: '/market-config blacklist', description: 'Eşya türlerini yasakla', usage: '/market-config blacklist <tür> <yasakla>', permissions: 'Yönetici' },
-      { name: '/market-config view', description: 'Mevcut ayarları görüntüle', usage: '/market-config view', permissions: 'Yönetici' },
-      { name: '/market-config reset', description: 'Ayarları sıfırla', usage: '/market-config reset', permissions: 'Yönetici' }
-    ]
-  },
-  {
-    id: 'games',
-    name: '🎮 Oyunlar',
-    icon: <SparklesIcon className="w-6 h-6" />,
-    color: 'red',
-    commands: [
-      { name: '/blackjack', description: 'Blackjack oyunu oynar', usage: '/blackjack <miktar>' },
-      { name: '/coinflip', description: 'Yazı-tura atar', usage: '/coinflip <miktar> <seçim>' },
-      { name: '/dice', description: 'Zar atar', usage: '/dice <miktar>' },
-      { name: '/slots', description: 'Slot makinesi oynar', usage: '/slots <miktar>' }
-    ]
-  },
-  {
-    id: 'leveling',
-    name: 'Seviye Sistemi',
-    icon: <ChartBarIcon className="w-6 h-6" />,
-    color: 'blue',
-    commands: [
-      { name: '/level', description: 'Seviye ve XP bilgilerini gösterir', usage: '/level [kullanıcı]' }
-    ]
-  },
-  {
-    id: 'ticket',
-    name: 'Ticket Sistemi',
-    icon: <TicketIcon className="w-6 h-6" />,
-    color: 'purple',
-    commands: [
-      { name: '/ticket', description: 'Ticket sistemini yapılandırır', usage: '/ticket <ayar>', permissions: 'Yönetici' }
-    ]
-  },
-  {
-    id: 'giveaway',
-    name: 'Çekiliş Sistemi',
-    icon: <GiftIcon className="w-6 h-6" />,
-    color: 'pink',
-    commands: [
-      { name: '/giveaway', description: 'Çekiliş başlatır veya yönetir', usage: '/giveaway <komut>', permissions: 'Çekilişleri Yönet' }
-    ]
-  },
-  {
-    id: 'admin',
-    name: 'Yönetim Komutları',
-    icon: <Cog6ToothIcon className="w-6 h-6" />,
-    color: 'gray',
-    commands: [
-      { name: '/setup', description: 'Bot kurulum sihirbazını başlatır', usage: '/setup', permissions: 'Yönetici' },
-      { name: '/quicksetup', description: 'Hızlı bot kurulumu yapar', usage: '/quicksetup', permissions: 'Yönetici' },
-      { name: '/admin', description: 'Admin panelini açar', usage: '/admin', permissions: 'Yönetici' },
-      { name: '/role', description: 'Rol yönetimi yapar', usage: '/role <komut>', permissions: 'Rolleri Yönet' },
-      { name: '/backup', description: 'Sunucu yedeği alır veya yükler', usage: '/backup <komut>', permissions: 'Yönetici' },
-      { name: '/welcome', description: 'Karşılama sistemini yapılandırır', usage: '/welcome', permissions: 'Yönetici' },
-      { name: '/verify', description: 'Doğrulama sistemini ayarlar', usage: '/verify', permissions: 'Yönetici' },
-      { name: '/custom', description: 'Özel komutlar oluşturur', usage: '/custom <komut>', permissions: 'Yönetici' }
-    ]
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    icon: <SparklesIcon className="w-6 h-6" />,
-    color: 'gold',
-    commands: [
-      { name: '/premium', description: 'Premium özelliklerini yönetir', usage: '/premium' }
-    ]
-  },
-  {
-    id: 'general',
-    name: 'Genel Komutlar',
-    icon: <CommandLineIcon className="w-6 h-6" />,
-    color: 'indigo',
-    commands: [
-      { name: '/ping', description: 'Bot gecikme süresini gösterir', usage: '/ping' },
-      { name: '/stats', description: 'Bot istatistiklerini gösterir', usage: '/stats' },
-      { name: '/yardım', description: 'Komut listesi ve yardım sayfası', usage: '/yardım [kategori]' }
-    ]
-  }
-];
 
 const colorMap: Record<string, { bg: string; border: string; text: string; glow: string }> = {
   green: { bg: 'bg-green-500/10', border: 'border-green-500/50', text: 'text-green-400', glow: 'from-green-500/10' },
@@ -223,16 +46,127 @@ const colorMap: Record<string, { bg: string; border: string; text: string; glow:
 };
 
 export default function CommandsPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredCategories = commandCategories.map(category => ({
+  useEffect(() => {
+    fetchCommands();
+  }, []);
+
+  async function fetchCommands() {
+    try {
+      const response = await axios.get('/api/bot-commands/commands/list');
+      if (response.data.success) {
+        // Category metadata mapping
+        const categoryMap: Record<string, any> = {
+          economy: { 
+            name: '🪙 NeuroCoin Ekonomisi', 
+            icon: <CurrencyDollarIcon className="w-6 h-6" />, 
+            color: 'purple' 
+          },
+          moderation: { 
+            name: 'Moderasyon', 
+            icon: <ShieldCheckIcon className="w-6 h-6" />, 
+            color: 'red' 
+          },
+          games: { 
+            name: '🎮 Oyunlar', 
+            icon: <SparklesIcon className="w-6 h-6" />, 
+            color: 'pink' 
+          },
+          leveling: { 
+            name: 'Seviye Sistemi', 
+            icon: <ChartBarIcon className="w-6 h-6" />, 
+            color: 'blue' 
+          },
+          utility: { 
+            name: 'Genel Komutlar', 
+            icon: <CommandLineIcon className="w-6 h-6" />, 
+            color: 'indigo' 
+          },
+          setup: { 
+            name: 'Yönetim Komutları', 
+            icon: <Cog6ToothIcon className="w-6 h-6" />, 
+            color: 'gray' 
+          },
+          roles: { 
+            name: 'Rol Sistemleri', 
+            icon: <ShieldCheckIcon className="w-6 h-6" />, 
+            color: 'purple' 
+          },
+          quests: { 
+            name: '🗺️ Görevler & Başarılar', 
+            icon: <SparklesIcon className="w-6 h-6" />, 
+            color: 'blue' 
+          },
+          tickets: { 
+            name: 'Ticket Sistemi', 
+            icon: <TicketIcon className="w-6 h-6" />, 
+            color: 'purple' 
+          },
+          giveaway: { 
+            name: 'Çekiliş Sistemi', 
+            icon: <GiftIcon className="w-6 h-6" />, 
+            color: 'pink' 
+          },
+          premium: { 
+            name: 'Premium', 
+            icon: <SparklesIcon className="w-6 h-6" />, 
+            color: 'gold' 
+          },
+          general: { 
+            name: 'Genel', 
+            icon: <CommandLineIcon className="w-6 h-6" />, 
+            color: 'indigo' 
+          }
+        };
+
+        const transformedCategories = Object.entries(response.data.grouped).map(([key, commands]: [string, any]) => ({
+          id: key,
+          ...(categoryMap[key] || { 
+            name: key.charAt(0).toUpperCase() + key.slice(1), 
+            icon: <CommandLineIcon className="w-6 h-6" />, 
+            color: 'gray' 
+          }),
+          commands: commands.map((cmd: any) => ({
+            name: `/${cmd.name}`,
+            description: cmd.description,
+            usage: `/${cmd.name}${cmd.options > 0 ? ' <seçenekler>' : ''}`,
+            permissions: cmd.permissions ? 'Yönetici' : undefined,
+            usageCount: cmd.usageCount
+          }))
+        }));
+
+        setCategories(transformedCategories);
+      }
+    } catch (error) {
+      console.error('Failed to fetch commands:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const filteredCategories = categories.map(category => ({
     ...category,
     commands: category.commands.filter(cmd =>
       cmd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cmd.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
   })).filter(category => category.commands.length > 0);
+
+  const totalCommands = categories.reduce((acc, cat) => acc + cat.commands.length, 0);
+
+  if (loading) {
+    return (
+      <div className="relative min-h-screen bg-gradient-to-br from-[#0a0b0f] via-[#13151f] to-[#1a1c2e] text-white overflow-hidden">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#0a0b0f] via-[#13151f] to-[#1a1c2e] text-white overflow-hidden">
@@ -275,7 +209,7 @@ export default function CommandsPage() {
             Bot Komutları
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            NeuroViaBot'un sunduğu <span className="text-purple-400 font-bold">{commandCategories.reduce((acc, cat) => acc + cat.commands.length, 0)}+ komut</span> ile Discord sunucunuzu bir üst seviyeye taşıyın.
+            NeuroViaBot'un sunduğu <span className="text-purple-400 font-bold">{totalCommands}+ komut</span> ile Discord sunucunuzu bir üst seviyeye taşıyın.
           </p>
 
           {/* Search Bar */}
@@ -284,7 +218,7 @@ export default function CommandsPage() {
               <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Komut ara... (örn: play, ban, ekonomi)"
+                placeholder="Komut ara... (örn: economy, ban, slot)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
@@ -371,7 +305,7 @@ export default function CommandsPage() {
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-2">
+                              <div className="flex items-center gap-3 mb-2 flex-wrap">
                                 <code className={`text-lg font-bold ${colors.text}`}>
                                   {command.name}
                                 </code>
@@ -379,6 +313,11 @@ export default function CommandsPage() {
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 border border-amber-500/50 rounded text-xs text-amber-400 font-semibold">
                                     <SparklesIcon className="w-3 h-3" />
                                     Premium
+                                  </span>
+                                )}
+                                {command.usageCount !== undefined && command.usageCount > 0 && (
+                                  <span className="text-xs text-gray-500">
+                                    ({command.usageCount} kullanım)
                                   </span>
                                 )}
                               </div>
@@ -468,4 +407,3 @@ export default function CommandsPage() {
     </div>
   );
 }
-

@@ -79,6 +79,8 @@ function checkEnvironmentVariables() {
 }
 
 // Komutları yükleme fonksiyonu
+const { categorizeCommand } = require('./src/utils/commandCategorizer');
+
 async function loadCommands() {
     const commandsPath = path.join(__dirname, 'src', 'commands');
     
@@ -99,9 +101,15 @@ async function loadCommands() {
             const command = require(filePath);
             
             if ('data' in command && 'execute' in command) {
+                // Auto-categorize command
+                command.category = categorizeCommand(command.data.name);
+                
+                // Initialize usage tracking
+                command.usageCount = 0;
+                
                 client.commands.set(command.data.name, command);
                 commandCount++;
-                log(`Loaded command: ${command.data.name}`, 'DEBUG');
+                log(`Loaded command: ${command.data.name} [${command.category}]`, 'DEBUG');
             } else {
                 log(`Command ${file} is missing required properties (data & execute)`, 'WARNING');
             }
@@ -629,6 +637,7 @@ const { router: reactionRolesRouter, setClient: setReactionRolesClient } = requi
 const { router: premiumRouter } = require('./src/routes/premium');
 const economyRouter = require('./src/routes/economy-api');
 const { router: developerBotRouter, setClient: setDeveloperBotClient } = require('./src/routes/developer-bot-api');
+const { router: botCommandsApiRouter, setClient: setBotCommandsClient } = require('./src/routes/bot-commands-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -641,6 +650,7 @@ apiApp.use('/api/bot/stats', botStatsRouter);
 apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
 apiApp.use('/api/dev-bot', developerBotRouter);
+apiApp.use(botCommandsApiRouter);
 
 const apiPort = process.env.BOT_API_PORT || 3002;
 apiApp.listen(apiPort, () => {
@@ -657,6 +667,7 @@ client.once('clientReady', () => {
     setBotStatsClient(client);
     setReactionRolesClient(client);
     setDeveloperBotClient(client);
+    setBotCommandsClient(client);
     
     // Activity Reward Handler'ı başlat
     activityRewardHandler = new ActivityRewardHandler(client);
