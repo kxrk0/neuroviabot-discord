@@ -73,6 +73,69 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// Get global bot statistics (for homepage)
+router.get('/stats/global', async (req, res) => {
+  try {
+    const db = req.app.get('db');
+    
+    // Calculate NRC in circulation
+    let totalNRC = 0;
+    if (db.data.neuroCoinBalances) {
+      db.data.neuroCoinBalances.forEach((balance) => {
+        totalNRC += (balance.wallet || 0) + (balance.bank || 0);
+      });
+    }
+    
+    // Count active traders (users with trade history)
+    let activeTraders = 0;
+    if (db.data.tradeHistory) {
+      const traderSet = new Set();
+      db.data.tradeHistory.forEach((trade) => {
+        traderSet.add(trade.senderId);
+        traderSet.add(trade.receiverId);
+      });
+      activeTraders = traderSet.size;
+    }
+    
+    // Get basic stats from bot
+    try {
+      const botResponse = await axios.get(`${BOT_API_URL}/api/bot/stats`, {
+        timeout: 3000
+      });
+      
+      res.json({
+        totalServers: botResponse.data.guilds || 0,
+        totalUsers: botResponse.data.users || 0,
+        totalCommands: botResponse.data.commands || 39,
+        nrcInCirculation: totalNRC,
+        activeTraders: activeTraders,
+        uptime: botResponse.data.uptime || 0
+      });
+    } catch (botError) {
+      // Fallback to database only
+      const guilds = Array.from(db.data.guilds.values());
+      let totalUsers = 0;
+      guilds.forEach((guild) => {
+        if (guild.memberCount) {
+          totalUsers += guild.memberCount;
+        }
+      });
+      
+      res.json({
+        totalServers: guilds.length,
+        totalUsers: totalUsers,
+        totalCommands: 39,
+        nrcInCirculation: totalNRC,
+        activeTraders: activeTraders,
+        uptime: 0
+      });
+    }
+  } catch (error) {
+    console.error('[Global Stats] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch global stats' });
+  }
+});
+
 // Get bot status
 router.get('/status', (req, res) => {
   try {
