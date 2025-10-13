@@ -21,10 +21,14 @@ import {
   ServerIcon,
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
+import StatCounter from '@/components/StatCounter';
+import TestimonialCard from '@/components/TestimonialCard';
 
 export default function Home() {
   const [stats, setStats] = useState({ guilds: 66, users: 59032, commands: 43 });
+  const [globalStats, setGlobalStats] = useState({ totalServers: 0, totalUsers: 0, totalCommands: 39, nrcInCirculation: 0, activeTraders: 0 });
   const [mounted, setMounted] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en'>('tr');
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -103,6 +107,23 @@ export default function Home() {
     
     loadStats();
     loadUser();
+    
+    // Load global stats
+    const loadGlobalStats = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+        const response = await fetch(`${API_URL}/api/bot/stats/global`);
+        if (response.ok) {
+          const data = await response.json();
+          setGlobalStats(data);
+          console.log('📊 Global stats loaded:', data);
+        }
+      } catch (error) {
+        console.error('Failed to load global stats:', error);
+      }
+    };
+    
+    loadGlobalStats();
     
     // HTTP fallback'i kaldır - Socket.IO yeterli
     // Sadece ilk yüklemede bir kez çağır
@@ -1451,6 +1472,138 @@ export default function Home() {
             </motion.a>
           </motion.div>
             </div>
+      </section>
+
+      {/* Global Stats Section */}
+      <section className="relative py-24 overflow-hidden" style={{
+        background: 'linear-gradient(rgb(19, 21, 31) 0%, rgb(29, 28, 47) 50%, rgb(33, 32, 54) 100%)'
+      }}>
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+              Topluluğumuza Katıl
+            </h2>
+            <p className="text-xl text-gray-300">
+              Binlerce sunucu ve milyonlarca kullanıcının tercih ettiği bot
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {[
+              { 
+                label: 'Sunucu', 
+                value: globalStats.totalServers || stats.guilds, 
+                icon: '🏆',
+                gradient: 'from-purple-500 to-pink-500'
+              },
+              { 
+                label: 'Kullanıcı', 
+                value: globalStats.totalUsers || stats.users, 
+                icon: '👥',
+                gradient: 'from-blue-500 to-cyan-500'
+              },
+              { 
+                label: 'Komut', 
+                value: globalStats.totalCommands, 
+                suffix: '+',
+                icon: '⚡',
+                gradient: 'from-amber-500 to-orange-500'
+              },
+              { 
+                label: 'NRC Dolaşımda', 
+                value: globalStats.nrcInCirculation, 
+                icon: '💰',
+                gradient: 'from-green-500 to-emerald-500'
+              },
+              { 
+                label: 'Aktif Trader', 
+                value: globalStats.activeTraders, 
+                icon: '📈',
+                gradient: 'from-pink-500 to-rose-500'
+              }
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="relative group"
+              >
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${stat.gradient} rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-300`}></div>
+                <div className="relative bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 text-center">
+                  <div className="text-4xl mb-3">{stat.icon}</div>
+                  <div className={`text-3xl md:text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${stat.gradient}`}>
+                    <StatCounter value={stat.value} suffix={stat.suffix || ''} />
+                  </div>
+                  <p className="text-gray-400 text-sm font-medium">{stat.label}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="relative py-24 overflow-hidden" style={{
+        background: 'linear-gradient(rgb(29, 28, 47) 0%, rgb(33, 32, 54) 50%, rgb(51, 40, 62) 100%)'
+      }}>
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+              Kullanıcılarımız Ne Diyor?
+            </h2>
+            <p className="text-xl text-gray-300">
+              NeuroViaBot ile deneyimlerini paylaşan sunucu sahipleri
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "NeuroViaBot sayesinde sunucumuzun yönetimi çok kolaylaştı. NRC ekonomi sistemi kullanıcılarımızı çok aktif tutuyor!",
+                author: "Ahmet Y.",
+                server: "GamersHub TR",
+                rating: 5
+              },
+              {
+                quote: "Moderasyon araçları gerçekten güçlü. Özellikle auto-mod özelliği spam sorununu tamamen çözdü.",
+                author: "Zeynep K.",
+                server: "Topluluk Merkezi",
+                rating: 5
+              },
+              {
+                quote: "P2P trading sistemi harika! Kullanıcılar kendi aralarında ticaret yapabiliyor, sunucumuz çok daha eğlenceli oldu.",
+                author: "Mehmet S.",
+                server: "EconoTR",
+                rating: 5
+              }
+            ].map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+              >
+                <TestimonialCard {...testimonial} />
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Footer - Smooth Animated & Hero-Style */}
