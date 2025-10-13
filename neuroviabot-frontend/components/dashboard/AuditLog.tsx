@@ -27,7 +27,7 @@ import LoadingSkeleton from '../LoadingSkeleton';
 import EmptyState from '../EmptyState';
 import ErrorBoundary from '../ErrorBoundary';
 import { useNotification } from '@/contexts/NotificationContext';
-import { useSocket } from '@/hooks/useSocket';
+import { useSocket } from '@/contexts/SocketContext';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 

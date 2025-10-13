@@ -6,6 +6,9 @@ import { io, Socket } from 'socket.io-client';
 interface SocketContextType {
     socket: Socket | null;
     connected: boolean;
+    on: (event: string, handler: (...args: any[]) => void) => void;
+    off: (event: string, handler?: (...args: any[]) => void) => void;
+    emit: (event: string, ...args: any[]) => void;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
@@ -45,8 +48,30 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         };
     }, []);
 
+    const on = (event: string, handler: (...args: any[]) => void) => {
+        if (socket) {
+            socket.on(event, handler);
+        }
+    };
+
+    const off = (event: string, handler?: (...args: any[]) => void) => {
+        if (socket) {
+            if (handler) {
+                socket.off(event, handler);
+            } else {
+                socket.off(event);
+            }
+        }
+    };
+
+    const emit = (event: string, ...args: any[]) => {
+        if (socket && connected) {
+            socket.emit(event, ...args);
+        }
+    };
+
     return (
-        <SocketContext.Provider value={{ socket, connected }}>
+        <SocketContext.Provider value={{ socket, connected, on, off, emit }}>
             {children}
         </SocketContext.Provider>
     );

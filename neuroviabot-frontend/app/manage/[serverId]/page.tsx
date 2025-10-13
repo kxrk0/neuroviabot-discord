@@ -37,7 +37,7 @@ import MemberManagement from '../../../components/dashboard/MemberManagement';
 import RoleEditor from '../../../components/dashboard/RoleEditor';
 import ChannelManager from '../../../components/dashboard/ChannelManager';
 import AuditLog from '../../../components/dashboard/AuditLog';
-import { useSocket } from '../../../hooks/useSocket';
+import { useSocket } from '@/contexts/SocketContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { DocumentTextIcon, UsersIcon } from '@heroicons/react/24/outline';
 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { fetchBotStats } from '@/lib/api';
-import { useSocket } from '@/hooks/useSocket';
+import { useSocket } from '@/contexts/SocketContext';
 import {
   MusicalNoteIcon,
   ShieldCheckIcon,

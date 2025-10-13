@@ -15,7 +15,7 @@ import EmptyState from '../EmptyState';
 import LoadingSkeleton from '../LoadingSkeleton';
 import ConfirmDialog from './shared/ConfirmDialog';
 import SearchBar from '../ui/SearchBar';
-import { useSocket } from '@/hooks/useSocket';
+import { useSocket } from '@/contexts/SocketContext';
 
 interface Channel {
   id: string;

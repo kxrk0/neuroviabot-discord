@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSocket } from '@/hooks/useSocket';
+import { useSocket } from '@/contexts/SocketContext';
 import { 
   ShieldCheckIcon, 
   PlusIcon, 
