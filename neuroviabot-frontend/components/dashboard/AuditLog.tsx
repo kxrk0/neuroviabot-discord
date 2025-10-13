@@ -78,11 +78,8 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
       
       // Show notification for important events
       if (entry.severity === 'danger' || entry.severity === 'warning') {
-        showNotification({
-          type: entry.severity === 'danger' ? 'error' : 'warning',
-          title: 'Yeni Denetim Kaydı',
-          message: entry.action,
-        });
+        const notificationType = entry.severity === 'danger' ? 'error' : 'warning';
+        showNotification(`Yeni Denetim Kaydı: ${entry.action}`, notificationType);
       }
     },
   });
