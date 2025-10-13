@@ -31,6 +31,10 @@ const io = new Server(server, {
   },
 });
 
+// Initialize socket module
+const { initIO } = require('./socket');
+initIO(io);
+
 // Middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'https://neuroviabot.xyz',

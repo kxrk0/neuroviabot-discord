@@ -664,7 +664,7 @@ apiApp.listen(apiPort, () => {
 });
 
 // Client'ı bot hazır olduktan sonra set et
-client.once('clientReady', () => {
+client.once('clientReady', async () => {
     setWebApiClient(client);
     setGuildManagementClient(client);
     setLevelingClient(client);
@@ -684,10 +684,6 @@ client.once('clientReady', () => {
     // Achievement Handler'ı başlat
     achievementHandler = new AchievementHandler(client);
     log('🏆 Achievement Handler initialized', 'SUCCESS');
-    
-    // Reaction Role Handler'ı başlat
-    reactionRoleHandler = new ReactionRoleHandler(client);
-    log('⚡ Reaction Role Handler initialized', 'SUCCESS');
     
     // Analytics Handler'ı başlat
     analyticsHandler = new AnalyticsHandler(client);
@@ -714,7 +710,7 @@ client.once('clientReady', () => {
     
     // Reaction Role Handler'ı başlat
     const ReactionRoleHandler = require('./src/handlers/reactionRoleHandler');
-    const reactionRoleHandler = new ReactionRoleHandler(client);
+    reactionRoleHandler = new ReactionRoleHandler(client);
     client.reactionRoleHandler = reactionRoleHandler;
     await reactionRoleHandler.loadActiveSetups();
     log('⭐ Reaction Role Handler initialized', 'SUCCESS');
