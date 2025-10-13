@@ -70,6 +70,61 @@ function initDeveloperEvents(socketIO) {
         socket.on('disconnect', () => {
             console.log(`[Developer Events] Developer disconnected: ${userId}`);
         });
+        
+        // New events for developer panel
+        socket.on('developer:command_update', (data) => {
+            // Broadcast command update to all developers
+            io.to('developers').emit('developer:command_updated', data);
+        });
+        
+        socket.on('developer:request_bot_status', async () => {
+            try {
+                const response = await axios.get(`${BOT_API_URL}/api/dev-bot/status`, {
+                    headers: { 'x-api-key': BOT_API_KEY },
+                    timeout: 5000
+                });
+                socket.emit('developer:bot_status', response.data);
+            } catch (error) {
+                socket.emit('dev:error', { message: 'Failed to fetch bot status' });
+            }
+        });
+        
+        socket.on('developer:request_health', async () => {
+            try {
+                const response = await axios.get(`${BOT_API_URL}/api/dev-bot/system/health`, {
+                    headers: { 'x-api-key': BOT_API_KEY },
+                    timeout: 5000
+                });
+                socket.emit('developer:health_update', response.data);
+            } catch (error) {
+                socket.emit('dev:error', { message: 'Failed to fetch system health' });
+            }
+        });
+        
+        socket.on('developer:request_errors', async (data) => {
+            try {
+                const response = await axios.get(`${BOT_API_URL}/api/dev-bot/system/errors`, {
+                    headers: { 'x-api-key': BOT_API_KEY },
+                    params: { limit: data?.limit || 50 },
+                    timeout: 5000
+                });
+                socket.emit('developer:errors_update', response.data);
+            } catch (error) {
+                socket.emit('dev:error', { message: 'Failed to fetch errors' });
+            }
+        });
+        
+        socket.on('developer:request_realtime_stats', async () => {
+            try {
+                const response = await axios.get(`${BOT_API_URL}/api/dev-bot/stats/realtime`, {
+                    headers: { 'x-api-key': BOT_API_KEY },
+                    timeout: 5000
+                });
+                socket.emit('developer:stats_update', response.data);
+            } catch (error) {
+                socket.emit('dev:error', { message: 'Failed to fetch realtime stats' });
+            }
+        });
     });
 }
 

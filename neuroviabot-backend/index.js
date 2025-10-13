@@ -110,6 +110,8 @@ const auditLogRoutes = require('./routes/audit-log');
 const analyticsRoutes = require('./routes/analytics');
 const developerRoutes = require('./routes/developer');
 const cmsRoutes = require('./routes/cms');
+const nrcCoinRoutes = require('./routes/nrc-coin');
+const nrcAdminRoutes = require('./routes/nrc-admin');
 
 // Set up Audit Logger with Socket.IO
 const { getAuditLogger } = require('../src/utils/auditLogger');
@@ -139,6 +141,8 @@ app.use('/api/audit', auditLogRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/moderation', require('./routes/moderation'));
 app.use('/api/dev', developerRoutes);
+app.use('/api/nrc', nrcCoinRoutes);
+app.use('/api/nrc', nrcAdminRoutes); // Admin routes (requires developer auth)
 
 // Bot API proxy routes
 app.use('/api/bot', require('./routes/bot-proxy'));

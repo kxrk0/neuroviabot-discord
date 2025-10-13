@@ -158,6 +158,28 @@ const categories = [
     ]
   },
   {
+    id: 'economy',
+    name: 'Ekonomi',
+    description: 'Sunucu ekonomisi ve NRC Coin ayarları',
+    icon: ChartBarIcon,
+    color: 'from-yellow-600 to-amber-600',
+    premium: false,
+    features: [
+      {
+        id: 'nrcSettings',
+        name: 'NRC Coin Ayarları',
+        description: 'NRC Coin kazanma ve günlük ödül ayarları',
+        settings: ['dailyReward', 'levelReward', 'shopItems']
+      },
+      {
+        id: 'serverCurrency',
+        name: 'Sunucu Para Birimi',
+        description: 'Sunucu özel para birimi ayarları',
+        settings: ['enabled', 'currencyName', 'startingBalance']
+      },
+    ]
+  },
+  {
     id: 'automation',
     name: 'Otomasyon',
     description: 'Sunucu yönetimini otomatikleştirin',

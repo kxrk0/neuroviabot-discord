@@ -429,6 +429,15 @@ export default function Home() {
                 {t[language].feedback}
               </Link>
 
+              {/* NRC Coin Link */}
+              <Link 
+                href="/nrc-coin"
+                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:text-yellow-300 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <CurrencyDollarIcon className="w-4 h-4" />
+                NRC Coin
+              </Link>
+
               {/* Servers Link - Only show if user is logged in */}
               {user && (
                 <Link 
@@ -553,6 +562,19 @@ export default function Home() {
                               <ServerIcon className="w-5 h-5" />
                               <span className="text-sm font-medium">{t[language].myServers}</span>
                             </Link>
+                            
+                            {/* Developer Panel Link - Only for developers */}
+                            {(user?.id === '315875588906680330' || user?.id === '413081778031427584') && (
+                              <Link
+                                href="/dev-panel"
+                                className="flex items-center gap-3 px-4 py-2.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
+                                onClick={() => setUserMenuOpen(false)}
+                              >
+                                <Cog6ToothIcon className="w-5 h-5" />
+                                <span className="text-sm font-medium">Developer Panel</span>
+                              </Link>
+                            )}
+                            
                             <button
                               onClick={() => {
                                 setUserMenuOpen(false);

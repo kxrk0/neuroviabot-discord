@@ -352,5 +352,235 @@ router.get('/logs', (req, res) => {
     }
 });
 
+// ==========================================
+// NEW ENDPOINTS FOR DEVELOPER PANEL
+// ==========================================
+
+// ==========================================
+// POST /api/dev-bot/commands/:name/update
+// Update command properties
+// ==========================================
+router.post('/commands/:name/update', (req, res) => {
+    try {
+        const { name } = req.params;
+        const updates = req.body;
+
+        if (!botClient) {
+            return res.status(503).json({ success: false, error: 'Bot not ready' });
+        }
+
+        const command = botClient.commands.get(name);
+        if (!command) {
+            return res.status(404).json({ success: false, error: 'Command not found' });
+        }
+
+        // Apply updates
+        Object.assign(command, updates);
+
+        logger.info(`[Dev API] Command ${name} updated:`, updates);
+        res.json({ success: true, command: name, updates });
+    } catch (error) {
+        logger.error('[Dev API] Command update error:', error);
+        res.status(500).json({ success: false, error: 'Failed to update command' });
+    }
+});
+
+// ==========================================
+// GET /api/dev-bot/stats/realtime
+// Get real-time bot statistics (extended)
+// ==========================================
+router.get('/stats/realtime', (req, res) => {
+    try {
+        if (!botClient) {
+            return res.status(503).json({ success: false, error: 'Bot not ready' });
+        }
+
+        const memUsage = process.memoryUsage();
+        
+        const stats = {
+            guilds: botClient.guilds.cache.size,
+            users: botClient.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0),
+            channels: botClient.channels.cache.size,
+            commands: botClient.commands.size,
+            ping: botClient.ws.ping,
+            uptime: process.uptime(),
+            memory: {
+                heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+                heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+                rss: Math.round(memUsage.rss / 1024 / 1024)
+            },
+            timestamp: Date.now()
+        };
+
+        res.json({ success: true, stats });
+    } catch (error) {
+        logger.error('[Dev API] Real-time stats error:', error);
+        res.status(500).json({ success: false, error: 'Failed to get real-time stats' });
+    }
+});
+
+// ==========================================
+// GET /api/dev-bot/system/health
+// Get system health status
+// ==========================================
+router.get('/system/health', (req, res) => {
+    try {
+        const memUsage = process.memoryUsage();
+        const cpuUsage = process.cpuUsage();
+        
+        const health = {
+            status: 'healthy',
+            bot: {
+                ready: botClient ? botClient.isReady() : false,
+                ping: botClient ? botClient.ws.ping : -1,
+                uptime: process.uptime()
+            },
+            system: {
+                platform: os.platform(),
+                arch: os.arch(),
+                nodeVersion: process.version,
+                memory: {
+                    total: Math.round(os.totalmem() / 1024 / 1024 / 1024),
+                    free: Math.round(os.freemem() / 1024 / 1024 / 1024),
+                    used: Math.round(memUsage.rss / 1024 / 1024)
+                },
+                cpu: {
+                    count: os.cpus().length,
+                    usage: cpuUsage,
+                    loadAvg: os.loadavg()
+                }
+            },
+            timestamp: Date.now()
+        };
+
+        // Determine overall health status
+        if (!botClient || !botClient.isReady()) {
+            health.status = 'degraded';
+        } else if (botClient.ws.ping > 500) {
+            health.status = 'warning';
+        }
+
+        res.json({ success: true, health });
+    } catch (error) {
+        logger.error('[Dev API] System health error:', error);
+        res.status(500).json({ 
+            success: false, 
+            health: { status: 'error', error: error.message }
+        });
+    }
+});
+
+// ==========================================
+// GET /api/dev-bot/system/errors
+// Get error logs and auto-fix status
+// ==========================================
+router.get('/system/errors', (req, res) => {
+    try {
+        const { limit = 50 } = req.query;
+        const errorLogsPath = path.join(__dirname, '..', 'logs', 'error.log');
+
+        if (!fs.existsSync(errorLogsPath)) {
+            return res.json({ success: true, errors: [] });
+        }
+
+        const errors = fs.readFileSync(errorLogsPath, 'utf8')
+            .split('\n')
+            .filter(line => line.trim())
+            .slice(-parseInt(limit))
+            .map(line => {
+                try {
+                    return JSON.parse(line);
+                } catch {
+                    return { 
+                        message: line, 
+                        level: 'error', 
+                        timestamp: new Date().toISOString() 
+                    };
+                }
+            });
+
+        res.json({ success: true, errors, total: errors.length });
+    } catch (error) {
+        logger.error('[Dev API] System errors error:', error);
+        res.status(500).json({ success: false, error: 'Failed to get system errors' });
+    }
+});
+
+// ==========================================
+// POST /api/dev-bot/database/restore
+// Restore database from backup
+// ==========================================
+router.post('/database/restore', (req, res) => {
+    try {
+        const { backupId } = req.body;
+
+        if (!backupId) {
+            return res.status(400).json({ success: false, error: 'Backup ID is required' });
+        }
+
+        const backupPath = path.join(__dirname, '..', '..', 'data', 'backups', backupId);
+        
+        if (!fs.existsSync(backupPath)) {
+            return res.status(404).json({ success: false, error: 'Backup not found' });
+        }
+
+        const db = getDatabase();
+        const dbPath = db.dbPath;
+
+        // Create safety backup of current database
+        const safetyBackupName = `pre-restore-${Date.now()}.json`;
+        const safetyBackupPath = path.join(__dirname, '..', '..', 'data', 'backups', safetyBackupName);
+        fs.copyFileSync(dbPath, safetyBackupPath);
+
+        // Restore from backup
+        fs.copyFileSync(backupPath, dbPath);
+
+        // Reload database
+        db.loadData();
+
+        logger.info(`[Dev API] Database restored from: ${backupId}`);
+        res.json({ 
+            success: true, 
+            restored: backupId,
+            safetyBackup: safetyBackupName
+        });
+    } catch (error) {
+        logger.error('[Dev API] Restore error:', error);
+        res.status(500).json({ success: false, error: 'Failed to restore database' });
+    }
+});
+
+// ==========================================
+// GET /api/dev-bot/status
+// Get bot status
+// ==========================================
+router.get('/status', (req, res) => {
+    try {
+        if (!botClient) {
+            return res.json({ 
+                success: true, 
+                status: 'offline',
+                message: 'Bot client not initialized'
+            });
+        }
+
+        res.json({ 
+            success: true, 
+            status: botClient.isReady() ? 'online' : 'connecting',
+            user: {
+                id: botClient.user?.id,
+                username: botClient.user?.username,
+                tag: botClient.user?.tag
+            },
+            ping: botClient.ws.ping,
+            uptime: process.uptime(),
+            readyAt: botClient.readyAt
+        });
+    } catch (error) {
+        logger.error('[Dev API] Status error:', error);
+        res.status(500).json({ success: false, error: 'Failed to get bot status' });
+    }
+});
+
 module.exports = { router, setClient };
 

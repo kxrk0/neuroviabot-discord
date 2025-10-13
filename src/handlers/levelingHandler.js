@@ -180,8 +180,33 @@ class LevelingHandler {
                 await this.handleLevelRoleRewards(message, memberData, newLevel, settings);
             }
 
+            // NRC Coin reward (fixed amount per level)
+            try {
+                const { addNRCToUser, NRC_CONFIG } = require('./nrcCoinHandler');
+                const nrcReward = NRC_CONFIG.levelReward; // Fixed 10 NRC per level
+                addNRCToUser(memberData.userId, nrcReward, `Level ${newLevel} achieved`);
+                
+                logger.info(`NRC Reward: ${message.author.tag} earned ${nrcReward} NRC for reaching level ${newLevel}`);
+            } catch (error) {
+                logger.error('NRC reward error:', error);
+            }
+
             // Level milestone achievements
             await this.handleLevelMilestones(message, memberData, newLevel);
+
+            // Real-time broadcast via Socket.IO
+            if (global.realtimeUpdates) {
+                global.realtimeUpdates.levelUpdate({
+                    guildId: message.guild.id,
+                    userId: memberData.userId,
+                    username: message.author.username,
+                    avatar: message.author.displayAvatarURL(),
+                    oldLevel,
+                    newLevel,
+                    xp: memberData.xp,
+                    timestamp: Date.now()
+                });
+            }
 
             logger.info(`Level up: ${message.author.tag} -> Level ${newLevel} (${message.guild.name})`);
 

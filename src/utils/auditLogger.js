@@ -5,6 +5,8 @@ class AuditLogger {
     constructor() {
         this.db = getDatabase();
         this.io = null; // Socket.IO instance
+        this.recentLogs = new Map(); // For duplicate detection (guildId -> recent logs)
+        this.duplicateWindow = 5000; // 5 seconds window for duplicate detection
     }
 
     /**
@@ -14,6 +16,59 @@ class AuditLogger {
     setIO(io) {
         this.io = io;
         logger.info('[AuditLogger] Socket.IO instance set for real-time broadcasting');
+    }
+
+    /**
+     * Generate event signature for duplicate detection
+     * @param {Object} options - Log options
+     * @returns {string} Event signature
+     */
+    generateSignature(options) {
+        const { guildId, action, executor, target } = options;
+        const executorId = executor?.id || executor || 'system';
+        const targetId = target?.id || target || 'none';
+        return `${guildId}:${action}:${executorId}:${targetId}`;
+    }
+
+    /**
+     * Check if event is duplicate
+     * @param {string} signature - Event signature
+     * @returns {boolean} True if duplicate
+     */
+    isDuplicate(signature) {
+        if (!this.recentLogs.has(signature)) {
+            return false;
+        }
+
+        const lastTimestamp = this.recentLogs.get(signature);
+        const now = Date.now();
+
+        // If within duplicate window, it's a duplicate
+        if (now - lastTimestamp < this.duplicateWindow) {
+            return true;
+        }
+
+        // Clean up old entry
+        this.recentLogs.delete(signature);
+        return false;
+    }
+
+    /**
+     * Record event signature
+     * @param {string} signature - Event signature
+     */
+    recordSignature(signature) {
+        this.recentLogs.set(signature, Date.now());
+
+        // Cleanup old signatures periodically
+        if (this.recentLogs.size > 1000) {
+            const now = Date.now();
+            for (const [sig, timestamp] of this.recentLogs.entries()) {
+                if (now - timestamp > this.duplicateWindow * 2) {
+                    this.recentLogs.delete(sig);
+                }
+            }
+        }
     }
 
     /**
@@ -34,6 +89,16 @@ class AuditLogger {
                 logger.warn('[AuditLogger] Missing required fields: guildId or action');
                 return null;
             }
+
+            // Duplicate detection
+            const signature = this.generateSignature(options);
+            if (this.isDuplicate(signature)) {
+                logger.debug(`[AuditLogger] Duplicate event detected: ${signature}`);
+                return null; // Skip duplicate
+            }
+
+            // Record this event
+            this.recordSignature(signature);
 
             const auditEntry = {
                 id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

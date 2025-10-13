@@ -5,23 +5,13 @@ const { logger } = require('../utils/logger');
 class WelcomeHandler {
     constructor(client) {
         this.client = client;
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        this.client.on('guildMemberAdd', async (member) => {
-            await this.handleMemberJoin(member);
-        });
-
-        this.client.on('guildMemberRemove', async (member) => {
-            await this.handleMemberLeave(member);
-        });
+        // Event listener'ları KALDIR - index.js'den çağrılacak
     }
 
     // Handler'ı yeniden başlat
     restart() {
         // WelcomeHandler için özel restart gerekmez
-        // Event listener'lar zaten kurulu
+        // Event listener'lar index.js'de
     }
 
     async handleMemberJoin(member) {

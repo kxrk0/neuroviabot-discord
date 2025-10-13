@@ -254,6 +254,15 @@ client.once('clientReady', async () => {
     statsCache.initialize(client);
     client.statsCache = statsCache;
     
+    // NRC Coin sistemini başlat
+    try {
+        const { initializeNRCSystem } = require('./src/handlers/nrcCoinHandler');
+        initializeNRCSystem();
+        log('💰 NRC Coin system initialized', 'SUCCESS');
+    } catch (error) {
+        log(`❌ NRC Coin initialization error: ${error.message}`, 'ERROR');
+    }
+    
     // Gerçek stats'ı logla
     const stats = statsCache.getStats();
     log(`Guilds: ${stats.guilds}`, 'INFO');
@@ -329,33 +338,89 @@ client.on('messageUpdate', async (oldMessage, newMessage) => {
 });
 
 client.on('guildMemberAdd', async (member) => {
+    // Logging
     const { logMemberJoin } = require('./src/handlers/loggingHandler');
     await logMemberJoin(member);
+    
+    // Welcome message
+    if (client.welcomeHandler) {
+        await client.welcomeHandler.handleMemberJoin(member);
+    }
+    
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.memberJoin(member);
+    }
 });
 
 client.on('guildMemberRemove', async (member) => {
+    // Logging
     const { logMemberLeave } = require('./src/handlers/loggingHandler');
     await logMemberLeave(member);
+    
+    // Goodbye message
+    if (client.welcomeHandler) {
+        await client.welcomeHandler.handleMemberLeave(member);
+    }
+    
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.memberLeave(member);
+    }
 });
 
 client.on('roleCreate', async (role) => {
     const { logRoleCreate } = require('./src/handlers/loggingHandler');
     await logRoleCreate(role);
+    
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.roleCreate(role);
+    }
+});
+
+client.on('roleUpdate', async (oldRole, newRole) => {
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.roleUpdate(oldRole, newRole);
+    }
 });
 
 client.on('roleDelete', async (role) => {
     const { logRoleDelete } = require('./src/handlers/loggingHandler');
     await logRoleDelete(role);
+    
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.roleDelete(role);
+    }
 });
 
 client.on('channelCreate', async (channel) => {
     const { logChannelCreate } = require('./src/handlers/loggingHandler');
     await logChannelCreate(channel);
+    
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.channelCreate(channel);
+    }
+});
+
+client.on('channelUpdate', async (oldChannel, newChannel) => {
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.channelUpdate(oldChannel, newChannel);
+    }
 });
 
 client.on('channelDelete', async (channel) => {
     const { logChannelDelete } = require('./src/handlers/loggingHandler');
     await logChannelDelete(channel);
+    
+    // Real-time sync
+    if (global.realtimeUpdates) {
+        global.realtimeUpdates.channelDelete(channel);
+    }
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -484,6 +549,13 @@ async function setupSocketIO(client) {
         });
 
         client.socket = socket;
+        
+        // Initialize RealtimeSync for frontend updates
+        const RealtimeSync = require('./src/handlers/realtimeSync');
+        const realtimeSync = new RealtimeSync(client, socket);
+        global.realtimeUpdates = realtimeSync;
+        
+        log('✅ Real-time sync initialized', 'SUCCESS');
         
     } catch (error) {
         log(`Socket.IO hatası: ${error.message}`, 'WARNING');
@@ -640,6 +712,7 @@ const { router: developerBotRouter, setClient: setDeveloperBotClient } = require
 const { router: botCommandsApiRouter, setClient: setBotCommandsClient } = require('./src/routes/bot-commands-api');
 const botFeaturesApiRouter = require('./src/routes/bot-features-api');
 const cmsApiRouter = require('./src/routes/cms-api');
+const nrcApiRouter = require('./src/routes/nrc-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -652,6 +725,7 @@ apiApp.use('/api/bot/stats', botStatsRouter);
 apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
 apiApp.use('/api/dev-bot', developerBotRouter);
+apiApp.use('/api/nrc', nrcApiRouter);
 apiApp.use(botCommandsApiRouter);
 apiApp.use(botFeaturesApiRouter);
 apiApp.use(cmsApiRouter);

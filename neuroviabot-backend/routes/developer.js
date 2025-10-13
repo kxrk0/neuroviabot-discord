@@ -23,6 +23,10 @@ router.use(auditLoggerMiddleware);
 router.use(developerLimiter);
 
 // ==========================================
+// NEW ENDPOINTS FOR DEVELOPER PANEL
+// ==========================================
+
+// ==========================================
 // GET /api/dev/bot-stats
 // Get bot statistics
 // ==========================================
@@ -312,7 +316,8 @@ router.get('/check-access', (req, res) => {
     res.json({
         success: true,
         hasDeveloperAccess: true,
-        userId: req.session?.user?.id || req.headers['x-user-id']
+        userId: req.session?.user?.id || req.headers['x-user-id'],
+        developer: req.developer
     });
 });
 
@@ -337,6 +342,207 @@ router.get('/audit-logs', (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to fetch audit logs'
+        });
+    }
+});
+
+// ==========================================
+// GET /api/dev/bot/commands
+// Get bot commands with details
+// ==========================================
+router.get('/bot/commands', async (req, res) => {
+    try {
+        const response = await axios.get(`${BOT_API_URL}/api/dev-bot/commands`, {
+            headers: { 'x-api-key': BOT_API_KEY },
+            timeout: 10000
+        });
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] Bot commands error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch bot commands'
+        });
+    }
+});
+
+// ==========================================
+// POST /api/dev/bot/commands/:name/toggle
+// Toggle command enabled/disabled
+// ==========================================
+router.post('/bot/commands/:name/toggle', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const { enabled } = req.body;
+
+        const response = await axios.post(
+            `${BOT_API_URL}/api/dev-bot/commands/${name}/toggle`,
+            { enabled },
+            {
+                headers: { 'x-api-key': BOT_API_KEY },
+                timeout: 10000
+            }
+        );
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] Command toggle error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to toggle command'
+        });
+    }
+});
+
+// ==========================================
+// POST /api/dev/bot/commands/:name/update
+// Update command properties
+// ==========================================
+router.post('/bot/commands/:name/update', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const updates = req.body;
+
+        const response = await axios.post(
+            `${BOT_API_URL}/api/dev-bot/commands/${name}/update`,
+            updates,
+            {
+                headers: { 'x-api-key': BOT_API_KEY },
+                timeout: 10000
+            }
+        );
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] Command update error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update command'
+        });
+    }
+});
+
+// ==========================================
+// GET /api/dev/bot/stats/real-time
+// Get real-time bot statistics
+// ==========================================
+router.get('/bot/stats/real-time', async (req, res) => {
+    try {
+        const response = await axios.get(`${BOT_API_URL}/api/dev-bot/stats/realtime`, {
+            headers: { 'x-api-key': BOT_API_KEY },
+            timeout: 10000
+        });
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] Real-time stats error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch real-time stats'
+        });
+    }
+});
+
+// ==========================================
+// GET /api/dev/system/health
+// Get system health status
+// ==========================================
+router.get('/system/health', async (req, res) => {
+    try {
+        const response = await axios.get(`${BOT_API_URL}/api/dev-bot/system/health`, {
+            headers: { 'x-api-key': BOT_API_KEY },
+            timeout: 10000
+        });
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] System health error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch system health'
+        });
+    }
+});
+
+// ==========================================
+// GET /api/dev/system/errors
+// Get error logs and auto-fix status
+// ==========================================
+router.get('/system/errors', async (req, res) => {
+    try {
+        const { limit = 50 } = req.query;
+        
+        const response = await axios.get(`${BOT_API_URL}/api/dev-bot/system/errors`, {
+            headers: { 'x-api-key': BOT_API_KEY },
+            params: { limit },
+            timeout: 10000
+        });
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] System errors error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch system errors'
+        });
+    }
+});
+
+// ==========================================
+// POST /api/dev/database/restore
+// Restore database from backup
+// ==========================================
+router.post('/database/restore', databaseLimiter, async (req, res) => {
+    try {
+        const { backupId } = req.body;
+
+        if (!backupId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Backup ID is required'
+            });
+        }
+
+        const response = await axios.post(
+            `${BOT_API_URL}/api/dev-bot/database/restore`,
+            { backupId },
+            {
+                headers: { 'x-api-key': BOT_API_KEY },
+                timeout: 30000
+            }
+        );
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] Restore error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to restore database'
+        });
+    }
+});
+
+// ==========================================
+// GET /api/dev/frontend/access
+// Check frontend access permissions
+// ==========================================
+router.get('/frontend/access', (req, res) => {
+    try {
+        const userId = req.session?.user?.id || req.headers['x-user-id'];
+        const { isDeveloper, DEVELOPER_IDS } = require('../middleware/developerAuth');
+        
+        res.json({
+            success: true,
+            hasDeveloperAccess: isDeveloper(userId),
+            userId,
+            allowedDevelopers: DEVELOPER_IDS.length
+        });
+    } catch (error) {
+        console.error('[Dev API] Frontend access error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to check frontend access'
         });
     }
 });

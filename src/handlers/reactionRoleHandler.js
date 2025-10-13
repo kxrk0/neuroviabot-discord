@@ -37,6 +37,12 @@ class ReactionRoleHandler {
                 throw new Error('Channel not found');
             }
 
+            // Check bot permissions
+            const botPermissions = channel.permissionsFor(guild.members.me);
+            if (!botPermissions.has(['SendMessages', 'AddReactions', 'ReadMessageHistory'])) {
+                throw new Error('Bot does not have required permissions (SendMessages, AddReactions, ReadMessageHistory)');
+            }
+
             // Create embed
             const embed = new EmbedBuilder()
                 .setTitle(config.title || '⭐ Rol Seçimi')
@@ -56,13 +62,17 @@ class ReactionRoleHandler {
             // Send message
             const message = await channel.send({ embeds: [embed] });
 
-            // Add reactions
+            // Add reactions (with proper error handling and retry)
             if (config.roles && config.roles.length > 0) {
                 for (const roleConfig of config.roles) {
                     try {
+                        // Add delay between reactions to avoid rate limits
+                        await new Promise(resolve => setTimeout(resolve, 300));
                         await message.react(roleConfig.emoji);
+                        logger.debug(`[ReactionRole] Added emoji ${roleConfig.emoji} to message`);
                     } catch (error) {
-                        logger.error(`Failed to add reaction ${roleConfig.emoji}:`, error);
+                        logger.error(`[ReactionRole] Failed to add reaction ${roleConfig.emoji}:`, error.message);
+                        // Continue with other emojis even if one fails
                     }
                 }
             }
@@ -102,7 +112,22 @@ class ReactionRoleHandler {
         try {
             // Fetch partial reactions
             if (reaction.partial) {
-                await reaction.fetch();
+                try {
+                    await reaction.fetch();
+                } catch (error) {
+                    logger.error('[ReactionRole] Failed to fetch partial reaction:', error);
+                    return;
+                }
+            }
+
+            // Fetch partial message
+            if (reaction.message.partial) {
+                try {
+                    await reaction.message.fetch();
+                } catch (error) {
+                    logger.error('[ReactionRole] Failed to fetch partial message:', error);
+                    return;
+                }
             }
 
             const messageId = reaction.message.id;
@@ -111,9 +136,28 @@ class ReactionRoleHandler {
 
             if (!setup) return;
 
+            // Get emoji identifier (works for both unicode and custom emojis)
+            const emojiIdentifier = reaction.emoji.id 
+                ? `<:${reaction.emoji.name}:${reaction.emoji.id}>` // Custom emoji
+                : reaction.emoji.name; // Unicode emoji
+
             // Find matching role
-            const roleConfig = setup.roles?.find(r => r.emoji === reaction.emoji.name || r.emoji === reaction.emoji.id);
-            if (!roleConfig) return;
+            const roleConfig = setup.roles?.find(r => {
+                // Try exact match first
+                if (r.emoji === emojiIdentifier || r.emoji === reaction.emoji.name) {
+                    return true;
+                }
+                // Try ID match for custom emojis
+                if (reaction.emoji.id && r.emoji.includes(reaction.emoji.id)) {
+                    return true;
+                }
+                return false;
+            });
+
+            if (!roleConfig) {
+                logger.debug(`[ReactionRole] No role config found for emoji ${emojiIdentifier}`);
+                return;
+            }
 
             const guild = reaction.message.guild;
             const member = await guild.members.fetch(user.id);
@@ -124,9 +168,15 @@ class ReactionRoleHandler {
                 return;
             }
 
+            // Check bot permissions
+            if (!guild.members.me.permissions.has('ManageRoles')) {
+                logger.error('[ReactionRole] Bot missing ManageRoles permission');
+                return;
+            }
+
             // Add role
             if (!member.roles.cache.has(role.id)) {
-                await member.roles.add(role);
+                await member.roles.add(role, 'Reaction role');
                 logger.info(`[ReactionRole] Added role ${role.name} to ${user.tag}`);
             }
         } catch (error) {
@@ -138,7 +188,22 @@ class ReactionRoleHandler {
         try {
             // Fetch partial reactions
             if (reaction.partial) {
-                await reaction.fetch();
+                try {
+                    await reaction.fetch();
+                } catch (error) {
+                    logger.error('[ReactionRole] Failed to fetch partial reaction:', error);
+                    return;
+                }
+            }
+
+            // Fetch partial message
+            if (reaction.message.partial) {
+                try {
+                    await reaction.message.fetch();
+                } catch (error) {
+                    logger.error('[ReactionRole] Failed to fetch partial message:', error);
+                    return;
+                }
             }
 
             const messageId = reaction.message.id;
@@ -147,9 +212,28 @@ class ReactionRoleHandler {
 
             if (!setup) return;
 
+            // Get emoji identifier (works for both unicode and custom emojis)
+            const emojiIdentifier = reaction.emoji.id 
+                ? `<:${reaction.emoji.name}:${reaction.emoji.id}>` // Custom emoji
+                : reaction.emoji.name; // Unicode emoji
+
             // Find matching role
-            const roleConfig = setup.roles?.find(r => r.emoji === reaction.emoji.name || r.emoji === reaction.emoji.id);
-            if (!roleConfig) return;
+            const roleConfig = setup.roles?.find(r => {
+                // Try exact match first
+                if (r.emoji === emojiIdentifier || r.emoji === reaction.emoji.name) {
+                    return true;
+                }
+                // Try ID match for custom emojis
+                if (reaction.emoji.id && r.emoji.includes(reaction.emoji.id)) {
+                    return true;
+                }
+                return false;
+            });
+
+            if (!roleConfig) {
+                logger.debug(`[ReactionRole] No role config found for emoji ${emojiIdentifier}`);
+                return;
+            }
 
             const guild = reaction.message.guild;
             const member = await guild.members.fetch(user.id);
@@ -160,9 +244,15 @@ class ReactionRoleHandler {
                 return;
             }
 
+            // Check bot permissions
+            if (!guild.members.me.permissions.has('ManageRoles')) {
+                logger.error('[ReactionRole] Bot missing ManageRoles permission');
+                return;
+            }
+
             // Remove role
             if (member.roles.cache.has(role.id)) {
-                await member.roles.remove(role);
+                await member.roles.remove(role, 'Reaction role removed');
                 logger.info(`[ReactionRole] Removed role ${role.name} from ${user.tag}`);
             }
         } catch (error) {
