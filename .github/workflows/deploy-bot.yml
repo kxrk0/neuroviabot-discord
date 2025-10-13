@@ -19,51 +19,172 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 🚀 Deploy Bot & Backend (All Steps)
+      - name: 📥 Pull Latest Bot Code
+        uses: appleboy/ssh-action@v1.0.3
+        continue-on-error: true
+        id: pull_code_attempt1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📥 BOT: Pulling Latest Changes"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd
+            echo "✅ Bot code updated"
+            echo ""
+
+      - name: 📥 Pull Latest Bot Code (Retry)
+        if: steps.pull_code_attempt1.outcome == 'failure'
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 15m
+          command_timeout: 30m
           script: |
-            set -e
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🚀 Starting Bot & Backend Deployment"
+            echo "🔄 BOT: Retrying Pull (Attempt 2)"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            
-            # Pull latest code
-            echo "📥 Pulling latest code..."
             cd /root/neuroviabot/bot
             git fetch origin main
             git reset --hard origin/main
-            echo "✅ Code updated"
-            
-            # Install bot dependencies
-            echo "📦 Installing bot dependencies..."
-            npm install --production --prefer-offline --no-audit
-            echo "✅ Bot dependencies installed"
-            
-            # Install backend dependencies
-            echo "📦 Installing backend dependencies..."
+            git clean -fd
+            echo "✅ Bot code updated (retry successful)"
+            echo ""
+
+      - name: 🗑️ Clean Bot Dependencies
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🗑️ BOT: Cleaning Dependencies"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot
+            rm -rf node_modules package-lock.json
+            echo "✅ Dependencies cleaned"
+            echo ""
+
+      - name: 📦 Install Bot Dependencies
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📦 BOT: Installing Dependencies"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            cd /root/neuroviabot/bot
+            npm install --production
+            echo "✅ Dependencies installed"
+            echo ""
+
+      - name: 📦 Install Backend Dependencies
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📦 BACKEND: Installing Dependencies"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             cd /root/neuroviabot/bot/neuroviabot-backend
-            npm install --production --prefer-offline --no-audit
+            npm install --production
             echo "✅ Backend dependencies installed"
-            
-            # Restart services
-            echo "🔄 Restarting services..."
-            pm2 restart neuroviabot neuroviabot-backend --update-env
-            pm2 save
+            echo ""
+
+      - name: 🔄 Restart Bot Service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔄 PM2: Restarting Bot"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            pm2 restart neuroviabot --update-env
+            echo "⏳ Waiting for bot to start..."
+            sleep 5
+            echo "✅ Bot restarted"
+            echo ""
+
+      - name: 🔄 Restart Backend Service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔄 PM2: Restarting Backend"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            pm2 restart neuroviabot-backend --update-env
             sleep 3
-            
-            # Verify
-            echo "✅ Verifying status..."
-            pm2 status
-            
+            echo "✅ Backend restarted"
+            echo ""
+
+      - name: 💾 Save PM2 Configuration
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "💾 PM2: Saving Configuration"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            pm2 save
+            echo "✅ Configuration saved"
+            echo ""
+
+      - name: ✅ Verify Services Status
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
+          script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "✅ BOT & BACKEND DEPLOYMENT COMPLETED!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "📊 Services Status:"
+            pm2 status
+            echo ""
+            echo "📋 Bot Logs:"
+            pm2 logs neuroviabot --lines 10 --nostream
+            echo ""
+            echo "📋 Backend Logs:"
+            pm2 logs neuroviabot-backend --lines 10 --nostream
+            echo ""
+            echo "🎉 All services are running!"
 
       - name: 📊 Deployment Summary
         if: always()
@@ -75,6 +196,7 @@ jobs:
           echo "| 🤖 Discord Bot | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
           echo "| 💾 Backend API | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** main" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
 
