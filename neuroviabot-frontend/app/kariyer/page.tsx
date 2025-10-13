@@ -3,9 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Arrow
-
-LeftIcon, BriefcaseIcon, RocketIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, BriefcaseIcon, RocketIcon, HeartIcon } from '@heroicons/react/24/outline';
 
 export default function CareersPage() {
   return (

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { NeuroCoinProvider } from '../contexts/NeuroCoinContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
+import { SocketProvider } from '../contexts/SocketContext';
 
 export const metadata: Metadata = {
   title: 'Neurovia Dashboard',
@@ -19,11 +20,13 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans antialiased">
         <LanguageProvider>
-          <NotificationProvider>
-            <NeuroCoinProvider>
-              {children}
-            </NeuroCoinProvider>
-          </NotificationProvider>
+          <SocketProvider>
+            <NotificationProvider>
+              <NeuroCoinProvider>
+                {children}
+              </NeuroCoinProvider>
+            </NotificationProvider>
+          </SocketProvider>
         </LanguageProvider>
       </body>
     </html>
