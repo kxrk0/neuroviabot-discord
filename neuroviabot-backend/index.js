@@ -8,6 +8,8 @@ const DiscordStrategy = require('passport-discord').Strategy;
 const http = require('http');
 const { Server } = require('socket.io');
 const { getDatabase } = require('./database/simple-db');
+const { getErrorDetector } = require('./utils/errorDetector');
+const { getAutoFixer } = require('./utils/autoFixer');
 const path = require('path');
 
 const app = express();
@@ -22,6 +24,11 @@ console.log('[Backend] Guilds in database:', Array.from(db.data.guilds.keys()));
 
 // Make database available to routes
 app.set('db', db);
+
+// Initialize Error Detection & Auto-Fixer
+const errorDetector = getErrorDetector();
+const autoFixer = getAutoFixer();
+console.log('[Backend] Error Detection & Auto-Fixer initialized');
 
 // Socket.IO setup
 const io = new Server(server, {

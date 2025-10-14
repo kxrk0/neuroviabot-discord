@@ -454,13 +454,13 @@ export default function Home() {
             <div className="flex items-center gap-3">
               {/* Language Selector - Emoji Only */}
               <div className="relative">
-                <motion.button 
+                <motion.button
                   onClick={() => setLanguageOpen(!languageOpen)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  className="hidden md:flex items-center justify-center w-10 h-10 text-2xl hover:bg-white/5 rounded-lg transition-all"
+                  className="hidden md:flex items-center justify-center w-10 h-10 text-sm font-bold hover:bg-white/5 rounded-lg transition-all border border-white/10"
                 >
-                  {language === 'tr' ? '🇹🇷' : '🇬🇧'}
+                  {language === 'tr' ? 'TR' : 'EN'}
                 </motion.button>
                 <AnimatePresence>
                 {languageOpen && (

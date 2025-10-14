@@ -263,6 +263,15 @@ client.once('clientReady', async () => {
         log(`❌ NRC Coin initialization error: ${error.message}`, 'ERROR');
     }
     
+    // Moderation Handler'ı başlat
+    try {
+        const ModerationHandler = require('./src/handlers/moderationHandler');
+        client.moderationHandler = new ModerationHandler(client);
+        log('🛡️ Moderation Handler initialized', 'SUCCESS');
+    } catch (error) {
+        log(`❌ Moderation Handler initialization error: ${error.message}`, 'ERROR');
+    }
+    
     // Gerçek stats'ı logla
     const stats = statsCache.getStats();
     log(`Guilds: ${stats.guilds}`, 'INFO');
@@ -713,6 +722,7 @@ const { router: botCommandsApiRouter, setClient: setBotCommandsClient } = requir
 const botFeaturesApiRouter = require('./src/routes/bot-features-api');
 const cmsApiRouter = require('./src/routes/cms-api');
 const nrcApiRouter = require('./src/routes/nrc-api');
+const { router: moderationApiRouter, setClient: setModerationClient } = require('./src/routes/moderation-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -726,6 +736,7 @@ apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
 apiApp.use('/api/dev-bot', developerBotRouter);
 apiApp.use('/api/nrc', nrcApiRouter);
+apiApp.use('/api/moderation', moderationApiRouter);
 apiApp.use(botCommandsApiRouter);
 apiApp.use(botFeaturesApiRouter);
 apiApp.use(cmsApiRouter);
@@ -746,6 +757,7 @@ client.once('clientReady', async () => {
     setReactionRolesClient(client);
     setDeveloperBotClient(client);
     setBotCommandsClient(client);
+    setModerationClient(client);
     
     // Activity Reward Handler'ı başlat
     activityRewardHandler = new ActivityRewardHandler(client);
