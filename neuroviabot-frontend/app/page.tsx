@@ -885,10 +885,12 @@ export default function Home() {
             style={{ willChange: 'transform, opacity' }}
           >
             {[
-              { icon: '🎵', value: `${stats.commands || 29}+`, label: 'Komut', gradient: 'from-purple-500/10 to-pink-500/10', border: 'border-purple-500/20', key: 'commands' },
-              { icon: '🏆', value: stats.guilds || '72', label: 'Sunucu', gradient: 'from-amber-500/10 to-orange-500/10', border: 'border-amber-500/20', key: 'guilds' },
-              { icon: '👥', value: stats.users.toLocaleString(), label: 'Kullanıcı', gradient: 'from-blue-500/10 to-cyan-500/10', border: 'border-blue-500/20', key: 'users' }
-            ].map((stat, index) => (
+              { icon: CommandLineIcon, value: `${stats.commands || 29}+`, label: 'Komut', gradient: 'from-purple-500/10 to-pink-500/10', border: 'border-purple-500/20', key: 'commands' },
+              { icon: ServerIcon, value: stats.guilds || '72', label: 'Sunucu', gradient: 'from-amber-500/10 to-orange-500/10', border: 'border-amber-500/20', key: 'guilds' },
+              { icon: UserGroupIcon, value: stats.users.toLocaleString(), label: 'Kullanıcı', gradient: 'from-blue-500/10 to-cyan-500/10', border: 'border-blue-500/20', key: 'users' }
+            ].map((stat, index) => {
+              const IconComponent = stat.icon;
+              return (
               <motion.div
                 key={index}
                 initial={{ scale: 0, opacity: 0 }}
@@ -947,7 +949,7 @@ export default function Home() {
                   )}
                 </AnimatePresence>
                 
-                <span className="text-2xl filter drop-shadow-sm relative z-10">{stat.icon}</span>
+                <IconComponent className="w-6 h-6 text-white filter drop-shadow-sm relative z-10" />
                 <div className="relative z-10">
                   <motion.div 
                     className="text-xl font-bold text-white leading-none mb-0.5"
@@ -962,7 +964,8 @@ export default function Home() {
                   <div className="text-xs font-medium text-gray-300 opacity-80 leading-none">{stat.label}</div>
                 </div>
               </motion.div>
-            ))}
+            );
+            })}
           </motion.div>
 
           {/* CTA Buttons */}

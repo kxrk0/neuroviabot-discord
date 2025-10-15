@@ -723,6 +723,7 @@ const botFeaturesApiRouter = require('./src/routes/bot-features-api');
 const cmsApiRouter = require('./src/routes/cms-api');
 const nrcApiRouter = require('./src/routes/nrc-api');
 const { router: moderationApiRouter, setClient: setModerationClient } = require('./src/routes/moderation-api');
+const nrcTradingApiRouter = require('./src/routes/nrc-trading-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -736,6 +737,7 @@ apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
 apiApp.use('/api/dev-bot', developerBotRouter);
 apiApp.use('/api/nrc', nrcApiRouter);
+apiApp.use('/api/nrc', nrcTradingApiRouter);
 apiApp.use('/api/moderation', moderationApiRouter);
 apiApp.use(botCommandsApiRouter);
 apiApp.use(botFeaturesApiRouter);

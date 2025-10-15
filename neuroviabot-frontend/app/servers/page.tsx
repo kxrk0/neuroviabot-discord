@@ -182,13 +182,6 @@ export default function ServersPage() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link
-            href="/manage"
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold transition-all"
-          >
-            Sunucu Yönetimi
-          </Link>
-          
           {/* User Menu */}
           <div className="relative">
             <motion.button

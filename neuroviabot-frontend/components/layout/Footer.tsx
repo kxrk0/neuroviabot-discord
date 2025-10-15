@@ -27,22 +27,12 @@ export default function Footer() {
                 <li><Link href="/servers" className="hover:text-white transition-colors text-sm">Sunucularım</Link></li>
                 <li><Link href="/komutlar" className="hover:text-white transition-colors text-sm">Komutlar</Link></li>
                 <li><Link href="/ozellikler" className="hover:text-white transition-colors text-sm">Özellikler</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-3">Kaynaklar</h4>
-              <ul className="space-y-2">
-                <li><Link href="/api-dokumantasyon" className="hover:text-white transition-colors text-sm">API Dokümantasyonu</Link></li>
-                <li><Link href="/blog" className="hover:text-white transition-colors text-sm">Blog</Link></li>
-                <li><Link href="/destek" className="hover:text-white transition-colors text-sm">Destek</Link></li>
                 <li><Link href="/geri-bildirim" className="hover:text-white transition-colors text-sm">Geri Bildirim</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-3">Şirket</h4>
+              <h4 className="text-white font-semibold mb-3">Yasal</h4>
               <ul className="space-y-2">
-                <li><Link href="/hakkimizda" className="hover:text-white transition-colors text-sm">Hakkımızda</Link></li>
-                <li><Link href="/kariyer" className="hover:text-white transition-colors text-sm">Kariyer</Link></li>
                 <li><Link href="/privacy" className="hover:text-white transition-colors text-sm">Gizlilik Politikası</Link></li>
                 <li><Link href="/terms" className="hover:text-white transition-colors text-sm">Kullanım Şartları</Link></li>
               </ul>
