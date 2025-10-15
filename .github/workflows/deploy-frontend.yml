@@ -16,7 +16,7 @@ jobs:
     
     steps:
       - name: 📥 Pull Latest Frontend Code
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         continue-on-error: true
         id: pull_code_attempt1
         with:
@@ -24,7 +24,8 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
+          timeout: 30m
+          timeout: 30m          command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "📥 FRONTEND: Pulling Latest Changes"
@@ -37,13 +38,14 @@ jobs:
 
       - name: 📥 Pull Latest Frontend Code (Retry)
         if: steps.pull_code_attempt1.outcome == 'failure'
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
+          timeout: 30m
+          timeout: 30m          command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔄 FRONTEND: Retrying Pull (Attempt 2)"
@@ -55,13 +57,13 @@ jobs:
             echo ""
 
       - name: 🗑️ Clean Frontend Build
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
+          timeout: 30m          command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🗑️ FRONTEND: Cleaning Build"
@@ -72,13 +74,13 @@ jobs:
             echo ""
 
       - name: 📦 Install Frontend Dependencies
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
+          timeout: 30m          command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "📦 FRONTEND: Installing Dependencies"
@@ -89,13 +91,13 @@ jobs:
             echo ""
 
       - name: 🏗️ Build Frontend
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
+          timeout: 30m          command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🏗️ FRONTEND: Building Application"
@@ -106,13 +108,13 @@ jobs:
             echo ""
 
       - name: 🔄 Restart Frontend Service
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
+          timeout: 30m          command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔄 PM2: Restarting Frontend"
@@ -123,13 +125,13 @@ jobs:
             echo ""
 
       - name: ✅ Verify Frontend Status
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
+          timeout: 30m          command_timeout: 30m
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "✅ FRONTEND DEPLOYMENT COMPLETED!"

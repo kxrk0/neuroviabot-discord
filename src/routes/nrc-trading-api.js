@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { logger } = require('../utils/logger');
-const { getDatabase } = require('../database/database');
+const { getDatabase } = require('../database/simple-db');
 const { getNRCBalance, addNRCToUser, removeNRCFromUser } = require('../handlers/nrcCoinHandler');
 
 // API Key validation
