@@ -395,7 +395,21 @@ function getTopHolders(limit = 10) {
         .slice(0, limit);
 }
 
+/**
+ * Initialize NRC Coin handler
+ */
+function init(client) {
+    logger.info('[NRC Coin] Handler initialized');
+    initializeNRCSystem();
+    
+    // Start price update interval (every hour)
+    setInterval(() => {
+        updateNRCPrice();
+    }, 3600000); // 1 hour
+}
+
 module.exports = {
+    init,
     initializeNRCSystem,
     getUserNRCBalance,
     addNRCToUser,

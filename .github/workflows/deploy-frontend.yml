@@ -15,6 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: 🔑 Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.VPS_PORT }} -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          
       - name: 📥 Pull Latest Frontend Code
         uses: appleboy/ssh-action@master
         continue-on-error: true
@@ -26,6 +33,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
+          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "📥 FRONTEND: Pulling Latest Changes"
@@ -46,6 +54,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
+          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔄 FRONTEND: Retrying Pull (Attempt 2)"
@@ -65,6 +74,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
+          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🗑️ FRONTEND: Cleaning Build"
@@ -83,6 +93,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
+          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "📦 FRONTEND: Installing Dependencies"
@@ -101,6 +112,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
+          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🏗️ FRONTEND: Building Application"
@@ -119,6 +131,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
+          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔄 PM2: Restarting Frontend"
@@ -137,6 +150,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
+          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "✅ FRONTEND DEPLOYMENT COMPLETED!"
