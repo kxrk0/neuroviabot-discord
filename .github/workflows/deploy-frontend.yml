@@ -33,7 +33,6 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "📥 FRONTEND: Pulling Latest Changes"
@@ -54,7 +53,6 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔄 FRONTEND: Retrying Pull (Attempt 2)"
@@ -74,7 +72,6 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🗑️ FRONTEND: Cleaning Build"
@@ -93,7 +90,6 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "📦 FRONTEND: Installing Dependencies"
@@ -112,7 +108,6 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🏗️ FRONTEND: Building Application"
@@ -131,7 +126,6 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔄 PM2: Restarting Frontend"
@@ -150,7 +144,6 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: false
           script: |
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "✅ FRONTEND DEPLOYMENT COMPLETED!"
