@@ -7,11 +7,11 @@ const rateLimit = require('express-rate-limit');
 
 /**
  * Rate limiter for developer endpoints
- * 10 requests per minute per IP
+ * 100 requests per minute per IP (increased for real-time polling)
  */
 const developerLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 10,
+    max: 100, // Increased from 10 to 100 for polling endpoints
     message: {
         success: false,
         error: 'Too many requests from this IP, please try again later.'
@@ -23,38 +23,59 @@ const developerLimiter = rateLimit({
         if (process.env.NODE_ENV === 'development') {
             return req.ip === '::1' || req.ip === '127.0.0.1';
         }
+        
+        // Skip rate limiting for known developers (optional - less secure but convenient)
+        const DEVELOPER_IDS = ['315875588906680330', '413081778031427584'];
+        const userId = req.user?.id || req.session?.passport?.user?.id || req.session?.user?.id;
+        if (userId && DEVELOPER_IDS.includes(userId)) {
+            console.log(`[Rate Limiter] Bypassing for developer ${userId}`);
+            return true; // Skip rate limit for developers
+        }
+        
         return false;
     }
 });
 
 /**
  * Rate limiter for database operations
- * 5 requests per minute (more restrictive)
+ * 20 requests per minute (increased for developers)
  */
 const databaseLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 5,
+    max: 20, // Increased from 5 to 20
     message: {
         success: false,
         error: 'Too many database requests, please try again later.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    skip: (req) => {
+        // Skip for developers
+        const DEVELOPER_IDS = ['315875588906680330', '413081778031427584'];
+        const userId = req.user?.id || req.session?.passport?.user?.id || req.session?.user?.id;
+        return userId && DEVELOPER_IDS.includes(userId);
+    }
 });
 
 /**
  * Rate limiter for system control operations
- * 3 requests per minute (most restrictive)
+ * 10 requests per minute (increased for developers)
  */
 const systemControlLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 3,
+    max: 10, // Increased from 3 to 10
     message: {
         success: false,
         error: 'Too many system control requests, please try again later.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    skip: (req) => {
+        // Skip for developers
+        const DEVELOPER_IDS = ['315875588906680330', '413081778031427584'];
+        const userId = req.user?.id || req.session?.passport?.user?.id || req.session?.user?.id;
+        return userId && DEVELOPER_IDS.includes(userId);
+    }
 });
 
 module.exports = {
