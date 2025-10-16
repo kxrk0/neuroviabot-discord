@@ -368,6 +368,32 @@ router.get('/bot/commands', async (req, res) => {
 });
 
 // ==========================================
+// POST /api/dev/bot/commands/refresh
+// Force refresh command list
+// ==========================================
+router.post('/bot/commands/refresh', async (req, res) => {
+    try {
+        const response = await axios.post(
+            `${BOT_API_URL}/api/dev-bot/commands/refresh`,
+            {},
+            {
+                headers: { 'x-api-key': BOT_API_KEY },
+                timeout: 15000
+            }
+        );
+        
+        console.log('[Dev API] Commands refreshed successfully');
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Dev API] Command refresh error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to refresh commands'
+        });
+    }
+});
+
+// ==========================================
 // POST /api/dev/bot/commands/:name/toggle
 // Toggle command enabled/disabled
 // ==========================================

@@ -30,9 +30,14 @@ router.use(validateApiKey);
 
 // Store client reference
 let botClient = null;
+let commandWatcher = null;
 
 function setClient(client) {
     botClient = client;
+}
+
+function setCommandWatcher(watcher) {
+    commandWatcher = watcher;
 }
 
 // ==========================================
@@ -128,20 +133,53 @@ router.get('/commands', (req, res) => {
             return res.status(503).json({ success: false, error: 'Bot not ready' });
         }
 
-        const commands = botClient.commands.map(cmd => ({
-            name: cmd.data.name,
-            description: cmd.data.description,
-            category: cmd.category || 'general',
-            options: cmd.data.options?.length || 0,
-            permissions: cmd.data.default_member_permissions,
-            dmPermission: cmd.data.dm_permission,
-            usageCount: cmd.usageCount || 0
-        }));
+        const commands = [];
+        for (const [name, cmd] of botClient.commands) {
+            commands.push({
+                name: cmd.data.name,
+                description: cmd.data.description,
+                category: cmd.category || 'general',
+                options: cmd.data.options?.length || 0,
+                permissions: cmd.data.default_member_permissions,
+                dmPermission: cmd.data.dm_permission,
+                usageCount: cmd.usageCount || 0
+            });
+        }
 
-        res.json({ success: true, commands });
+        res.json({ 
+            success: true, 
+            commands,
+            total: commands.length,
+            timestamp: new Date().toISOString()
+        });
     } catch (error) {
         logger.error('[Dev API] Commands error:', error);
         res.status(500).json({ success: false, error: 'Failed to get commands' });
+    }
+});
+
+// ==========================================
+// POST /api/dev-bot/commands/refresh
+// Force refresh command list
+// ==========================================
+router.post('/commands/refresh', async (req, res) => {
+    try {
+        if (!botClient) {
+            return res.status(503).json({ success: false, error: 'Bot not ready' });
+        }
+
+        if (!commandWatcher) {
+            return res.status(503).json({ success: false, error: 'Command watcher not initialized' });
+        }
+
+        // Force refresh
+        const result = await commandWatcher.forceRefresh();
+        
+        logger.info('[Dev API] Command refresh completed:', result);
+        res.json(result);
+    } catch (error) {
+        logger.error('[Dev API] Command refresh error:', error);
+        res.status(500).json({ success: false, error: 'Failed to refresh commands' });
     }
 });
 
@@ -582,5 +620,5 @@ router.get('/status', (req, res) => {
     }
 });
 
-module.exports = { router, setClient };
+module.exports = { router, setClient, setCommandWatcher };
 

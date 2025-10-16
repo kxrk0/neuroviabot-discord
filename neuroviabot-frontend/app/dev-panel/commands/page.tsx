@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import DeveloperOnly from '@/components/DeveloperOnly';
+import { io, Socket } from 'socket.io-client';
 import {
     ArrowLeftIcon,
     MagnifyingGlassIcon,
     CommandLineIcon,
     CheckCircleIcon,
-    XCircleIcon
+    XCircleIcon,
+    ArrowPathIcon,
+    BellAlertIcon
 } from '@heroicons/react/24/outline';
 
 interface Command {
@@ -26,10 +29,104 @@ export default function CommandsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+    const [notification, setNotification] = useState<{ type: 'added' | 'removed' | 'modified', name: string } | null>(null);
+    
+    const socketRef = useRef<Socket | null>(null);
 
+    // Load commands
     useEffect(() => {
         loadCommands();
     }, []);
+
+    // Setup Socket.IO for real-time updates
+    useEffect(() => {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+        const socket = io(API_URL, {
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 10,
+            transports: ['websocket', 'polling']
+        });
+
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+            console.log('[Commands] Socket connected');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('[Commands] Socket disconnected');
+        });
+
+        // Listen for command updates
+        socket.on('commands_updated', (data: any) => {
+            console.log('[Commands] Commands updated:', data);
+            handleCommandUpdate(data);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
+
+    const handleCommandUpdate = useCallback((data: any) => {
+        const { added, removed, modified } = data;
+
+        // Show notifications
+        if (added && added.length > 0) {
+            added.forEach((cmd: any) => {
+                showNotification('added', cmd.name);
+                // Add to commands list
+                setCommands(prev => {
+                    if (!prev.find(c => c.name === cmd.name)) {
+                        return [...prev, {
+                            name: cmd.name,
+                            description: cmd.description,
+                            category: cmd.category || 'general',
+                            options: cmd.options?.length || 0,
+                            usageCount: 0,
+                            enabled: true
+                        }];
+                    }
+                    return prev;
+                });
+            });
+        }
+
+        if (removed && removed.length > 0) {
+            removed.forEach((cmdName: string) => {
+                showNotification('removed', cmdName);
+                // Remove from commands list
+                setCommands(prev => prev.filter(c => c.name !== cmdName));
+            });
+        }
+
+        if (modified && modified.length > 0) {
+            modified.forEach((cmd: any) => {
+                showNotification('modified', cmd.name);
+                // Update command
+                setCommands(prev => prev.map(c => 
+                    c.name === cmd.name 
+                        ? {
+                            ...c,
+                            description: cmd.description,
+                            category: cmd.category || c.category,
+                            options: cmd.options?.length || c.options
+                        }
+                        : c
+                ));
+            });
+        }
+
+        setLastUpdate(new Date());
+    }, []);
+
+    const showNotification = (type: 'added' | 'removed' | 'modified', name: string) => {
+        setNotification({ type, name });
+        setTimeout(() => setNotification(null), 5000);
+    };
 
     const loadCommands = async () => {
         try {
@@ -41,11 +138,42 @@ export default function CommandsPage() {
             if (response.ok) {
                 const data = await response.json();
                 setCommands(data.commands || []);
+                setLastUpdate(new Date());
             }
         } catch (error) {
             console.error('[Dev Panel] Error loading commands:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+            const response = await fetch(`${API_URL}/api/dev/bot/commands/refresh`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('[Commands] Refresh result:', data);
+                
+                // Update commands list
+                if (data.commands) {
+                    setCommands(data.commands);
+                } else {
+                    // Fallback: reload all commands
+                    await loadCommands();
+                }
+                
+                setLastUpdate(new Date());
+            }
+        } catch (error) {
+            console.error('[Dev Panel] Error refreshing commands:', error);
+        } finally {
+            setRefreshing(false);
         }
     };
 
@@ -90,29 +218,80 @@ export default function CommandsPage() {
                     className="bg-gray-900/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50"
                 >
                     <div className="max-w-7xl mx-auto px-6 py-4">
-                        <div className="flex items-center gap-4">
-                            <Link 
-                                href="/dev-panel"
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/5 transition-colors text-gray-300 hover:text-white"
-                            >
-                                <ArrowLeftIcon className="w-5 h-5" />
-                                <span className="font-semibold">Geri</span>
-                            </Link>
-                            
-                            <div className="h-8 w-px bg-white/20"></div>
-                            
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
-                                    <CommandLineIcon className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h1 className="text-2xl font-black text-white">Komut Yönetimi</h1>
-                                    <p className="text-sm text-gray-400">{commands.length} komut kayıtlı</p>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <Link 
+                                    href="/dev-panel"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/5 transition-colors text-gray-300 hover:text-white"
+                                >
+                                    <ArrowLeftIcon className="w-5 h-5" />
+                                    <span className="font-semibold">Geri</span>
+                                </Link>
+                                
+                                <div className="h-8 w-px bg-white/20"></div>
+                                
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+                                        <CommandLineIcon className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-2xl font-black text-white">Komut Yönetimi</h1>
+                                        <p className="text-sm text-gray-400">
+                                            {commands.length} komut kayıtlı
+                                            {lastUpdate && (
+                                                <span className="ml-2 text-xs text-gray-500">
+                                                    • Son güncelleme: {lastUpdate.toLocaleTimeString('tr-TR')}
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* Refresh Button */}
+                            <button
+                                onClick={handleRefresh}
+                                disabled={refreshing}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-all ${
+                                    refreshing ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                            >
+                                <ArrowPathIcon className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                                <span className="font-semibold">{refreshing ? 'Yenileniyor...' : 'Yenile'}</span>
+                            </button>
                         </div>
                     </div>
                 </motion.div>
+
+                {/* Notifications */}
+                <AnimatePresence>
+                    {notification && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -50 }}
+                            className="fixed top-20 right-6 z-50"
+                        >
+                            <div className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-2xl border backdrop-blur-xl ${
+                                notification.type === 'added' 
+                                    ? 'bg-green-500/20 border-green-500/50 text-green-300' 
+                                    : notification.type === 'removed'
+                                    ? 'bg-red-500/20 border-red-500/50 text-red-300'
+                                    : 'bg-blue-500/20 border-blue-500/50 text-blue-300'
+                            }`}>
+                                <BellAlertIcon className="w-6 h-6" />
+                                <div>
+                                    <p className="font-bold">
+                                        {notification.type === 'added' && 'Komut Eklendi'}
+                                        {notification.type === 'removed' && 'Komut Kaldırıldı'}
+                                        {notification.type === 'modified' && 'Komut Güncellendi'}
+                                    </p>
+                                    <p className="text-sm opacity-80">/{notification.name}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Content */}
                 <div className="max-w-7xl mx-auto px-6 py-8">

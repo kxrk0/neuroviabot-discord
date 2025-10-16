@@ -576,6 +576,17 @@ async function setupSocketIO(client) {
         
         log('✅ Real-time sync initialized', 'SUCCESS');
         
+        // Initialize CommandWatcher for real-time command sync
+        const CommandWatcher = require('./src/utils/commandWatcher');
+        const commandWatcher = new CommandWatcher(client, socket);
+        commandWatcher.start();
+        
+        // Set command watcher in bot API
+        const { setCommandWatcher } = require('./src/routes/developer-bot-api');
+        setCommandWatcher(commandWatcher);
+        
+        log('✅ Command watcher initialized', 'SUCCESS');
+        
     } catch (error) {
         log(`Socket.IO hatası: ${error.message}`, 'WARNING');
         // Socket hatasında bot çalışmaya devam eder (kritik değil)
