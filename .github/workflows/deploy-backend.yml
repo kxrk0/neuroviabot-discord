@@ -101,24 +101,9 @@ jobs:
             echo "🔄 PM2: Restarting Backend"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             pm2 restart neuroviabot-backend --update-env
-            sleep 3
-            echo "✅ Backend restarted"
-            echo ""
-
-      - name: 💾 Save PM2 Configuration
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          command_timeout: 30m
-          script: |
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "💾 PM2: Saving Configuration"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             pm2 save
-            echo "✅ Configuration saved"
+            sleep 3
+            echo "✅ Backend restarted and saved"
             echo ""
 
       - name: ✅ Verify Backend Status
