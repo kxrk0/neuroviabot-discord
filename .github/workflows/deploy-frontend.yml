@@ -117,9 +117,17 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔄 PM2: Restarting Frontend"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            pm2 restart neuroviabot-frontend --update-env
+            
+            # Stop frontend if running
+            pm2 stop neuroviabot-frontend 2>/dev/null || true
+            pm2 delete neuroviabot-frontend 2>/dev/null || true
+            
+            # Start with updated ecosystem config
+            cd /root/neuroviabot/bot
+            pm2 start PM2-ECOSYSTEM.config.js --only neuroviabot-frontend
             pm2 save
-            sleep 3
+            sleep 5
+            
             echo "✅ Frontend restarted and saved"
             echo ""
 
@@ -135,8 +143,27 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "✅ FRONTEND DEPLOYMENT COMPLETED!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            
+            # Wait a bit for startup
+            sleep 3
+            
+            # Show PM2 status
             pm2 status neuroviabot-frontend
-            pm2 logs neuroviabot-frontend --lines 10 --nostream
+            
+            # Show recent logs
+            echo ""
+            echo "📋 Recent Logs:"
+            pm2 logs neuroviabot-frontend --lines 20 --nostream
+            
+            # Check if frontend is actually running
+            echo ""
+            echo "🔍 Health Check:"
+            if pm2 status | grep -q "neuroviabot-frontend.*online"; then
+              echo "✅ Frontend is ONLINE"
+            else
+              echo "❌ Frontend is NOT running properly"
+              exit 1
+            fi
 
       - name: 📊 Deployment Summary
         if: always()

@@ -50,8 +50,8 @@ module.exports = {
     // Frontend (Next.js)
     {
       name: 'neuroviabot-frontend',
-      script: 'npm',
-      args: 'start',
+      script: './node_modules/.bin/next',
+      args: 'start -p 3001',
       cwd: '/root/neuroviabot/bot/neuroviabot-frontend',
       instances: 1,
       exec_mode: 'fork',
