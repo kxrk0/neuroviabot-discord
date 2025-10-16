@@ -40,33 +40,86 @@ export default function CommandsPage() {
         loadCommands();
     }, []);
 
-    // Setup Socket.IO for real-time updates
+    // Setup Socket.IO for real-time updates with heartbeat
     useEffect(() => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+        let heartbeatInterval: NodeJS.Timeout;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+
         const socket = io(API_URL, {
             reconnection: true,
             reconnectionDelay: 1000,
-            reconnectionAttempts: 10,
-            transports: ['websocket', 'polling']
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+            transports: ['websocket', 'polling'],
+            timeout: 20000
         });
 
         socketRef.current = socket;
 
         socket.on('connect', () => {
             console.log('[Commands] Socket connected');
+            reconnectAttempts = 0;
+            
+            // Start heartbeat
+            heartbeatInterval = setInterval(() => {
+                if (socket.connected) {
+                    socket.emit('heartbeat', { type: 'commands_page' });
+                }
+            }, 30000); // 30 seconds
         });
 
-        socket.on('disconnect', () => {
-            console.log('[Commands] Socket disconnected');
+        socket.on('disconnect', (reason) => {
+            console.log('[Commands] Socket disconnected:', reason);
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+            }
         });
 
-        // Listen for command updates
+        socket.on('reconnect', (attemptNumber) => {
+            console.log('[Commands] Socket reconnected after', attemptNumber, 'attempts');
+        });
+
+        socket.on('reconnect_attempt', (attemptNumber) => {
+            reconnectAttempts = attemptNumber;
+            console.log('[Commands] Reconnection attempt:', attemptNumber);
+        });
+
+        socket.on('reconnect_failed', () => {
+            console.error('[Commands] Socket reconnection failed after', MAX_RECONNECT_ATTEMPTS, 'attempts');
+        });
+
+        // Listen for command updates (from CommandWatcher)
         socket.on('commands_updated', (data: any) => {
             console.log('[Commands] Commands updated:', data);
             handleCommandUpdate(data);
         });
 
+        // Listen for instant sync updates (from InstantCommandSync)
+        socket.on('command_sync', (data: any) => {
+            console.log('[Commands] Instant sync:', data);
+            handleInstantSync(data);
+        });
+
+        // Listen for full sync (force refresh)
+        socket.on('commands_full_sync', (data: any) => {
+            console.log('[Commands] Full sync received:', data);
+            if (data.commands) {
+                setCommands(data.commands);
+                setLastUpdate(new Date());
+            }
+        });
+
+        // Pong response for heartbeat
+        socket.on('pong', () => {
+            // Connection is alive
+        });
+
         return () => {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+            }
             socket.disconnect();
         };
     }, []);
@@ -127,6 +180,45 @@ export default function CommandsPage() {
         setNotification({ type, name });
         setTimeout(() => setNotification(null), 5000);
     };
+
+    // Handle instant sync events (from chokidar)
+    const handleInstantSync = useCallback((data: any) => {
+        const { type, command } = data;
+
+        if (type === 'added' && command) {
+            showNotification('added', command.name);
+            setCommands(prev => {
+                if (!prev.find(c => c.name === command.name)) {
+                    return [...prev, {
+                        name: command.name,
+                        description: command.description,
+                        category: command.category || 'general',
+                        options: command.options || 0,
+                        usageCount: 0,
+                        enabled: true
+                    }];
+                }
+                return prev;
+            });
+        } else if (type === 'removed' && command) {
+            showNotification('removed', command.name);
+            setCommands(prev => prev.filter(c => c.name !== command.name));
+        } else if (type === 'modified' && command) {
+            showNotification('modified', command.name);
+            setCommands(prev => prev.map(c => 
+                c.name === command.name 
+                    ? {
+                        ...c,
+                        description: command.description,
+                        category: command.category || c.category,
+                        options: command.options || c.options
+                    }
+                    : c
+            ));
+        }
+
+        setLastUpdate(new Date());
+    }, []);
 
     const loadCommands = async () => {
         try {

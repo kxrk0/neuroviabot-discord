@@ -120,6 +120,7 @@ const cmsRoutes = require('./routes/cms');
 const nrcCoinRoutes = require('./routes/nrc-coin');
 const nrcAdminRoutes = require('./routes/nrc-admin');
 const nrcTradingRoutes = require('./routes/nrc-trading');
+const { router: nrcApiRoutes, initDB: initNrcDB } = require('./routes/nrc');
 
 // Set up Audit Logger with Socket.IO
 const { getAuditLogger } = require('../src/utils/auditLogger');
@@ -131,6 +132,11 @@ console.log('[Backend] Audit Logger configured with Socket.IO');
 const { initDeveloperEvents } = require('./socket/developerEvents');
 initDeveloperEvents(io);
 console.log('[Backend] Developer Events configured with Socket.IO');
+
+// Set up NRC Events with Socket.IO
+const { initNrcEvents } = require('./socket/nrcEvents');
+initNrcEvents(io);
+console.log('[Backend] NRC Events configured with Socket.IO');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
@@ -152,6 +158,10 @@ app.use('/api/dev', developerRoutes);
 app.use('/api/nrc', nrcCoinRoutes);
 app.use('/api/nrc', nrcAdminRoutes); // Admin routes (requires developer auth)
 app.use('/api/nrc', nrcTradingRoutes); // Trading routes
+
+// Initialize NRC API routes with database
+initNrcDB(db);
+app.use('/api/nrc', nrcApiRoutes); // New NRC expansion routes
 
 // Bot API proxy routes
 app.use('/api/bot', require('./routes/bot-proxy'));

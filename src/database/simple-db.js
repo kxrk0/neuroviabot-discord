@@ -33,7 +33,19 @@ class SimpleDatabase {
             auditLogs: new Map(), // New: guildId -> Array<AuditEntry>
             guildTreasury: new Map(), // New: guildId -> { balance, totalEarned, transactions }
             stakingPositions: new Map(), // New: stakingId -> staking position
+            stakingPools: new Map(), // New: poolId -> staking pool data
             loans: new Map(), // New: loanId -> loan details
+            
+            // NRC Expansion - Phase 2
+            nftCollections: new Map(), // collectionId -> { name, type, items, totalSupply }
+            userCollections: new Map(), // userId -> { ownedItems, favoriteItem, totalValue }
+            nftListings: new Map(), // listingId -> NFT marketplace listing
+            investments: new Map(), // investmentId -> { userId, amount, startDate, endDate, apy, status }
+            questTemplates: new Map(), // questId -> { name, description, type, objectives, reward }
+            gameStats: new Map(), // userId -> { totalGamesPlayed, wins, losses, biggestWin, streak }
+            tournamentHistory: new Map(), // tournamentId -> { gametype, participants, winner, prizePool }
+            tradeHistory: new Map(), // tradeId -> { buyerId, sellerId, itemId, price, platformFee, timestamp }
+            
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),

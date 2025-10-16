@@ -576,16 +576,16 @@ async function setupSocketIO(client) {
         
         log('✅ Real-time sync initialized', 'SUCCESS');
         
-        // Initialize CommandWatcher for real-time command sync
-        const CommandWatcher = require('./src/utils/commandWatcher');
-        const commandWatcher = new CommandWatcher(client, socket);
-        commandWatcher.start();
+        // Initialize InstantCommandSync for real-time command sync (Chokidar)
+        const InstantCommandSync = require('./src/utils/instantCommandSync');
+        const instantSync = new InstantCommandSync(client, socket);
+        instantSync.start();
         
-        // Set command watcher in bot API
+        // Set instant sync in bot API
         const { setCommandWatcher } = require('./src/routes/developer-bot-api');
-        setCommandWatcher(commandWatcher);
+        setCommandWatcher(instantSync); // Using instant sync instead of interval-based watcher
         
-        log('✅ Command watcher initialized', 'SUCCESS');
+        log('✅ Instant command sync initialized', 'SUCCESS');
         
     } catch (error) {
         log(`Socket.IO hatası: ${error.message}`, 'WARNING');

@@ -1,72 +1,104 @@
+// ==========================================
+// 🎯 Quest Command
+// ==========================================
+// Daily and weekly quest system
+
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { getDatabase } = require('../database/simple-db');
+const { getQuestHandler } = require('../handlers/questHandler');
 const { logger } = require('../utils/logger');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('quest')
-        .setDescription('🗺️ Görev sistemi - NeuroCoin kazan!')
+        .setDescription('🎯 Görev sistemi - Günlük ve haftalık görevler')
         .addSubcommand(subcommand =>
             subcommand
-                .setName('list')
-                .setDescription('📋 Mevcut görevleri görüntüle')
+                .setName('liste')
+                .setDescription('📜 Aktif görevlerini görüntüle')
                 .addStringOption(option =>
                     option.setName('tür')
-                        .setDescription('Görev türü')
+                        .setDescription('Görev türü filtresi')
+                        .setRequired(false)
                         .addChoices(
                             { name: '📅 Günlük', value: 'daily' },
                             { name: '📆 Haftalık', value: 'weekly' },
-                            { name: '🏆 Başarı', value: 'achievement' }
+                            { name: '🌐 Tümü', value: 'all' }
                         )
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('durum')
+                .setDescription('📊 Görev ilerlemenizi kontrol edin')
+                .addUserOption(option =>
+                    option.setName('kullanıcı')
+                        .setDescription('Durumu görüntülenecek kullanıcı')
                         .setRequired(false)
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
-                .setName('progress')
-                .setDescription('📊 Görev ilerlemeni kontrol et')
-        )
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('claim')
+                .setName('ödül-al')
                 .setDescription('🎁 Tamamlanan görev ödülünü al')
                 .addStringOption(option =>
                     option.setName('görev-id')
-                        .setDescription('Görev ID\'si')
+                        .setDescription('Görev ID (liste komutunda görünür)')
                         .setRequired(true)
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
-                .setName('daily')
-                .setDescription('📅 Günlük görevleri görüntüle')
+                .setName('geçmiş')
+                .setDescription('✅ Tamamlanan görevleri görüntüle')
         ),
+
+    category: 'economy',
 
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
+        // Check if economy is enabled
+        const db = getDatabase();
+        const settings = db.getGuildSettings(interaction.guild.id);
+        const economyEnabled = settings.features?.economy || settings.economy?.enabled;
+        
+        if (!economyEnabled) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#F39C12')
+                .setTitle('❌ Görev Sistemi Kapalı')
+                .setDescription('Bu sunucuda ekonomi sistemi etkin değil!')
+                .setFooter({ text: 'Ekonomi sistemini açmak için web dashboard\'u kullanın' })
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
         try {
             switch (subcommand) {
-                case 'list':
+                case 'liste':
                     await this.handleList(interaction);
                     break;
-                case 'progress':
-                    await this.handleProgress(interaction);
+                case 'durum':
+                    await this.handleStatus(interaction);
                     break;
-                case 'claim':
+                case 'ödül-al':
                     await this.handleClaim(interaction);
                     break;
-                case 'daily':
-                    await this.handleDaily(interaction);
+                case 'geçmiş':
+                    await this.handleHistory(interaction);
                     break;
             }
         } catch (error) {
-            logger.error('Quest komutunda hata', error, { subcommand, user: interaction.user.id });
-            
+            logger.error('Quest komut hatası', error, { 
+                subcommand, 
+                user: interaction.user.id 
+            });
+
             const errorEmbed = new EmbedBuilder()
-                .setColor('#8B5CF6')
-                .setTitle('❌ Görev Hatası')
-                .setDescription('Görev işlemi sırasında bir hata oluştu!')
+                .setColor('#F39C12')
+                .setTitle('❌ Hata')
+                .setDescription('İşlem sırasında bir hata oluştu!')
                 .setTimestamp();
 
             if (interaction.replied || interaction.deferred) {
@@ -77,300 +109,170 @@ module.exports = {
         }
     },
 
+    // Show quest list
     async handleList(interaction) {
+        const questHandler = getQuestHandler();
         const type = interaction.options.getString('tür') || 'all';
-        const db = getDatabase();
-        const userId = interaction.user.id;
 
-        // Get user's quest progress
-        const userProgress = db.data.questProgress.get(userId) || {};
-
-        // Define available quests
-        const quests = this.getAvailableQuests(type);
-
-        const embed = new EmbedBuilder()
-            .setColor('#8B5CF6')
-            .setTitle('🗺️ Mevcut Görevler')
-            .setDescription('Görevleri tamamlayarak NeuroCoin ve özel ödüller kazan!')
-            .setTimestamp();
-
-        for (const quest of quests) {
-            const progress = userProgress[quest.id] || { current: 0, completed: false };
-            const progressBar = this.createProgressBar(progress.current, quest.target);
-            const status = progress.completed ? '✅' : '⏳';
-
-            embed.addFields({
-                name: `${status} ${quest.name}`,
-                value: `${quest.description}\n${progressBar} ${progress.current}/${quest.target}\n**Ödül:** ${quest.reward} NRC ${quest.badge ? `+ ${quest.badge}` : ''}`,
-                inline: false
-            });
-        }
+        const embed = questHandler.createQuestListEmbed(
+            interaction.user.id,
+            interaction.user.username,
+            type
+        );
 
         await interaction.reply({ embeds: [embed] });
     },
 
-    async handleProgress(interaction) {
-        const db = getDatabase();
-        const userId = interaction.user.id;
-        const userProgress = db.data.questProgress.get(userId) || {};
+    // Show quest status/progress
+    async handleStatus(interaction) {
+        const questHandler = getQuestHandler();
+        const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
 
-        const allQuests = this.getAvailableQuests('all');
-        const completedQuests = Object.values(userProgress).filter(p => p.completed).length;
-        const totalQuests = allQuests.length;
+        if (targetUser.bot) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#F39C12')
+                .setTitle('❌ Hata')
+                .setDescription('Bot kullanıcılarının görevleri yoktur!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        const userProgress = questHandler.getUserProgress(targetUser.id);
 
         const embed = new EmbedBuilder()
-            .setColor('#8B5CF6')
-            .setTitle('📊 Görev İlerlemeniz')
-            .setDescription(`Toplam: ${completedQuests}/${totalQuests} görev tamamlandı`)
+            .setColor('#F39C12')
+            .setTitle(`🎯 ${targetUser.username} - Görev Durumu`)
             .setTimestamp();
 
-        // Daily quests
-        const dailyQuests = allQuests.filter(q => q.type === 'daily');
-        const dailyCompleted = dailyQuests.filter(q => userProgress[q.id]?.completed).length;
-        embed.addFields({
-            name: '📅 Günlük Görevler',
-            value: `${dailyCompleted}/${dailyQuests.length} tamamlandı`,
-            inline: true
-        });
+        const totalQuests = userProgress.activeQuests.length;
+        const completedQuests = userProgress.activeQuests.filter(q => q.completed).length;
+        const claimableQuests = userProgress.activeQuests.filter(q => q.completed && !q.claimed).length;
 
-        // Weekly quests
-        const weeklyQuests = allQuests.filter(q => q.type === 'weekly');
-        const weeklyCompleted = weeklyQuests.filter(q => userProgress[q.id]?.completed).length;
-        embed.addFields({
-            name: '📆 Haftalık Görevler',
-            value: `${weeklyCompleted}/${weeklyQuests.length} tamamlandı`,
-            inline: true
-        });
+        embed.addFields(
+            { name: '📊 Aktif Görevler', value: `**${totalQuests}**`, inline: true },
+            { name: '✅ Tamamlanan', value: `**${completedQuests}**`, inline: true },
+            { name: '🎁 Ödül Alınabilir', value: `**${claimableQuests}**`, inline: true }
+        );
 
-        // Achievement quests
-        const achievementQuests = allQuests.filter(q => q.type === 'achievement');
-        const achievementCompleted = achievementQuests.filter(q => userProgress[q.id]?.completed).length;
-        embed.addFields({
-            name: '🏆 Başarı Görevleri',
-            value: `${achievementCompleted}/${achievementQuests.length} tamamlandı`,
-            inline: true
-        });
-
-        await interaction.reply({ embeds: [embed] });
-    },
-
-    async handleClaim(interaction) {
-        const questId = interaction.options.getString('görev-id');
-        const db = getDatabase();
-        const userId = interaction.user.id;
-
-        const userProgress = db.data.questProgress.get(userId) || {};
-        const progress = userProgress[questId];
-
-        if (!progress) {
-            return interaction.reply({
-                embeds: [new EmbedBuilder()
-                    .setColor('#8B5CF6')
-                    .setTitle('❌ Görev Bulunamadı')
-                    .setDescription('Bu görev bulunamadı veya henüz başlamadınız.')],
-                ephemeral: true
-            });
-        }
-
-        if (progress.claimed) {
-            return interaction.reply({
-                embeds: [new EmbedBuilder()
-                    .setColor('#8B5CF6')
-                    .setTitle('❌ Zaten Alındı')
-                    .setDescription('Bu görevin ödülünü zaten aldınız.')],
-                ephemeral: true
-            });
-        }
-
-        if (!progress.completed) {
-            return interaction.reply({
-                embeds: [new EmbedBuilder()
-                    .setColor('#8B5CF6')
-                    .setTitle('❌ Görev Tamamlanmadı')
-                    .setDescription('Bu görevi henüz tamamlamadınız.')],
-                ephemeral: true
-            });
-        }
-
-        // Find quest details
-        const quest = this.getAvailableQuests('all').find(q => q.id === questId);
-        if (!quest) {
-            return interaction.reply({
-                embeds: [new EmbedBuilder()
-                    .setColor('#8B5CF6')
-                    .setTitle('❌ Görev Bulunamadı')
-                    .setDescription('Görev bilgisi bulunamadı.')],
-                ephemeral: true
-            });
-        }
-
-        // Award rewards
-        db.updateNeuroCoinBalance(userId, quest.reward, 'wallet');
-        
-        // Mark as claimed
-        progress.claimed = true;
-        progress.claimedAt = new Date().toISOString();
-        userProgress[questId] = progress;
-        db.data.questProgress.set(userId, userProgress);
-
-        // Record transaction
-        db.recordTransaction('system', userId, quest.reward, 'quest', {
-            questId,
-            questName: quest.name
-        });
-
-        db.saveData();
-
-        const embed = new EmbedBuilder()
-            .setColor('#8B5CF6')
-            .setTitle('🎁 Görev Ödülü Alındı!')
-            .setDescription(`**${quest.name}** görevini tamamladınız!`)
-            .addFields(
-                { name: '💰 Kazanılan', value: `**${quest.reward.toLocaleString()}** NRC`, inline: true },
-                { name: '🏅 Bonus', value: quest.badge || 'Yok', inline: true }
-            )
-            .setTimestamp();
-
-        await interaction.reply({ embeds: [embed] });
-    },
-
-    async handleDaily(interaction) {
-        const db = getDatabase();
-        const userId = interaction.user.id;
-        const userProgress = db.data.questProgress.get(userId) || {};
-
-        const dailyQuests = this.getAvailableQuests('daily');
-
-        const embed = new EmbedBuilder()
-            .setColor('#8B5CF6')
-            .setTitle('📅 Günlük Görevler')
-            .setDescription('Her gün yeni görevler! Hepsini tamamla ve bonus kazan.')
-            .setTimestamp();
-
-        for (const quest of dailyQuests) {
-            const progress = userProgress[quest.id] || { current: 0, completed: false };
-            const progressBar = this.createProgressBar(progress.current, quest.target);
-            const status = progress.completed ? (progress.claimed ? '✅' : '🎁') : '⏳';
-
-            embed.addFields({
-                name: `${status} ${quest.name}`,
-                value: `${quest.description}\n${progressBar} ${progress.current}/${quest.target}\n**Ödül:** ${quest.reward} NRC`,
-                inline: false
-            });
-        }
-
-        // Check if all daily quests are completed
-        const allCompleted = dailyQuests.every(q => userProgress[q.id]?.completed);
-        if (allCompleted) {
-            embed.addFields({
-                name: '🌟 Bonus Ödül!',
-                value: 'Tüm günlük görevleri tamamladınız! **+1000 NRC** bonus kazandınız!',
-                inline: false
-            });
-        }
-
-        await interaction.reply({ embeds: [embed] });
-    },
-
-    getAvailableQuests(type) {
-        const allQuests = [
-            // Daily Quests
-            {
-                id: 'daily_messages_10',
-                type: 'daily',
-                name: '💬 Sohbet Ustası',
-                description: '10 mesaj gönder',
-                target: 10,
-                reward: 500,
-                badge: null
-            },
-            {
-                id: 'daily_reactions_5',
-                type: 'daily',
-                name: '👍 Tepki Göster',
-                description: '5 mesaja tepki ver',
-                target: 5,
-                reward: 300,
-                badge: null
-            },
-            {
-                id: 'daily_voice_30',
-                type: 'daily',
-                name: '🎤 Sesli Sohbet',
-                description: '30 dakika sesli kanalda kal',
-                target: 30,
-                reward: 800,
-                badge: null
-            },
-
-            // Weekly Quests
-            {
-                id: 'weekly_earn_5000',
-                type: 'weekly',
-                name: '💰 Zenginlik Yolu',
-                description: '5000 NRC kazan',
-                target: 5000,
-                reward: 2000,
-                badge: '🏆 Zengin'
-            },
-            {
-                id: 'weekly_trades_3',
-                type: 'weekly',
-                name: '🤝 Tüccar',
-                description: '3 ticaret tamamla',
-                target: 3,
-                reward: 1500,
-                badge: '🛒 Tüccar'
-            },
-            {
-                id: 'weekly_games_10',
-                type: 'weekly',
-                name: '🎮 Oyuncu',
-                description: '10 oyun oyna',
-                target: 10,
-                reward: 1000,
-                badge: null
-            },
-
-            // Achievement Quests
-            {
-                id: 'achievement_level_50',
-                type: 'achievement',
-                name: '⭐ Seviye 50',
-                description: '50. seviyeye ulaş',
-                target: 50,
-                reward: 10000,
-                badge: '⭐ Efsane'
-            },
-            {
-                id: 'achievement_marketplace_10',
-                type: 'achievement',
-                name: '🛍️ Koleksiyoncu',
-                description: 'Pazar yerinden 10 eşya al',
-                target: 10,
-                reward: 5000,
-                badge: '🛍️ Koleksiyoncu'
-            },
-            {
-                id: 'achievement_streak_30',
-                type: 'achievement',
-                name: '🔥 Sadık Kullanıcı',
-                description: '30 günlük streak yap',
-                target: 30,
-                reward: 15000,
-                badge: '🔥 Sadık'
+        if (userProgress.dailyStreak > 0 || userProgress.weeklyStreak > 0) {
+            const streakText = [];
+            if (userProgress.dailyStreak > 0) {
+                streakText.push(`🔥 Günlük: **${userProgress.dailyStreak}** gün`);
             }
-        ];
+            if (userProgress.weeklyStreak > 0) {
+                streakText.push(`⭐ Haftalık: **${userProgress.weeklyStreak}** hafta`);
+            }
 
-        if (type === 'all') return allQuests;
-        return allQuests.filter(q => q.type === type);
+            embed.addFields({
+                name: '📈 Streak',
+                value: streakText.join('\n'),
+                inline: false
+            });
+        }
+
+        embed.addFields(
+            { name: '🏆 Toplam Tamamlanan', value: `**${userProgress.totalCompleted}**`, inline: true }
+        );
+
+        embed.setFooter({ text: 'Detaylı liste için: /quest liste' });
+
+        await interaction.reply({ embeds: [embed] });
     },
 
-    createProgressBar(current, target) {
-        const percentage = Math.min((current / target) * 100, 100);
-        const filled = Math.floor(percentage / 10);
-        const empty = 10 - filled;
-        return `[${'█'.repeat(filled)}${'░'.repeat(empty)}] ${Math.floor(percentage)}%`;
+    // Claim quest reward
+    async handleClaim(interaction) {
+        const questHandler = getQuestHandler();
+        const questId = interaction.options.getString('görev-id');
+
+        try {
+            await interaction.deferReply();
+
+            const result = await questHandler.claimReward(interaction.user.id, questId);
+
+            if (!result.success) {
+                throw new Error('Ödül alınamadı!');
+            }
+
+            const { reward, newBalance } = result;
+            const db = getDatabase();
+            const template = db.data.questTemplates.get(questId);
+
+            const claimEmbed = new EmbedBuilder()
+                .setColor('#2ECC71')
+                .setTitle('🎁 Görev Ödülü Alındı!')
+                .setDescription(`${template?.emoji || '🎯'} **${template?.name || questId}**\n\nTebrikler! Görevi tamamladınız.`)
+                .addFields(
+                    { name: '💰 Kazanılan', value: `+**${reward.toLocaleString()}** NRC`, inline: true },
+                    { name: '💵 Yeni Bakiye', value: `**${newBalance.wallet.toLocaleString()}** NRC`, inline: true }
+                )
+                .setFooter({ text: 'Daha fazla görev için: /quest liste' })
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [claimEmbed] });
+
+            // Broadcast to socket
+            const socket = interaction.client.socket;
+            if (socket) {
+                socket.emit('quest_claimed', {
+                    userId: interaction.user.id,
+                    username: interaction.user.username,
+                    questId,
+                    reward,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            logger.error('[Quest Claim] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#F39C12')
+                .setTitle('❌ Ödül Alma Hatası')
+                .setDescription(error.message || 'Ödül alınırken bir hata oluştu!')
+                .setTimestamp();
+
+            if (interaction.deferred) {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            }
+        }
+    },
+
+    // Show completed quests history
+    async handleHistory(interaction) {
+        const questHandler = getQuestHandler();
+        const userProgress = questHandler.getUserProgress(interaction.user.id);
+
+        const embed = new EmbedBuilder()
+            .setColor('#F39C12')
+            .setTitle('✅ Tamamlanan Görevler')
+            .setTimestamp();
+
+        if (userProgress.completedQuests.length === 0) {
+            embed.setDescription('❌ Henüz hiç görev tamamlamadınız!');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+
+        const recentCompleted = userProgress.completedQuests.slice(-10).reverse();
+        const db = getDatabase();
+
+        const historyText = recentCompleted.map(completed => {
+            const template = db.data.questTemplates.get(completed.questId);
+            const date = new Date(completed.completedAt).toLocaleDateString('tr-TR');
+            
+            return `${template?.emoji || '🎯'} **${template?.name || completed.questId}**\n└ ${date} • +${completed.reward} NRC`;
+        }).join('\n\n');
+
+        embed.setDescription(`**Son ${recentCompleted.length} görev:**\n\n${historyText}`);
+
+        embed.addFields({
+            name: '📊 Toplam',
+            value: `**${userProgress.totalCompleted}** görev tamamlandı`,
+            inline: false
+        });
+
+        await interaction.reply({ embeds: [embed], ephemeral: true });
     }
 };
-

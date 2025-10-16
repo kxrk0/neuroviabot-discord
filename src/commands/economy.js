@@ -2,10 +2,16 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { getDatabase } = require('../database/simple-db');
 const { logger } = require('../utils/logger');
 
+// ==========================================
+// ⚠️ DEPRECATED: Use /nrc instead
+// ==========================================
+// This command is kept for backward compatibility
+// All functionality has been moved to /nrc command
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('economy')
-        .setDescription('🪙 NeuroCoin (NRC) ekonomi sistemi')
+        .setDescription('⚠️ DEPRECATED - Lütfen /nrc komutunu kullanın')
         .addSubcommand(subcommand =>
             subcommand
                 .setName('balance')
@@ -103,28 +109,43 @@ module.exports = {
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
-        // Ekonomi sistemi kontrolü
-        const db = getDatabase();
-        const settings = db.getGuildSettings(interaction.guild.id);
-        
-        // Features objesi içinde veya direkt economy objesi olarak kontrol et
-        const economyEnabled = settings.features?.economy || settings.economy?.enabled;
-        
-        if (!economyEnabled) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#8B5CF6')
-                .setTitle('❌ NeuroCoin Sistemi Kapalı')
-                .setDescription('Bu sunucuda NeuroCoin ekonomi sistemi etkin değil!')
-                .addFields({
-                    name: '💡 Yöneticiler İçin',
-                    value: `🌐 **Web Dashboard üzerinden açabilirsiniz:**\n└ https://neuroviabot.xyz/dashboard\n└ Sunucunuzu seçin → Ekonomi → Sistemi Etkinleştir`,
-                    inline: false
-                })
-                .setFooter({ text: 'The Neural Currency of Discord' })
-                .setTimestamp();
-            
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
+        // REDIRECT to /nrc command
+        const commandMap = {
+            'balance': 'bakiye',
+            'daily': 'günlük',
+            'work': 'çalış',
+            'transfer': 'gönder',
+            'deposit': 'yatır',
+            'withdraw': 'çek',
+            'leaderboard': 'sıralama',
+            'stats': 'istatistik',
+            'convert': 'dönüştür',
+            'portfolio': 'profil'
+        };
+
+        const newCommand = commandMap[subcommand] || subcommand;
+
+        const redirectEmbed = new EmbedBuilder()
+            .setColor('#FFA500')
+            .setTitle('⚠️ Komut Taşındı!')
+            .setDescription(`\`/economy\` komutu artık kullanılmamaktadır.\n\n**Lütfen yeni komutu kullanın:**`)
+            .addFields({
+                name: '🆕 Yeni Komut',
+                value: `\`\`\`\n/nrc ${newCommand}\n\`\`\``,
+                inline: false
+            }, {
+                name: '💡 Neden değişti?',
+                value: '`/nrc` komutu daha kısa, hızlı ve kullanıcı dostudur!\nTüm NRC işlemleriniz için tek bir komut.',
+                inline: false
+            }, {
+                name: '📚 Tüm Komutlar',
+                value: 'Tüm NRC komutlarını görmek için: `/nrc yardım`',
+                inline: false
+            })
+            .setFooter({ text: 'NeuroCoin • The Neural Currency of Discord' })
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [redirectEmbed], ephemeral: true });
 
         try {
             switch (subcommand) {

@@ -97,9 +97,219 @@ module.exports = {
             subcommand
                 .setName('yardım')
                 .setDescription('❓ NRC sistemi hakkında bilgi al')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('istatistik')
+                .setDescription('📊 NRC istatistikleri ve işlem geçmişi')
+                .addUserOption(option =>
+                    option.setName('kullanıcı')
+                        .setDescription('İstatistikleri görüntülenecek kullanıcı')
+                        .setRequired(false)
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('dönüştür')
+                .setDescription('🔄 Eski coinleri NRC\'ye çevir (tek seferlik)')
+        )
+        .addSubcommandGroup(group =>
+            group
+                .setName('koleksiyon')
+                .setDescription('🎨 NFT Koleksiyon sistemi')
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('liste')
+                        .setDescription('📜 Mevcut NFT koleksiyonlarını görüntüle')
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('satın-al')
+                        .setDescription('🛒 NFT satın al')
+                        .addStringOption(option =>
+                            option.setName('koleksiyon')
+                                .setDescription('Koleksiyon ID\'si')
+                                .setRequired(true)
+                                .addChoices(
+                                    { name: '🖼️ Avatar Çerçeveleri', value: 'avatar_frames_01' },
+                                    { name: '🃏 Trading Cards', value: 'trading_cards_01' },
+                                    { name: '🏆 Rozetler', value: 'badges_achievements' },
+                                    { name: '🎨 Profil Öğeleri', value: 'profile_items_01' }
+                                )
+                        )
+                        .addStringOption(option =>
+                            option.setName('item')
+                                .setDescription('Satın alınacak item ID\'si')
+                                .setRequired(true)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('envanter')
+                        .setDescription('🎒 NFT envanterinizi görüntüle')
+                        .addUserOption(option =>
+                            option.setName('kullanıcı')
+                                .setDescription('Envanteri görüntülenecek kullanıcı')
+                                .setRequired(false)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('sat')
+                        .setDescription('💰 NFT\'nizi marketplace\'e listeleyin')
+                        .addStringOption(option =>
+                            option.setName('koleksiyon')
+                                .setDescription('Koleksiyon ID\'si')
+                                .setRequired(true)
+                        )
+                        .addStringOption(option =>
+                            option.setName('item')
+                                .setDescription('Satılacak item ID\'si')
+                                .setRequired(true)
+                        )
+                        .addIntegerOption(option =>
+                            option.setName('fiyat')
+                                .setDescription('Satış fiyatı (NRC)')
+                                .setMinValue(1)
+                                .setRequired(true)
+                        )
+                )
+        )
+        .addSubcommandGroup(group =>
+            group
+                .setName('premium')
+                .setDescription('👑 Premium abonelik sistemi')
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('planlar')
+                        .setDescription('📋 Tüm premium planlarını görüntüle')
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('satın-al')
+                        .setDescription('💳 Premium satın al')
+                        .addStringOption(option =>
+                            option.setName('plan')
+                                .setDescription('Premium planı seçin')
+                                .setRequired(true)
+                                .addChoices(
+                                    { name: '🥉 Bronze Premium - 5,000 NRC', value: 'bronze' },
+                                    { name: '🥈 Silver Premium - 15,000 NRC', value: 'silver' },
+                                    { name: '🥇 Gold Premium - 50,000 NRC', value: 'gold' }
+                                )
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('durum')
+                        .setDescription('📊 Premium durumunuzu kontrol edin')
+                        .addUserOption(option =>
+                            option.setName('kullanıcı')
+                                .setDescription('Durumu kontrol edilecek kullanıcı')
+                                .setRequired(false)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('iptal')
+                        .setDescription('❌ Premium otomatik yenilemeyi iptal et')
+                )
+        )
+        .addSubcommandGroup(group =>
+            group
+                .setName('yatırım')
+                .setDescription('💰 NRC yatırım ve faiz sistemi')
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('planlar')
+                        .setDescription('📋 Yatırım planlarını görüntüle')
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('yap')
+                        .setDescription('💸 Yatırım yap ve faiz kazan')
+                        .addStringOption(option =>
+                            option.setName('plan')
+                                .setDescription('Yatırım planı seçin')
+                                .setRequired(true)
+                                .addChoices(
+                                    { name: '📅 7 Gün - 5% APY (Min: 100 NRC)', value: 'week' },
+                                    { name: '📆 30 Gün - 15% APY (Min: 500 NRC)', value: 'month' },
+                                    { name: '🗓️ 90 Gün - 35% APY (Min: 1,000 NRC)', value: 'quarter' }
+                                )
+                        )
+                        .addIntegerOption(option =>
+                            option.setName('miktar')
+                                .setDescription('Yatırılacak NRC miktarı')
+                                .setMinValue(100)
+                                .setRequired(true)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('durum')
+                        .setDescription('📊 Yatırım portföyünüzü görüntüle')
+                        .addUserOption(option =>
+                            option.setName('kullanıcı')
+                                .setDescription('Portföyü görüntülenecek kullanıcı')
+                                .setRequired(false)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('çek')
+                        .setDescription('💰 Yatırımı çek (vade dolmuşsa)')
+                        .addStringOption(option =>
+                            option.setName('yatırım-id')
+                                .setDescription('Yatırım ID\'si (durum komutuyla öğrenebilirsiniz)')
+                                .setRequired(true)
+                        )
+                        .addBooleanOption(option =>
+                            option.setName('erken')
+                                .setDescription('Erken çekme (25% ceza)')
+                                .setRequired(false)
+                        )
+                )
+        )
+        .addSubcommandGroup(group =>
+            group
+                .setName('market')
+                .setDescription('🛒 NFT Marketplace')
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('liste')
+                        .setDescription('📜 Marketplace\'te satışta olan NFT\'leri görüntüle')
+                        .addStringOption(option =>
+                            option.setName('nadirlık')
+                                .setDescription('Nadirlık filtresi')
+                                .setRequired(false)
+                                .addChoices(
+                                    { name: '⚪ Common', value: 'common' },
+                                    { name: '🔵 Rare', value: 'rare' },
+                                    { name: '🟣 Epic', value: 'epic' },
+                                    { name: '🟡 Legendary', value: 'legendary' }
+                                )
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('satın-al')
+                        .setDescription('💸 Marketplace\'ten NFT satın al (escrow korumalı)')
+                        .addStringOption(option =>
+                            option.setName('listing-id')
+                                .setDescription('Satın alınacak listing ID\'si')
+                                .setRequired(true)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName('listem')
+                        .setDescription('📋 Kendi listingler ve iptal etme')
+                )
         ),
 
     async execute(interaction) {
+        const subcommandGroup = interaction.options.getSubcommandGroup();
         const subcommand = interaction.options.getSubcommand();
 
         // Ekonomi sistemi kontrolü
@@ -126,6 +336,77 @@ module.exports = {
         }
 
         try {
+            // Handle subcommand groups
+            if (subcommandGroup === 'koleksiyon') {
+                switch (subcommand) {
+                    case 'liste':
+                        await this.handleCollectionList(interaction);
+                        break;
+                    case 'satın-al':
+                        await this.handleCollectionPurchase(interaction);
+                        break;
+                    case 'envanter':
+                        await this.handleCollectionInventory(interaction);
+                        break;
+                    case 'sat':
+                        await this.handleCollectionSell(interaction);
+                        break;
+                }
+                return;
+            }
+
+            if (subcommandGroup === 'premium') {
+                switch (subcommand) {
+                    case 'planlar':
+                        await this.handlePremiumPlans(interaction);
+                        break;
+                    case 'satın-al':
+                        await this.handlePremiumPurchase(interaction);
+                        break;
+                    case 'durum':
+                        await this.handlePremiumStatus(interaction);
+                        break;
+                    case 'iptal':
+                        await this.handlePremiumCancel(interaction);
+                        break;
+                }
+                return;
+            }
+
+            if (subcommandGroup === 'yatırım') {
+                switch (subcommand) {
+                    case 'planlar':
+                        await this.handleInvestmentPlans(interaction);
+                        break;
+                    case 'yap':
+                        await this.handleInvestmentCreate(interaction);
+                        break;
+                    case 'durum':
+                        await this.handleInvestmentStatus(interaction);
+                        break;
+                    case 'çek':
+                        await this.handleInvestmentWithdraw(interaction);
+                        break;
+                }
+                return;
+            }
+
+            if (subcommandGroup === 'market') {
+                switch (subcommand) {
+                    case 'liste':
+                        await this.handleMarketList(interaction);
+                        break;
+                    case 'satın-al':
+                        await this.handleMarketPurchase(interaction);
+                        break;
+                    case 'listem':
+                        await this.handleMarketMyListings(interaction);
+                        break;
+                }
+                return;
+            }
+
+            // Handle regular subcommands
             switch (subcommand) {
                 case 'bakiye':
                     await this.handleBalance(interaction);
@@ -153,6 +434,12 @@ module.exports = {
                     break;
                 case 'yardım':
                     await this.handleHelp(interaction);
+                    break;
+                case 'istatistik':
+                    await this.handleStats(interaction);
+                    break;
+                case 'dönüştür':
+                    await this.handleConvert(interaction);
                     break;
             }
         } catch (error) {
@@ -688,6 +975,141 @@ module.exports = {
         await interaction.reply({ embeds: [helpEmbed] });
     },
 
+    // İstatistikler
+    async handleStats(interaction) {
+        const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
+
+        if (targetUser.bot) {
+            return interaction.reply({
+                content: '❌ Bot kullanıcılarının NRC verisi yoktur!',
+                ephemeral: true
+            });
+        }
+
+        const db = getDatabase();
+        const balance = db.getNeuroCoinBalance(targetUser.id);
+        const transactions = db.getUserTransactions(targetUser.id, 10);
+        const streakData = db.data.dailyStreaks.get(targetUser.id) || { count: 0 };
+
+        // Transaction istatistikleri
+        let totalEarned = 0;
+        let totalSpent = 0;
+        let totalTransfers = 0;
+
+        for (const tx of transactions) {
+            if (tx.to === targetUser.id) {
+                totalEarned += tx.amount;
+            }
+            if (tx.from === targetUser.id && tx.to !== targetUser.id) {
+                totalSpent += tx.amount;
+                totalTransfers++;
+            }
+        }
+
+        const statsEmbed = new EmbedBuilder()
+            .setColor('#8B5CF6')
+            .setTitle(`📊 ${targetUser.username} - NRC İstatistikleri`)
+            .setDescription('**The Neural Currency of Discord**')
+            .setThumbnail(targetUser.displayAvatarURL())
+            .addFields(
+                { name: '💰 Toplam Bakiye', value: `**${balance.total.toLocaleString()}** NRC`, inline: true },
+                { name: '💵 Cüzdan', value: `**${balance.wallet.toLocaleString()}** NRC`, inline: true },
+                { name: '🏦 Banka', value: `**${balance.bank.toLocaleString()}** NRC`, inline: true },
+                { name: '📈 Toplam Kazanılan', value: `**${totalEarned.toLocaleString()}** NRC`, inline: true },
+                { name: '📉 Toplam Harcanan', value: `**${totalSpent.toLocaleString()}** NRC`, inline: true },
+                { name: '💸 Transfer Sayısı', value: `**${totalTransfers}**`, inline: true },
+                { name: '🔥 Daily Streak', value: `**${streakData.count}** gün`, inline: true },
+                { name: '📝 İşlem Sayısı', value: `**${transactions.length}**`, inline: true },
+                { name: '⏱️ Son İşlem', value: transactions.length > 0 
+                    ? `<t:${Math.floor(new Date(transactions[0].timestamp).getTime() / 1000)}:R>`
+                    : 'Henüz işlem yok', inline: true }
+            )
+            .setFooter({
+                text: `NRC İstatistikleri • ${interaction.guild.name}`,
+                iconURL: interaction.guild.iconURL()
+            })
+            .setTimestamp();
+
+        await interaction.reply({ embeds: [statsEmbed] });
+    },
+
+    // Coin dönüştürme (legacy migration)
+    async handleConvert(interaction) {
+        const db = getDatabase();
+        
+        // Eski ekonomi verisini kontrol et
+        const oldEconomy = db.data.userEconomy.get(interaction.user.id);
+        
+        if (!oldEconomy || (oldEconomy.balance === 0 && oldEconomy.bank === 0)) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Dönüştürülecek Coin Yok')
+                .setDescription('Eski ekonomi sisteminde hiç coininiz yok veya zaten dönüştürdünüz!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        // Daha önce dönüştürüldü mü kontrol et
+        if (oldEconomy.converted) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Zaten Dönüştürüldü')
+                .setDescription('Eski coinlerinizi zaten NRC\'ye dönüştürdünüz!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        // Conversion rate: 1 old coin = 10 NRC
+        const CONVERSION_RATE = 10;
+        const oldBalance = oldEconomy.balance || 0;
+        const oldBank = oldEconomy.bank || 0;
+        const oldTotal = oldBalance + oldBank;
+
+        const newWallet = oldBalance * CONVERSION_RATE;
+        const newBank = oldBank * CONVERSION_RATE;
+        const newTotal = oldTotal * CONVERSION_RATE;
+
+        // NeuroCoin bakiyesini güncelle
+        db.updateNeuroCoinBalance(interaction.user.id, newWallet, 'wallet');
+        db.updateNeuroCoinBalance(interaction.user.id, newBank, 'bank');
+
+        // Transaction kaydet
+        db.recordTransaction('system', interaction.user.id, newTotal, 'migration', {
+            oldBalance,
+            oldBank,
+            conversionRate: CONVERSION_RATE
+        });
+
+        // Eski ekonomiyi işaretle
+        oldEconomy.converted = true;
+        db.data.userEconomy.set(interaction.user.id, oldEconomy);
+        db.saveData();
+
+        const balance = db.getNeuroCoinBalance(interaction.user.id);
+
+        const convertEmbed = new EmbedBuilder()
+            .setColor('#8B5CF6')
+            .setTitle('🔄 Dönüştürme Başarılı!')
+            .setDescription(`**Eski coinleriniz NRC'ye dönüştürüldü!**\n\nDönüştürme oranı: **1:${CONVERSION_RATE}**`)
+            .addFields(
+                { name: '📊 Eski Toplam', value: `${oldTotal.toLocaleString()} coin`, inline: true },
+                { name: '🪙 Yeni Toplam', value: `**${newTotal.toLocaleString()}** NRC`, inline: true },
+                { name: '\u200b', value: '\u200b', inline: true },
+                { name: '💵 Cüzdan', value: `**${balance.wallet.toLocaleString()}** NRC`, inline: true },
+                { name: '🏦 Banka', value: `**${balance.bank.toLocaleString()}** NRC`, inline: true },
+                { name: '📊 Toplam', value: `**${balance.total.toLocaleString()}** NRC`, inline: true }
+            )
+            .setFooter({
+                text: 'Welcome to NeuroCoin! • The Neural Currency of Discord',
+                iconURL: interaction.guild.iconURL()
+            })
+            .setTimestamp();
+
+        await interaction.reply({ embeds: [convertEmbed] });
+    },
+
     // Helper: Kullanıcının sırasını bul
     getUserRank(db, userId) {
         const balances = Array.from(db.data.neuroCoinBalances.entries())
@@ -696,6 +1118,695 @@ module.exports = {
         
         const rank = balances.findIndex(b => b.userId === userId) + 1;
         return rank > 0 ? rank : '-';
+    },
+
+    // ==========================================
+    // NFT COLLECTION HANDLERS
+    // ==========================================
+
+    // List all collections
+    async handleCollectionList(interaction) {
+        const { getNFTHandler } = require('../handlers/nftHandler');
+        const nftHandler = getNFTHandler();
+        
+        const collections = nftHandler.getAllCollections();
+
+        if (collections.length === 0) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Koleksiyon Bulunamadı')
+                .setDescription('Henüz hiç NFT koleksiyonu yok!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        await interaction.deferReply();
+
+        // Show each collection
+        const embeds = collections.map(collection => nftHandler.createCollectionEmbed(collection));
+
+        const mainEmbed = new EmbedBuilder()
+            .setColor('#8B5CF6')
+            .setTitle('🎨 NFT Koleksiyonları')
+            .setDescription(`Toplam **${collections.length}** koleksiyon mevcut!\n\n**Satın almak için:**\n\`/nrc koleksiyon satın-al\` komutunu kullanın.`)
+            .setFooter({ text: `${interaction.guild.name} • NFT Marketplace` })
+            .setTimestamp();
+
+        await interaction.editReply({ embeds: [mainEmbed, ...embeds.slice(0, 9)] }); // Max 10 embeds
+    },
+
+    // Purchase NFT
+    async handleCollectionPurchase(interaction) {
+        const { getNFTHandler } = require('../handlers/nftHandler');
+        const nftHandler = getNFTHandler();
+        
+        const collectionId = interaction.options.getString('koleksiyon');
+        const itemId = interaction.options.getString('item');
+
+        try {
+            await interaction.deferReply();
+
+            const result = await nftHandler.purchaseNFT(interaction.user.id, collectionId, itemId);
+
+            if (!result.success) {
+                throw new Error('Satın alma başarısız!');
+            }
+
+            const { item, newBalance } = result;
+
+            const purchaseEmbed = new EmbedBuilder()
+                .setColor(nftHandler.getRarityColor(item.rarity))
+                .setTitle('✅ NFT Satın Alındı!')
+                .setDescription(`**${item.emoji} ${item.name}** başarıyla satın alındı!`)
+                .addFields(
+                    { name: '🎨 Nadirlık', value: `${nftHandler.getRarityEmoji(item.rarity)} **${item.rarity.toUpperCase()}**`, inline: true },
+                    { name: '💰 Fiyat', value: `**${item.price.toLocaleString()}** NRC`, inline: true },
+                    { name: '\u200b', value: '\u200b', inline: true },
+                    { name: '💵 Yeni Bakiye', value: `**${newBalance.wallet.toLocaleString()}** NRC`, inline: true },
+                    { name: '🏦 Banka', value: `**${newBalance.bank.toLocaleString()}** NRC`, inline: true },
+                    { name: '📊 Toplam', value: `**${newBalance.total.toLocaleString()}** NRC`, inline: true }
+                )
+                .setFooter({ text: 'NFT Koleksiyonunuza eklendi!' })
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [purchaseEmbed] });
+
+            // Broadcast to socket
+            const socket = interaction.client.socket;
+            if (socket) {
+                socket.emit('nrc_nft_purchased', {
+                    userId: interaction.user.id,
+                    username: interaction.user.username,
+                    nftId: itemId,
+                    nftName: item.name,
+                    rarity: item.rarity,
+                    price: item.price,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            logger.error('[NFT Purchase] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Satın Alma Hatası')
+                .setDescription(error.message || 'NFT satın alınırken bir hata oluştu!')
+                .setTimestamp();
+
+            if (interaction.deferred) {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            }
+        }
+    },
+
+    // Show user's inventory
+    async handleCollectionInventory(interaction) {
+        const { getNFTHandler } = require('../handlers/nftHandler');
+        const nftHandler = getNFTHandler();
+        
+        const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
+
+        if (targetUser.bot) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Hata')
+                .setDescription('Bot kullanıcılarının NFT koleksiyonu yoktur!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        const inventoryEmbed = nftHandler.createInventoryEmbed(targetUser.id, targetUser.username);
+
+        await interaction.reply({ embeds: [inventoryEmbed] });
+    },
+
+    // Sell NFT on marketplace
+    async handleCollectionSell(interaction) {
+        const { getNFTHandler } = require('../handlers/nftHandler');
+        const nftHandler = getNFTHandler();
+        
+        const collectionId = interaction.options.getString('koleksiyon');
+        const itemId = interaction.options.getString('item');
+        const price = interaction.options.getInteger('fiyat');
+
+        try {
+            await interaction.deferReply();
+
+            const result = await nftHandler.listNFTForSale(
+                interaction.user.id,
+                collectionId,
+                itemId,
+                price
+            );
+
+            if (!result.success) {
+                throw new Error('Listeleme başarısız!');
+            }
+
+            const sellEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('✅ NFT Listelendi!')
+                .setDescription(`NFT\'niz marketplace\'e başarıyla listelendi!`)
+                .addFields(
+                    { name: '🆔 Listing ID', value: `\`${result.listingId}\``, inline: false },
+                    { name: '💰 Satış Fiyatı', value: `**${price.toLocaleString()}** NRC`, inline: true },
+                    { name: '💸 Platform Komisyonu', value: `**${Math.floor(price * 0.05).toLocaleString()}** NRC (5%)`, inline: true },
+                    { name: '💵 Net Kazanç', value: `**${Math.floor(price * 0.95).toLocaleString()}** NRC`, inline: true }
+                )
+                .setFooter({ text: 'NFT satıldığında bildirim alacaksınız!' })
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [sellEmbed] });
+
+            // Broadcast to socket
+            const socket = interaction.client.socket;
+            if (socket) {
+                socket.emit('marketplace_listing_added', {
+                    listingId: result.listingId,
+                    sellerId: interaction.user.id,
+                    sellerName: interaction.user.username,
+                    price,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            logger.error('[NFT Sell] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Listeleme Hatası')
+                .setDescription(error.message || 'NFT listelenirken bir hata oluştu!')
+                .setTimestamp();
+
+            if (interaction.deferred) {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            }
+        }
+    },
+
+    // ==========================================
+    // PREMIUM HANDLERS
+    // ==========================================
+
+    // Show premium plans
+    async handlePremiumPlans(interaction) {
+        const { getPremiumHandler } = require('../handlers/premiumHandler');
+        const premiumHandler = getPremiumHandler();
+        
+        const plansEmbed = premiumHandler.createPlansEmbed();
+
+        // Add user's current balance
+        const db = getDatabase();
+        const balance = db.getNeuroCoinBalance(interaction.user.id);
+
+        plansEmbed.addFields({
+            name: '💰 Mevcut Bakiyeniz',
+            value: `**${balance.wallet.toLocaleString()}** NRC (Cüzdan)`,
+            inline: false
+        });
+
+        await interaction.reply({ embeds: [plansEmbed] });
+    },
+
+    // Purchase premium
+    async handlePremiumPurchase(interaction) {
+        const { getPremiumHandler } = require('../handlers/premiumHandler');
+        const premiumHandler = getPremiumHandler();
+        
+        const planId = interaction.options.getString('plan');
+
+        try {
+            await interaction.deferReply();
+
+            const result = await premiumHandler.purchasePremium(interaction.user.id, planId);
+
+            if (!result.success) {
+                throw new Error('Premium satın alma başarısız!');
+            }
+
+            const { plan, expiresAt, newBalance } = result;
+
+            const purchaseEmbed = new EmbedBuilder()
+                .setColor(plan.color)
+                .setTitle('✅ Premium Aktif!')
+                .setDescription(`${plan.emoji} **${plan.name}** başarıyla aktif edildi!`)
+                .addFields(
+                    { name: '⏳ Süre', value: `**${plan.duration}** gün`, inline: true },
+                    { name: '⏰ Bitiş Tarihi', value: `<t:${Math.floor(new Date(expiresAt).getTime() / 1000)}:F>`, inline: true },
+                    { name: '\u200b', value: '\u200b', inline: true },
+                    { name: '💰 Ödenen', value: `**${plan.price.toLocaleString()}** NRC`, inline: true },
+                    { name: '💵 Yeni Bakiye', value: `**${newBalance.wallet.toLocaleString()}** NRC`, inline: true },
+                    { name: '\u200b', value: '\u200b', inline: true }
+                )
+                .setFooter({ text: 'Premium aboneliğiniz için teşekkürler!' })
+                .setTimestamp();
+
+            // Add features
+            const featuresText = plan.features.map(f => `✓ ${f}`).join('\n');
+            purchaseEmbed.addFields({
+                name: '✨ Aktif Özellikler',
+                value: featuresText,
+                inline: false
+            });
+
+            await interaction.editReply({ embeds: [purchaseEmbed] });
+
+            // Broadcast to socket
+            const socket = interaction.client.socket;
+            if (socket) {
+                socket.emit('premium_activated', {
+                    userId: interaction.user.id,
+                    username: interaction.user.username,
+                    tier: planId,
+                    expiresAt,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            logger.error('[Premium Purchase] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Satın Alma Hatası')
+                .setDescription(error.message || 'Premium satın alınırken bir hata oluştu!')
+                .setTimestamp();
+
+            if (interaction.deferred) {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            }
+        }
+    },
+
+    // Check premium status
+    async handlePremiumStatus(interaction) {
+        const { getPremiumHandler } = require('../handlers/premiumHandler');
+        const premiumHandler = getPremiumHandler();
+        
+        const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
+
+        if (targetUser.bot) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Hata')
+                .setDescription('Bot kullanıcılarının premium durumu yoktur!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        const statusEmbed = premiumHandler.createStatusEmbed(targetUser.id, targetUser.username);
+
+        await interaction.reply({ embeds: [statusEmbed] });
+    },
+
+    // Cancel premium auto-renewal
+    async handlePremiumCancel(interaction) {
+        const { getPremiumHandler } = require('../handlers/premiumHandler');
+        const premiumHandler = getPremiumHandler();
+
+        try {
+            const result = await premiumHandler.cancelPremium(interaction.user.id);
+
+            if (!result.success) {
+                throw new Error('İptal başarısız!');
+            }
+
+            const cancelEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('✅ Otomatik Yenileme İptal Edildi')
+                .setDescription('Premium otomatik yenileme başarıyla iptal edildi.')
+                .addFields({
+                    name: '⏳ Premium Süresi',
+                    value: `Mevcut premium aboneliğiniz <t:${Math.floor(new Date(result.expiresAt).getTime() / 1000)}:R> sona erecek.\n\nDaha sonra tekrar premium satın alabilirsiniz.`,
+                    inline: false
+                })
+                .setFooter({ text: 'Otomatik yenilemeyi tekrar aktif etmek için premium satın alın' })
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [cancelEmbed] });
+
+        } catch (error) {
+            logger.error('[Premium Cancel] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ İptal Hatası')
+                .setDescription(error.message || 'Otomatik yenileme iptal edilirken bir hata oluştu!')
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+    },
+
+    // ==========================================
+    // INVESTMENT HANDLERS
+    // ==========================================
+
+    // Show investment plans
+    async handleInvestmentPlans(interaction) {
+        const { getInvestmentHandler } = require('../handlers/investmentHandler');
+        const investmentHandler = getInvestmentHandler();
+        
+        const plansEmbed = investmentHandler.createPlansEmbed();
+
+        // Add user's current balance
+        const db = getDatabase();
+        const balance = db.getNeuroCoinBalance(interaction.user.id);
+
+        plansEmbed.addFields({
+            name: '💰 Mevcut Bakiyeniz',
+            value: `**${balance.wallet.toLocaleString()}** NRC (Cüzdan)`,
+            inline: false
+        });
+
+        await interaction.reply({ embeds: [plansEmbed] });
+    },
+
+    // Create new investment
+    async handleInvestmentCreate(interaction) {
+        const { getInvestmentHandler } = require('../handlers/investmentHandler');
+        const investmentHandler = getInvestmentHandler();
+        
+        const planId = interaction.options.getString('plan');
+        const amount = interaction.options.getInteger('miktar');
+
+        try {
+            await interaction.deferReply();
+
+            const result = await investmentHandler.createInvestment(interaction.user.id, planId, amount);
+
+            if (!result.success) {
+                throw new Error('Yatırım oluşturulamadı!');
+            }
+
+            const { investment, plan, newBalance } = result;
+            const expectedInterest = investmentHandler.calculateInterest(amount, plan.apy, plan.duration);
+            const expectedTotal = amount + expectedInterest;
+
+            const createEmbed = new EmbedBuilder()
+                .setColor(plan.color)
+                .setTitle('✅ Yatırım Başarılı!')
+                .setDescription(`${plan.emoji} **${plan.name}** yatırımınız oluşturuldu!`)
+                .addFields(
+                    { name: '💰 Yatırılan', value: `**${amount.toLocaleString()}** NRC`, inline: true },
+                    { name: '⏳ Süre', value: `**${plan.duration}** gün`, inline: true },
+                    { name: '📈 APY', value: `**${(plan.apy * 100).toFixed(0)}%**`, inline: true },
+                    { name: '💵 Beklenen Faiz', value: `+**${expectedInterest.toLocaleString()}** NRC`, inline: true },
+                    { name: '🎯 Toplam Getiri', value: `**${expectedTotal.toLocaleString()}** NRC`, inline: true },
+                    { name: '⏰ Vade Tarihi', value: `<t:${Math.floor(new Date(investment.endDate).getTime() / 1000)}:F>`, inline: true }
+                )
+                .addFields({
+                    name: '📋 Yatırım ID',
+                    value: `\`${investment.investmentId}\`\n\nYatırımınızı çekmek için bu ID\'yi kullanın.`,
+                    inline: false
+                })
+                .addFields({
+                    name: '💵 Yeni Bakiye',
+                    value: `**${newBalance.wallet.toLocaleString()}** NRC`,
+                    inline: true
+                })
+                .setFooter({ text: 'Vade dolduğunda otomatik olarak faiziniz hesaplanır' })
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [createEmbed] });
+
+        } catch (error) {
+            logger.error('[Investment Create] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Yatırım Hatası')
+                .setDescription(error.message || 'Yatırım oluşturulurken bir hata oluştu!')
+                .setTimestamp();
+
+            if (interaction.deferred) {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            }
+        }
+    },
+
+    // Show investment status
+    async handleInvestmentStatus(interaction) {
+        const { getInvestmentHandler } = require('../handlers/investmentHandler');
+        const investmentHandler = getInvestmentHandler();
+        
+        const targetUser = interaction.options.getUser('kullanıcı') || interaction.user;
+
+        if (targetUser.bot) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Hata')
+                .setDescription('Bot kullanıcılarının yatırımları yoktur!')
+                .setTimestamp();
+            
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        const statusEmbed = investmentHandler.createStatusEmbed(targetUser.id, targetUser.username);
+
+        await interaction.reply({ embeds: [statusEmbed] });
+    },
+
+    // Withdraw investment
+    async handleInvestmentWithdraw(interaction) {
+        const { getInvestmentHandler } = require('../handlers/investmentHandler');
+        const investmentHandler = getInvestmentHandler();
+        
+        const investmentId = interaction.options.getString('yatırım-id');
+        const early = interaction.options.getBoolean('erken') || false;
+
+        try {
+            await interaction.deferReply();
+
+            const result = await investmentHandler.withdrawInvestment(
+                interaction.user.id,
+                investmentId,
+                early
+            );
+
+            if (!result.success) {
+                throw new Error('Çekim başarısız!');
+            }
+
+            const { investment, totalReturn, earnedInterest, penaltyAmount, isEarlyWithdrawal, newBalance } = result;
+
+            const withdrawEmbed = new EmbedBuilder()
+                .setColor(isEarlyWithdrawal ? '#E74C3C' : '#2ECC71')
+                .setTitle(isEarlyWithdrawal ? '⚠️ Erken Çekim Yapıldı' : '✅ Yatırım Çekildi!')
+                .setDescription(isEarlyWithdrawal 
+                    ? `Yatırımınız vade dolmadan çekildi. **%25 ceza** uygulandı.`
+                    : `Yatırımınız başarıyla çekildi!`)
+                .addFields(
+                    { name: '💰 Ana Para', value: `**${investment.amount.toLocaleString()}** NRC`, inline: true },
+                    { name: '📈 Kazanılan Faiz', value: `+**${earnedInterest.toLocaleString()}** NRC`, inline: true },
+                    { name: '\u200b', value: '\u200b', inline: true }
+                );
+
+            if (isEarlyWithdrawal && penaltyAmount > 0) {
+                withdrawEmbed.addFields(
+                    { name: '⚠️ Ceza', value: `-**${penaltyAmount.toLocaleString()}** NRC`, inline: true }
+                );
+            }
+
+            withdrawEmbed.addFields(
+                { name: '💵 Cüzdana Eklenen', value: `**${totalReturn.toLocaleString()}** NRC`, inline: true },
+                { name: '📊 Yeni Bakiye', value: `**${newBalance.wallet.toLocaleString()}** NRC`, inline: true }
+            );
+
+            withdrawEmbed.setFooter({ 
+                text: isEarlyWithdrawal 
+                    ? 'Erken çekim nedeniyle faiz kazancınız kaybedildi' 
+                    : 'Yatırımınız için teşekkürler!'
+            }).setTimestamp();
+
+            await interaction.editReply({ embeds: [withdrawEmbed] });
+
+            // Broadcast to socket
+            const socket = interaction.client.socket;
+            if (socket) {
+                socket.emit('investment_withdrawn', {
+                    userId: interaction.user.id,
+                    username: interaction.user.username,
+                    investmentId,
+                    amount: totalReturn,
+                    isEarly: isEarlyWithdrawal,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            logger.error('[Investment Withdraw] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Çekim Hatası')
+                .setDescription(error.message || 'Yatırım çekilirken bir hata oluştu!')
+                .setTimestamp();
+
+            if (interaction.deferred) {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            }
+        }
+    },
+
+    // ==========================================
+    // MARKETPLACE HANDLERS
+    // ==========================================
+
+    // Browse marketplace listings
+    async handleMarketList(interaction) {
+        const { getMarketHandler } = require('../handlers/marketHandler');
+        const marketHandler = getMarketHandler();
+        
+        const rarityFilter = interaction.options.getString('nadirlık');
+
+        const filters = {};
+        if (rarityFilter) {
+            filters.rarity = rarityFilter;
+        }
+
+        const listings = marketHandler.getListings(filters);
+
+        const browseEmbed = marketHandler.createBrowseEmbed(listings);
+
+        await interaction.reply({ embeds: [browseEmbed] });
+    },
+
+    // Purchase from marketplace
+    async handleMarketPurchase(interaction) {
+        const { getMarketHandler } = require('../handlers/marketHandler');
+        const marketHandler = getMarketHandler();
+        
+        const listingId = interaction.options.getString('listing-id');
+
+        try {
+            await interaction.deferReply();
+
+            const result = await marketHandler.purchaseListing(interaction.user.id, listingId);
+
+            if (!result.success) {
+                throw new Error('Satın alma başarısız!');
+            }
+
+            const { listing, tradeId, fee, discount } = result;
+
+            const purchaseEmbed = new EmbedBuilder()
+                .setColor('#2ECC71')
+                .setTitle('✅ Marketplace Satın Alma Başarılı!')
+                .setDescription(`**${listing.itemName}** başarıyla satın alındı! (Escrow korumalı)`)
+                .addFields(
+                    { name: '💰 Ödenen', value: `**${listing.price.toLocaleString()}** NRC`, inline: true },
+                    { name: '🎨 Nadirlık', value: marketHandler.nftHandler.getRarityEmoji(listing.rarity) + ` ${listing.rarity.toUpperCase()}`, inline: true },
+                    { name: '\u200b', value: '\u200b', inline: true },
+                    { name: '👤 Satıcı', value: `<@${listing.sellerId}>`, inline: true },
+                    { name: '📋 İşlem ID', value: `\`${tradeId}\``, inline: true },
+                    { name: '\u200b', value: '\u200b', inline: true }
+                )
+                .setFooter({ text: 'NFT koleksiyonunuza eklendi!' })
+                .setTimestamp();
+
+            // Show fee info if applicable
+            if (fee > 0 || discount > 0) {
+                let feeText = `Platform Ücreti: **${fee.toLocaleString()}** NRC`;
+                if (discount > 0) {
+                    feeText += `\n✨ Premium İndirim: -**${discount.toLocaleString()}** NRC`;
+                }
+                purchaseEmbed.addFields({
+                    name: '💸 Ücretler',
+                    value: feeText,
+                    inline: false
+                });
+            }
+
+            await interaction.editReply({ embeds: [purchaseEmbed] });
+
+            // Broadcast to socket
+            const socket = interaction.client.socket;
+            if (socket) {
+                socket.emit('marketplace_purchase', {
+                    buyerId: interaction.user.id,
+                    buyerName: interaction.user.username,
+                    sellerId: listing.sellerId,
+                    listingId,
+                    itemName: listing.itemName,
+                    price: listing.price,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            logger.error('[Market Purchase] Error:', error);
+            
+            const errorEmbed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle('❌ Satın Alma Hatası')
+                .setDescription(error.message || 'Marketplace satın alma sırasında bir hata oluştu!')
+                .setTimestamp();
+
+            if (interaction.deferred) {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } else {
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+            }
+        }
+    },
+
+    // Show user's marketplace listings
+    async handleMarketMyListings(interaction) {
+        const { getMarketHandler } = require('../handlers/marketHandler');
+        const marketHandler = getMarketHandler();
+        
+        const activeListings = marketHandler.getUserListings(interaction.user.id, 'active');
+
+        const embed = new EmbedBuilder()
+            .setColor('#8B5CF6')
+            .setTitle('📋 Listingleriniz')
+            .setTimestamp();
+
+        if (activeListings.length === 0) {
+            embed.setDescription('❌ Aktif listinginiz yok!\n\n`/nrc koleksiyon sat` komutu ile NFT\'nizi listeleyebilirsiniz.');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+
+        embed.setDescription(`Toplam **${activeListings.length}** aktif listing`);
+
+        for (const listing of activeListings.slice(0, 10)) {
+            const pendingOffers = listing.offers?.filter(o => o.status === 'pending').length || 0;
+            
+            embed.addFields({
+                name: `${marketHandler.nftHandler.getRarityEmoji(listing.rarity)} ${listing.itemName}`,
+                value: [
+                    `💰 **${listing.price.toLocaleString()} NRC**`,
+                    `📅 ${new Date(listing.listedAt).toLocaleDateString('tr-TR')}`,
+                    pendingOffers > 0 ? `📬 ${pendingOffers} teklif` : '',
+                    `🆔 \`${listing.listingId}\``
+                ].filter(Boolean).join('\n'),
+                inline: true
+            });
+        }
+
+        embed.addFields({
+            name: '💡 İptal Etme',
+            value: 'Web dashboard\'dan iptal edebilirsiniz veya `/nrc koleksiyon envanter` ile envanter değişikliklerini görebilirsiniz.',
+            inline: false
+        });
+
+        await interaction.reply({ embeds: [embed], ephemeral: true });
     }
 };
 

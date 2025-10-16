@@ -4,6 +4,7 @@
 
 const { logger } = require('../utils/logger');
 const { getOrCreateUser, getOrCreateGuild, getOrCreateGuildMember } = require('../models/index');
+const { getQuestProgressTracker } = require('../utils/questProgressTracker');
 
 module.exports = {
     name: 'messageCreate',
@@ -56,6 +57,10 @@ module.exports = {
                     await client.levelingHandler.handleMessageXp(message);
                 }
             }
+
+            // Quest progress tracking
+            const questTracker = getQuestProgressTracker();
+            await questTracker.trackMessage(message.author.id, message.guild.id);
 
         } catch (error) {
             logger.error('messageCreate event hatası', error, {
