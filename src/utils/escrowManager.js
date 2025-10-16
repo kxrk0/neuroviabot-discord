@@ -111,6 +111,36 @@ class EscrowManager {
         await questTracker.trackTrade(buyerId, 'global');
         await questTracker.trackTrade(sellerId, 'global');
 
+        // Track marketplace trade activity
+        try {
+            const { trackMarketplaceTrade } = require('./activityTracker');
+            const client = global.discordClient;
+            let buyerName = `User${buyerId.substring(0, 8)}`;
+            let sellerName = `User${sellerId.substring(0, 8)}`;
+
+            if (client) {
+                try {
+                    const buyer = await client.users.fetch(buyerId).catch(() => null);
+                    const seller = await client.users.fetch(sellerId).catch(() => null);
+                    if (buyer) buyerName = buyer.username;
+                    if (seller) sellerName = seller.username;
+                } catch (e) {}
+            }
+
+            await trackMarketplaceTrade({
+                buyerId,
+                buyerName,
+                sellerId,
+                sellerName,
+                serverId: null,
+                serverName: null,
+                itemName: listingId,
+                price
+            });
+        } catch (error) {
+            // Silent fail
+        }
+
         logger.info(`[Escrow] Released ${feeCalc.sellerReceives} NRC to ${sellerId} (fee: ${feeCalc.actualFee} NRC)`);
 
         return {

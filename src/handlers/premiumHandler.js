@@ -174,6 +174,34 @@ class PremiumHandler {
 
         db.saveData();
 
+        // Track activity
+        try {
+            const { trackPremiumActivation } = require('../utils/activityTracker');
+            const client = global.discordClient;
+            let username = `User${userId.substring(0, 8)}`;
+            let serverId = null;
+            let serverName = null;
+
+            if (client) {
+                try {
+                    const user = await client.users.fetch(userId).catch(() => null);
+                    if (user) username = user.username;
+                } catch (e) {}
+            }
+
+            await trackPremiumActivation({
+                userId,
+                username,
+                serverId,
+                serverName,
+                tier: planId,
+                duration: plan.duration,
+                cost: plan.price
+            });
+        } catch (error) {
+            logger.debug('[PremiumHandler] Activity tracking failed:', error);
+        }
+
         logger.info(`[PremiumHandler] ${userId} purchased ${planId} premium for ${plan.price} NRC`);
 
         return {

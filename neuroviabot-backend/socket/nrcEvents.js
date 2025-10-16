@@ -23,6 +23,43 @@ function initNrcEvents(io) {
 }
 
 /**
+ * Emit activity to live feed
+ * @param {Server} io - Socket.IO instance
+ * @param {object} activity - Activity data
+ */
+function emitActivity(io, activity) {
+    const { getDatabase } = require('../../src/database/simple-db');
+    const db = getDatabase();
+
+    // Generate activity ID
+    const activityId = `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Store in database
+    const activityData = {
+        ...activity,
+        activityId,
+        timestamp: activity.timestamp || new Date().toISOString()
+    };
+
+    db.data.activityFeed.set(activityId, activityData);
+
+    // Keep only last 1000 activities
+    const activities = Array.from(db.data.activityFeed.entries());
+    if (activities.length > 1000) {
+        // Sort by timestamp and remove oldest
+        activities.sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp));
+        activities.slice(1000).forEach(([id]) => db.data.activityFeed.delete(id));
+    }
+
+    db.saveData();
+
+    // Broadcast to all connected clients
+    io.emit('nrc_activity', activityData);
+
+    console.log(`[NRC Activity] ${activity.type} - ${activity.userId || 'Unknown'}`);
+}
+
+/**
  * Emit balance update to specific user
  * @param {Server} io - Socket.IO instance
  * @param {string} userId - User ID
@@ -200,6 +237,7 @@ function emitDuelResult(io, duelId, winnerId, winnings) {
 
 module.exports = {
     initNrcEvents,
+    emitActivity,
     emitBalanceUpdate,
     emitNftPurchase,
     emitMarketplaceListing,

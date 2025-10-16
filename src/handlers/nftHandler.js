@@ -203,6 +203,37 @@ class NFTHandler {
 
         db.saveData();
 
+        // Track activity
+        try {
+            const { trackNFTPurchase } = require('../utils/activityTracker');
+            // Get user and server info from Discord client if available
+            const client = global.discordClient;
+            let username = `User${userId.substring(0, 8)}`;
+            let serverId = null;
+            let serverName = null;
+
+            if (client) {
+                try {
+                    const user = await client.users.fetch(userId).catch(() => null);
+                    if (user) username = user.username;
+                } catch (e) {}
+            }
+
+            await trackNFTPurchase({
+                userId,
+                username,
+                serverId,
+                serverName,
+                itemName: item.name,
+                itemType: collection.type,
+                amount: item.price,
+                rarity: item.rarity
+            });
+        } catch (error) {
+            // Silent fail for activity tracking
+            logger.debug('[NFTHandler] Activity tracking failed:', error);
+        }
+
         // Check for achievement unlocks
         await this.checkAchievementUnlocks(userId, userCollection);
 

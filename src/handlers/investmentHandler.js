@@ -107,6 +107,30 @@ class InvestmentHandler {
         db.data.investments.set(investmentId, investment);
         db.saveData();
 
+        // Track activity
+        try {
+            const { trackInvestment } = require('../utils/activityTracker');
+            const client = global.discordClient;
+            let username = `User${userId.substring(0, 8)}`;
+
+            if (client) {
+                try {
+                    const user = await client.users.fetch(userId).catch(() => null);
+                    if (user) username = user.username;
+                } catch (e) {}
+            }
+
+            await trackInvestment({
+                userId,
+                username,
+                amount,
+                duration: plan.duration,
+                apy: plan.apy
+            });
+        } catch (error) {
+            logger.debug('[InvestmentHandler] Activity tracking failed:', error);
+        }
+
         logger.info(`[InvestmentHandler] ${userId} created ${planId} investment: ${amount} NRC`);
 
         return {

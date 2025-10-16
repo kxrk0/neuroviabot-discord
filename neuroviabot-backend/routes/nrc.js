@@ -769,5 +769,186 @@ router.get('/balance/:userId', checkDB, (req, res) => {
     }
 });
 
+// ==========================================
+// Activity Feed Routes
+// ==========================================
+
+/**
+ * GET /api/nrc/activity/live
+ * Get recent activities (last 50)
+ */
+router.get('/activity/live', checkDB, (req, res) => {
+    try {
+        const { limit = 50, type } = req.query;
+        
+        let activities = Array.from(db.data.activityFeed.entries())
+            .map(([id, activity]) => ({ id, ...activity }))
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Filter by type if specified
+        if (type && type !== 'all') {
+            activities = activities.filter(a => a.type === type);
+        }
+
+        // Limit results
+        activities = activities.slice(0, parseInt(limit));
+
+        res.json({
+            success: true,
+            activities,
+            total: activities.length
+        });
+    } catch (error) {
+        console.error('[NRC API] Error fetching activities:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to fetch activities' 
+        });
+    }
+});
+
+/**
+ * GET /api/nrc/activity/stats
+ * Get activity statistics
+ */
+router.get('/activity/stats', checkDB, (req, res) => {
+    try {
+        const activities = Array.from(db.data.activityFeed.values());
+        
+        // Calculate stats
+        const now = Date.now();
+        const oneDayAgo = now - (24 * 60 * 60 * 1000);
+        const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
+
+        const last24h = activities.filter(a => new Date(a.timestamp).getTime() > oneDayAgo);
+        const last7d = activities.filter(a => new Date(a.timestamp).getTime() > oneWeekAgo);
+
+        // Type breakdown
+        const typeBreakdown = {};
+        activities.forEach(a => {
+            typeBreakdown[a.type] = (typeBreakdown[a.type] || 0) + 1;
+        });
+
+        // Total volume (sum of amounts)
+        const totalVolume = activities.reduce((sum, a) => sum + (a.amount || 0), 0);
+        const volume24h = last24h.reduce((sum, a) => sum + (a.amount || 0), 0);
+
+        res.json({
+            success: true,
+            stats: {
+                totalActivities: activities.length,
+                last24h: last24h.length,
+                last7d: last7d.length,
+                typeBreakdown,
+                totalVolume,
+                volume24h,
+                avgPerActivity: activities.length > 0 ? totalVolume / activities.length : 0
+            }
+        });
+    } catch (error) {
+        console.error('[NRC API] Error fetching activity stats:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to fetch activity stats' 
+        });
+    }
+});
+
+// ==========================================
+// Discord Proxy Routes
+// ==========================================
+
+/**
+ * GET /api/nrc/discord/avatar/:userId
+ * Fetch Discord user avatar (proxy)
+ */
+router.get('/discord/avatar/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Try to get from bot's client
+        const client = global.discordClient;
+        
+        if (client) {
+            try {
+                const user = await client.users.fetch(userId);
+                const avatarURL = user.displayAvatarURL({ format: 'png', size: 128 });
+                
+                res.json({
+                    success: true,
+                    avatar: avatarURL,
+                    username: user.username,
+                    discriminator: user.discriminator
+                });
+                return;
+            } catch (err) {
+                console.warn(`[Discord Proxy] Could not fetch user ${userId}:`, err.message);
+            }
+        }
+
+        // Fallback to default Discord avatar
+        const defaultAvatarIndex = parseInt(userId) % 5;
+        res.json({
+            success: true,
+            avatar: `https://cdn.discordapp.com/embed/avatars/${defaultAvatarIndex}.png`,
+            username: `User${userId.substring(0, 4)}`,
+            discriminator: '0000'
+        });
+        
+    } catch (error) {
+        console.error('[NRC API] Error fetching Discord avatar:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to fetch avatar',
+            fallback: 'https://cdn.discordapp.com/embed/avatars/0.png'
+        });
+    }
+});
+
+/**
+ * GET /api/nrc/discord/server/:serverId
+ * Fetch Discord server info (proxy)
+ */
+router.get('/discord/server/:serverId', async (req, res) => {
+    try {
+        const { serverId } = req.params;
+        
+        // Try to get from bot's client
+        const client = global.discordClient;
+        
+        if (client) {
+            try {
+                const guild = await client.guilds.fetch(serverId);
+                const iconURL = guild.iconURL({ format: 'png', size: 64 });
+                
+                res.json({
+                    success: true,
+                    serverName: guild.name,
+                    serverIcon: iconURL,
+                    memberCount: guild.memberCount
+                });
+                return;
+            } catch (err) {
+                console.warn(`[Discord Proxy] Could not fetch guild ${serverId}:`, err.message);
+            }
+        }
+
+        // Fallback
+        res.json({
+            success: true,
+            serverName: 'Unknown Server',
+            serverIcon: null,
+            memberCount: 0
+        });
+        
+    } catch (error) {
+        console.error('[NRC API] Error fetching Discord server:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to fetch server info'
+        });
+    }
+});
+
 module.exports = { router, initDB };
 

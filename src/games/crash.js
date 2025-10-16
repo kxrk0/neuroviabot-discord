@@ -152,6 +152,33 @@ class CrashGame {
 
         this.activeGames.delete(userId);
 
+        // Track big wins
+        const profit = winAmount - game.betAmount;
+        if (profit >= 1000) {
+            try {
+                const { trackGameWin } = require('../utils/activityTracker');
+                const client = global.discordClient;
+                let username = `User${userId.substring(0, 8)}`;
+
+                if (client) {
+                    try {
+                        const user = await client.users.fetch(userId).catch(() => null);
+                        if (user) username = user.username;
+                    } catch (e) {}
+                }
+
+                await trackGameWin({
+                    userId,
+                    username,
+                    game: 'Crash',
+                    winAmount: profit,
+                    multiplier: cashOutMultiplier
+                });
+            } catch (error) {
+                // Silent fail
+            }
+        }
+
         logger.info(`[Crash] ${userId} cashed out at ${cashOutMultiplier.toFixed(2)}x, won ${winAmount} NRC`);
 
         return {

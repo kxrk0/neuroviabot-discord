@@ -46,6 +46,9 @@ class SimpleDatabase {
             tournamentHistory: new Map(), // tournamentId -> { gametype, participants, winner, prizePool }
             tradeHistory: new Map(), // tradeId -> { buyerId, sellerId, itemId, price, platformFee, timestamp }
             
+            // NRC Live Activity Feed
+            activityFeed: new Map(), // activityId -> { type, userId, username, avatar, serverId, serverName, serverIcon, details, amount, timestamp, visibility }
+            
             warnings: new Map(),
             tickets: new Map(),
             giveaways: new Map(),

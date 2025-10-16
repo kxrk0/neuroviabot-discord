@@ -65,6 +65,10 @@ module.exports = {
         
         console.log('🚀 Bot tamamen hazır ve çalışıyor!');
         
+        // Global client reference for API proxies
+        global.discordClient = client;
+        console.log('🔗 Discord client global olarak kaydedildi');
+        
         // Otomatik komut kaydı - Discord API rate limit nedeniyle geçici olarak devre dışı
         // registerCommands(client);
     },
