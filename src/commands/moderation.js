@@ -236,11 +236,19 @@ module.exports = {
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
         
-        if (!settings.moderation?.enabled) {
+        // Features objesi içinde veya direkt moderation objesi olarak kontrol et
+        const moderationEnabled = settings.features?.moderation || settings.moderation?.enabled;
+        
+        if (!moderationEnabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Moderasyon Sistemi Kapalı')
                 .setDescription('Bu sunucuda moderasyon sistemi etkin değil!')
+                .addFields({
+                    name: '💡 Yöneticiler İçin',
+                    value: `🌐 **Web Dashboard üzerinden açabilirsiniz:**\n└ https://neuroviabot.xyz/dashboard\n└ Sunucunuzu seçin → Moderasyon → Sistemi Etkinleştir`,
+                    inline: false
+                })
                 .setTimestamp();
             
             return interaction.reply({ embeds: [errorEmbed], flags: 64 });

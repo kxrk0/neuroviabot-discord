@@ -530,6 +530,11 @@ async function setupSocketIO(client) {
                 db.data.settings.set(guildId, settings);
                 db.saveData();
                 log(`💾 Bot database güncellendi: Guild ${guildId}`, 'DEBUG');
+                
+                // Debug: Settings içeriğini göster
+                if (category === 'features') {
+                    log(`📋 Features: ${JSON.stringify(settings.features || settings.economy || {})}`, 'DEBUG');
+                }
             }
             
             // Leveling handler'ı güncelle
@@ -540,6 +545,11 @@ async function setupSocketIO(client) {
             // Moderation ayarları güncellendi
             if (settings.moderation) {
                 log(`🛡️ Moderasyon ayarları güncellendi`, 'DEBUG');
+            }
+            
+            // Features güncellendiğinde bildir
+            if (category === 'features' && settings.features) {
+                log(`🎛️ Features güncellendi: Economy=${settings.features.economy}, Leveling=${settings.features.leveling}, Tickets=${settings.features.tickets}`, 'INFO');
             }
             
             log(`✅ Guild ${guildId} ayarları senkronize edildi`, 'SUCCESS');

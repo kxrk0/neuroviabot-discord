@@ -100,11 +100,19 @@ module.exports = {
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
         
-        if (!settings.giveaways?.enabled) {
+        // Features objesi içinde veya direkt giveaways objesi olarak kontrol et
+        const giveawaysEnabled = settings.features?.giveaways || settings.giveaways?.enabled;
+        
+        if (!giveawaysEnabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Çekiliş Sistemi Kapalı')
                 .setDescription('Bu sunucuda çekiliş sistemi etkin değil!')
+                .addFields({
+                    name: '💡 Yöneticiler İçin',
+                    value: `🌐 **Web Dashboard üzerinden açabilirsiniz:**\n└ https://neuroviabot.xyz/dashboard\n└ Sunucunuzu seçin → Çekiliş Sistemi → Sistemi Etkinleştir`,
+                    inline: false
+                })
                 .setTimestamp();
             
             return interaction.reply({ embeds: [errorEmbed], flags: 64 });

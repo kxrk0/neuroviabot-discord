@@ -107,14 +107,17 @@ module.exports = {
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
         
-        if (!settings.economy?.enabled) {
+        // Features objesi içinde veya direkt economy objesi olarak kontrol et
+        const economyEnabled = settings.features?.economy || settings.economy?.enabled;
+        
+        if (!economyEnabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#8B5CF6')
                 .setTitle('❌ NeuroCoin Sistemi Kapalı')
                 .setDescription('Bu sunucuda NeuroCoin ekonomi sistemi etkin değil!')
                 .addFields({
                     name: '💡 Yöneticiler İçin',
-                    value: 'Ekonomi sistemini etkinleştirmek için `/features enable economy` komutunu kullanın.',
+                    value: `🌐 **Web Dashboard üzerinden açabilirsiniz:**\n└ https://neuroviabot.xyz/dashboard\n└ Sunucunuzu seçin → Ekonomi → Sistemi Etkinleştir`,
                     inline: false
                 })
                 .setFooter({ text: 'The Neural Currency of Discord' })

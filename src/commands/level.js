@@ -109,11 +109,19 @@ module.exports = {
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
         
-        if (!settings.leveling?.enabled) {
+        // Features objesi içinde veya direkt leveling objesi olarak kontrol et
+        const levelingEnabled = settings.features?.leveling || settings.leveling?.enabled;
+        
+        if (!levelingEnabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Seviye Sistemi Kapalı')
                 .setDescription('Bu sunucuda seviye sistemi etkin değil!')
+                .addFields({
+                    name: '💡 Yöneticiler İçin',
+                    value: `🌐 **Web Dashboard üzerinden açabilirsiniz:**\n└ https://neuroviabot.xyz/dashboard\n└ Sunucunuzu seçin → Seviye Sistemi → Sistemi Etkinleştir`,
+                    inline: false
+                })
                 .setTimestamp();
             
             return interaction.reply({ embeds: [errorEmbed], flags: 64 });

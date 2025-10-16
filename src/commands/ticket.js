@@ -98,14 +98,20 @@ module.exports = {
         const { getDatabase } = require('../database/simple-db');
         const db = getDatabase();
         const settings = db.getGuildSettings(interaction.guild.id);
-        const isEnabled = settings.tickets?.enabled || false;
         
+        // Features objesi içinde veya direkt tickets objesi olarak kontrol et
+        const isEnabled = settings.features?.tickets || settings.tickets?.enabled || false;
         
         if (!isEnabled) {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('❌ Ticket Sistemi Kapalı')
                 .setDescription('Bu sunucuda ticket sistemi etkin değil!')
+                .addFields({
+                    name: '💡 Yöneticiler İçin',
+                    value: `🌐 **Web Dashboard üzerinden açabilirsiniz:**\n└ https://neuroviabot.xyz/dashboard\n└ Sunucunuzu seçin → Ticket Sistemi → Sistemi Etkinleştir`,
+                    inline: false
+                })
                 .setTimestamp();
             
             return interaction.reply({ embeds: [errorEmbed], flags: 64 });

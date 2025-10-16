@@ -52,31 +52,6 @@ module.exports = {
         )
         .addSubcommand(subcommand =>
             subcommand
-                .setName('features')
-                .setDescription('🎛️ Bot özelliklerini aktif/pasif yap')
-                .addBooleanOption(option =>
-                    option.setName('müzik')
-                        .setDescription('Müzik sistemi')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option.setName('ekonomi')
-                        .setDescription('Ekonomi sistemi')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option.setName('seviye')
-                        .setDescription('Seviye sistemi')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option.setName('ticket')
-                        .setDescription('Ticket sistemi')
-                        .setRequired(false)
-                )
-        )
-        .addSubcommand(subcommand =>
-            subcommand
                 .setName('view')
                 .setDescription('👀 Mevcut sunucu ayarlarını görüntüle')
         )
@@ -101,9 +76,6 @@ module.exports = {
                     break;
                 case 'moderation':
                     await handleModerationSetup(interaction);
-                    break;
-                case 'features':
-                    await handleFeaturesSetup(interaction);
                     break;
                 case 'view':
                     await handleViewSettings(interaction);
@@ -283,83 +255,6 @@ async function handleModerationSetup(interaction) {
     await interaction.reply({ embeds: [embed] });
 }
 
-// Özellik ayarları
-async function handleFeaturesSetup(interaction) {
-    const music = interaction.options.getBoolean('müzik');
-    const economy = interaction.options.getBoolean('ekonomi');
-    const leveling = interaction.options.getBoolean('seviye');
-    const tickets = interaction.options.getBoolean('ticket');
-
-    const updates = { features: {} };
-
-    if (music !== null) updates.features.music = music;
-    if (economy !== null) updates.features.economy = economy;
-    if (leveling !== null) updates.features.leveling = leveling;
-    if (tickets !== null) updates.features.tickets = tickets;
-
-    if (Object.keys(updates.features).length === 0) {
-        // Mevcut ayarları göster
-        const currentSettings = await Settings.getGuildSettings(interaction.guild.id);
-
-        const embed = new EmbedBuilder()
-            .setColor(config.embedColor)
-            .setTitle('🎛️ Bot Özellikleri')
-            .addFields(
-                {
-                    name: '🎵 Müzik Sistemi',
-                    value: currentSettings.features?.music ? '✅ Aktif' : '❌ Pasif',
-                    inline: true
-                },
-                {
-                    name: '💰 Ekonomi Sistemi',
-                    value: currentSettings.features?.economy ? '✅ Aktif' : '❌ Pasif',
-                    inline: true
-                },
-                {
-                    name: '📊 Seviye Sistemi',
-                    value: currentSettings.features?.leveling ? '✅ Aktif' : '❌ Pasif',
-                    inline: true
-                },
-                {
-                    name: '🎫 Ticket Sistemi',
-                    value: currentSettings.features?.tickets ? '✅ Aktif' : '❌ Pasif',
-                    inline: true
-                }
-            )
-            .setTimestamp();
-
-        return interaction.reply({ embeds: [embed] });
-    }
-
-    // Mevcut ayarları al ve merge et
-    const currentSettings = await Settings.getGuildSettings(interaction.guild.id);
-    const mergedFeatures = { ...currentSettings.features, ...updates.features };
-    
-    await Settings.updateGuildSettings(interaction.guild.id, { features: mergedFeatures });
-
-    const embed = new EmbedBuilder()
-        .setColor('#00ff00')
-        .setTitle('✅ Özellik Ayarları Güncellendi')
-        .setDescription('Bot özellikleriniz başarıyla güncellendi!');
-
-    Object.keys(updates.features).forEach(feature => {
-        const featureNames = {
-            music: '🎵 Müzik Sistemi',
-            economy: '💰 Ekonomi Sistemi',
-            leveling: '📊 Seviye Sistemi',
-            tickets: '🎫 Ticket Sistemi'
-        };
-
-        embed.addFields({
-            name: featureNames[feature],
-            value: updates.features[feature] ? '✅ Aktif' : '❌ Pasif',
-            inline: true
-        });
-    });
-
-    await interaction.reply({ embeds: [embed] });
-}
-
 // Ayarları görüntüleme
 async function handleViewSettings(interaction) {
     const settings = await Settings.getGuildSettings(interaction.guild.id);
@@ -386,7 +281,7 @@ async function handleViewSettings(interaction) {
             }
         )
         .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
-        .setFooter({ text: 'Ayarları değiştirmek için /setup komutunu kullanın' })
+        .setFooter({ text: 'Ayarları değiştirmek için web dashboard kullanın: https://neuroviabot.xyz/dashboard' })
         .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });
