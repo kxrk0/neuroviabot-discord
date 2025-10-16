@@ -11,7 +11,7 @@ class FeedbackHandler {
             this.setupListeners();
             logger.info('✅ Feedback Handler initialized with channel:', this.feedbackChannelId);
         } else {
-            logger.warn('⚠️ Feedback Handler: No FEEDBACK_CHANNEL_ID configured');
+            logger.debug('Feedback Handler: FEEDBACK_CHANNEL_ID not configured (optional feature)');
         }
     }
 

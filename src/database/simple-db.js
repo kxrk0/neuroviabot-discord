@@ -120,7 +120,7 @@ class SimpleDatabase {
             logger.debug('Database kaydedildi');
             
         } catch (error) {
-            logger.error('Database kaydetme hatası', error);
+            logger.error('Database kaydetme hatası', { error: error.message, stack: error.stack });
         }
     }
 

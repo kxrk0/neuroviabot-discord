@@ -150,7 +150,7 @@ module.exports = {
                 embeds: [new EmbedBuilder()
                     .setColor('#8B5CF6')
                     .setTitle('❌ Yetersiz Bakiye')
-                    .setDescription(`Bankada yeterli NRC yok!\n\n**Banka:** ${balance.bank.toLocaleString()} NRC\n**Gerekli:** ${amount.toLocaleString()} NRC\n\n💡 `/economy deposit` ile cüzdanınızdan bankaya yatırabilirsiniz.`)
+                    .setDescription(`Bankada yeterli NRC yok!\n\n**Banka:** ${balance.bank.toLocaleString()} NRC\n**Gerekli:** ${amount.toLocaleString()} NRC\n\n💡 /economy deposit ile cüzdanınızdan bankaya yatırabilirsiniz.`)
                 ],
                 ephemeral: true
             });
