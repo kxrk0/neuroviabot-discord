@@ -163,6 +163,10 @@ app.use('/api/cms', cmsRoutes);
 const healthRoutes = require('./routes/health');
 app.use('/api/health', healthRoutes);
 
+// Diagnostic routes (for debugging auth issues)
+const diagnosticRoutes = require('./routes/diagnostic');
+app.use('/api/diagnostic', diagnosticRoutes);
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`[Socket.IO] Client connected: ${socket.id}`);
