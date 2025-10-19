@@ -2,8 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSocket } from '@/contexts/SocketContext';
 import ActivityCard from './ActivityCard';
+
+// Safe socket hook
+function useSafeSocket() {
+    try {
+        const { useSocket } = require('@/contexts/SocketContext');
+        return useSocket();
+    } catch {
+        return null;
+    }
+}
 
 interface LiveActivity {
     activityId: string;
@@ -26,19 +35,27 @@ interface LiveActivityFeedProps {
 export default function LiveActivityFeed({ filter = 'all' }: LiveActivityFeedProps) {
     const [activities, setActivities] = useState<LiveActivity[]>([]);
     const [loading, setLoading] = useState(true);
-    const socket = useSocket();
+    const socket = useSafeSocket();
 
     useEffect(() => {
         loadInitialActivities();
 
         // Listen for real-time activities
         if (socket) {
-            socket.on('nrc_activity', handleNewActivity);
+            try {
+                socket.on('nrc_activity', handleNewActivity);
+            } catch (error) {
+                console.warn('[Activity Feed] Socket listener error:', error);
+            }
         }
 
         return () => {
             if (socket) {
-                socket.off('nrc_activity', handleNewActivity);
+                try {
+                    socket.off('nrc_activity', handleNewActivity);
+                } catch (error) {
+                    // Silent cleanup
+                }
             }
         };
     }, [socket, filter]);

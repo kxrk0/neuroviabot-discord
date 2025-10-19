@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface DiscordAvatarProps {
@@ -22,9 +21,16 @@ export default function DiscordAvatar({
     serverIcon
 }: DiscordAvatarProps) {
     const [imgError, setImgError] = useState(false);
+    const [serverImgError, setServerImgError] = useState(false);
 
     const defaultAvatar = `https://cdn.discordapp.com/embed/avatars/${parseInt(userId || '0') % 5}.png`;
     const avatarUrl = imgError ? defaultAvatar : (avatar || defaultAvatar);
+    const serverIconUrl = serverImgError ? null : serverIcon;
+
+    useEffect(() => {
+        setImgError(false);
+        setServerImgError(false);
+    }, [avatar, serverIcon]);
 
     return (
         <div className="discord-avatar-container" style={{ width: size, height: size }}>
@@ -34,24 +40,25 @@ export default function DiscordAvatar({
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3 }}
             >
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                     src={avatarUrl}
                     alt={username || 'User'}
                     width={size}
                     height={size}
                     className="user-avatar"
                     onError={() => setImgError(true)}
-                    unoptimized
                 />
-                {showServer && serverIcon && (
+                {showServer && serverIconUrl && (
                     <div className="server-badge">
-                        <Image
-                            src={serverIcon}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={serverIconUrl}
                             alt="Server"
                             width={size / 2}
                             height={size / 2}
                             className="server-icon"
-                            unoptimized
+                            onError={() => setServerImgError(true)}
                         />
                     </div>
                 )}
