@@ -10,11 +10,12 @@ const { Server } = require('socket.io');
 const { getDatabase } = require('./database/simple-db');
 const { getErrorDetector } = require('./utils/errorDetector');
 const { getAutoFixer } = require('./utils/autoFixer');
+const { connectDB, isMongoConnected, getConnectionStats } = require('./config/database');
 const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Get shared database instance (synced with main bot)
 const db = getDatabase();
@@ -31,12 +32,20 @@ const autoFixer = getAutoFixer();
 console.log('[Backend] Error Detection & Auto-Fixer initialized');
 
 // Socket.IO setup
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [process.env.FRONTEND_URL || 'https://neuroviabot.xyz']
+  : ['http://localhost:3001', 'http://localhost:3000'];
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'https://neuroviabot.xyz',
+    origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST']
   },
 });
+
+// Make io available to routes (after initialization)
+app.set('io', io);
 
 // Initialize socket module
 const { initIO } = require('./socket');
@@ -44,14 +53,25 @@ initIO(io);
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://neuroviabot.xyz',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 app.use(express.json());
-// Ensure SESSION_SECRET is set
+// Ensure SESSION_SECRET is set (or use fallback for development)
 if (!process.env.SESSION_SECRET) {
-  console.error('ERROR: SESSION_SECRET environment variable is required!');
-  process.exit(1);
+  console.warn('[Backend] WARNING: SESSION_SECRET not set, using default (not secure for production)');
+  process.env.SESSION_SECRET = 'UXxunZzBQNpkRIAlCgDGPIdcbSZNemlk';
 }
 
 app.use(session({
@@ -121,6 +141,8 @@ const nrcCoinRoutes = require('./routes/nrc-coin');
 const nrcAdminRoutes = require('./routes/nrc-admin');
 const nrcTradingRoutes = require('./routes/nrc-trading');
 const { router: nrcApiRoutes, initDB: initNrcDB } = require('./routes/nrc');
+const marketplaceRequestsRoutes = require('./routes/marketplace-requests');
+const developerMarketplaceRoutes = require('./routes/developer-marketplace');
 
 // Set up Audit Logger with Socket.IO
 const { getAuditLogger } = require('../src/utils/auditLogger');
@@ -138,6 +160,11 @@ const { initNrcEvents } = require('./socket/nrcEvents');
 initNrcEvents(io);
 console.log('[Backend] NRC Events configured with Socket.IO');
 
+// Set up Marketplace Events with Socket.IO
+const { initMarketplaceEvents } = require('./socket/marketplaceEvents');
+initMarketplaceEvents(io);
+console.log('[Backend] Marketplace Events configured with Socket.IO');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/bot', botRoutes);
 app.use('/api/bot-commands', botCommandsRoutes);
@@ -146,6 +173,7 @@ app.use('/api/guild-settings', require('./routes/guild-settings'));
 app.use('/api/notifications', require('./routes/guild-settings'));
 app.use('/api/guild-management', guildManagementRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/marketplace', marketplaceRequestsRoutes);
 app.use('/api/neurocoin', neuroCoinRoutes);
 app.use('/api/quests', questsRoutes);
 app.use('/api/leveling', levelingRoutes);
@@ -155,6 +183,7 @@ app.use('/api/audit', auditLogRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/moderation', require('./routes/moderation'));
 app.use('/api/dev', developerRoutes);
+app.use('/api/dev', developerMarketplaceRoutes);
 app.use('/api/nrc', nrcCoinRoutes);
 app.use('/api/nrc', nrcAdminRoutes); // Admin routes (requires developer auth)
 app.use('/api/nrc', nrcTradingRoutes); // Trading routes
@@ -172,6 +201,9 @@ app.use('/api/cms', cmsRoutes);
 // Health check route
 const healthRoutes = require('./routes/health');
 app.use('/api/health', healthRoutes);
+
+// Database status endpoint
+app.use('/api/database', require('./routes/database'));
 
 // Diagnostic routes (for debugging auth issues)
 const diagnosticRoutes = require('./routes/diagnostic');
@@ -253,8 +285,20 @@ app.use(notFoundHandler);
 // Global error handler - must be last
 app.use(errorHandler);
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`[Backend] Server running on http://localhost:${PORT}`);
   console.log(`[Backend] Socket.IO enabled`);
   console.log(`[Backend] Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Connect to MongoDB Atlas
+  await connectDB();
+  
+  // Log MongoDB connection status
+  if (isMongoConnected()) {
+    const stats = getConnectionStats();
+    console.log(`[Backend] MongoDB Atlas connected: ${stats.name}`);
+    console.log(`[Backend] Database has ${stats.collections} collections`);
+  } else {
+    console.log('[Backend] Running with simple-db (JSON database)');
+  }
 });

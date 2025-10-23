@@ -18,6 +18,7 @@ import {
   XMarkIcon,
   ChevronDownIcon,
   HashtagIcon,
+  ShoppingBagIcon,
 } from '@heroicons/react/24/outline';
 
 // Feature Categories (MEE6 style)
@@ -125,6 +126,16 @@ const categories = [
         settings: ['messages']
       },
     ]
+  },
+  {
+    id: 'marketplace',
+    name: 'Marketplace',
+    description: 'Sunucunuz için ürün oluşturun ve satış yapın',
+    icon: ShoppingBagIcon,
+    color: 'from-emerald-500 to-teal-500',
+    premium: false,
+    isExternal: true,
+    link: '/dashboard/{serverId}/marketplace' // Will be replaced with actual serverId
   },
   {
     id: 'general',
@@ -368,6 +379,25 @@ export default function ServerDashboard() {
             {categories.map((category) => {
               const Icon = category.icon;
               const isActive = activeCategory === category.id;
+              
+              // Handle external links (like Marketplace)
+              if (category.isExternal && category.link) {
+                const href = category.link.replace('{serverId}', serverId);
+                return (
+                  <Link
+                    key={category.id}
+                    href={href}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all mb-1 text-gray-400 hover:text-white hover:bg-white/5"
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-semibold text-sm flex-1 text-left">{category.name}</span>
+                    {category.premium && (
+                      <SparklesIcon className="w-4 h-4 text-yellow-400" />
+                    )}
+                  </Link>
+                );
+              }
+              
               return (
                 <button
                   key={category.id}

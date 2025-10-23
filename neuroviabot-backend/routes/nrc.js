@@ -950,5 +950,406 @@ router.get('/discord/server/:serverId', async (req, res) => {
     }
 });
 
-module.exports = { router, initDB };
+// ==========================================
+// Price Algorithm & Routes
+// ==========================================
+
+// Price history storage (in-memory for now)
+const priceHistory = {
+    '24h': [],
+    '7d': [],
+    '30d': []
+};
+
+// Initialize with base price
+let currentPrice = 1.00;
+let lastPriceUpdate = Date.now();
+
+/**
+ * Calculate dynamic NRC price based on market factors
+ * Base: 1.00 NRC
+ * Factors:
+ * - Trading volume (0-10% impact)
+ * - Active users (0-5% impact)
+ * - Marketplace sales (0-8% impact)
+ * - Supply circulation (-5% to +5% impact)
+ * - Volatility index (±3% random)
+ */
+function calculateDynamicPrice() {
+    if (!db) return 1.00;
+
+    try {
+        const basePrice = 1.00;
+        let priceMultiplier = 1.00;
+
+        // Defensive check: Ensure activityFeed exists
+        if (!db.data || !db.data.activityFeed) {
+            console.warn('[Price Algorithm] activityFeed not initialized yet');
+            return basePrice;
+        }
+
+        // 1. Trading Volume Impact (0-10%)
+        const activities = Array.from(db.data.activityFeed.values());
+        const last24h = activities.filter(a => {
+            const activityTime = new Date(a.timestamp).getTime();
+            const dayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            return activityTime > dayAgo;
+        });
+
+        const volume24h = last24h.reduce((sum, a) => sum + (a.amount || 0), 0);
+        const volumeImpact = Math.min(volume24h / 1000000, 0.10); // Max 10%
+        priceMultiplier += volumeImpact;
+
+        // 2. Active Users Impact (0-5%)
+        const uniqueUsers = new Set(last24h.map(a => a.userId)).size;
+        const userImpact = Math.min(uniqueUsers / 1000, 0.05); // Max 5%
+        priceMultiplier += userImpact;
+
+        // 3. Marketplace Sales Impact (0-8%)
+        const marketplaceSales = last24h.filter(a => 
+            a.type === 'trade' || a.type === 'marketplace_sale'
+        ).length;
+        const salesImpact = Math.min(marketplaceSales / 500, 0.08); // Max 8%
+        priceMultiplier += salesImpact;
+
+        // 4. Supply Circulation Impact (-5% to +5%)
+        if (!db.data.users) {
+            console.warn('[Price Algorithm] users not initialized yet');
+            return basePrice;
+        }
+        
+        const totalUsers = db.data.users.size;
+        const totalBalance = Array.from(db.data.users.values())
+            .reduce((sum, u) => sum + (u.balance || 0), 0);
+        
+        const avgBalance = totalUsers > 0 ? totalBalance / totalUsers : 0;
+        const supplyImpact = (avgBalance - 1000) / 20000; // Normalized to ±5%
+        const clampedSupplyImpact = Math.max(-0.05, Math.min(0.05, supplyImpact));
+        priceMultiplier += clampedSupplyImpact;
+
+        // 5. Volatility Index (±3% random fluctuation)
+        const volatility = (Math.random() - 0.5) * 0.06; // ±3%
+        priceMultiplier += volatility;
+
+        // Calculate final price
+        const newPrice = basePrice * priceMultiplier;
+        
+        // Clamp price between 0.50 and 2.00
+        return Math.max(0.50, Math.min(2.00, newPrice));
+
+    } catch (error) {
+        console.error('[Price Algorithm] Error:', error);
+        return 1.00;
+    }
+}
+
+/**
+ * Update price history
+ */
+function updatePriceHistory(price) {
+    const timestamp = Date.now();
+    const pricePoint = {
+        price: parseFloat(price.toFixed(4)),
+        timestamp: new Date().toISOString(),
+        time: timestamp
+    };
+
+    // Add to 24h history
+    priceHistory['24h'].push(pricePoint);
+    
+    // Keep only last 24 hours (288 points for 5min intervals)
+    const dayAgo = timestamp - (24 * 60 * 60 * 1000);
+    priceHistory['24h'] = priceHistory['24h'].filter(p => p.time > dayAgo);
+
+    // Add to 7d history (every 30 minutes)
+    if (priceHistory['7d'].length === 0 || 
+        timestamp - priceHistory['7d'][priceHistory['7d'].length - 1].time > 30 * 60 * 1000) {
+        priceHistory['7d'].push(pricePoint);
+        
+        // Keep only last 7 days
+        const weekAgo = timestamp - (7 * 24 * 60 * 60 * 1000);
+        priceHistory['7d'] = priceHistory['7d'].filter(p => p.time > weekAgo);
+    }
+
+    // Add to 30d history (every 2 hours)
+    if (priceHistory['30d'].length === 0 || 
+        timestamp - priceHistory['30d'][priceHistory['30d'].length - 1].time > 2 * 60 * 60 * 1000) {
+        priceHistory['30d'].push(pricePoint);
+        
+        // Keep only last 30 days
+        const monthAgo = timestamp - (30 * 24 * 60 * 60 * 1000);
+        priceHistory['30d'] = priceHistory['30d'].filter(p => p.time > monthAgo);
+    }
+}
+
+/**
+ * GET /api/nrc/price/current
+ * Get current NRC price with 24h change
+ */
+router.get('/price/current', checkDB, (req, res) => {
+    try {
+        // Calculate 24h change
+        let change24h = 0;
+        let changePercent = 0;
+
+        if (priceHistory['24h'].length > 0) {
+            const firstPrice = priceHistory['24h'][0].price;
+            change24h = currentPrice - firstPrice;
+            changePercent = (change24h / firstPrice) * 100;
+        }
+
+        res.json({
+            success: true,
+            price: parseFloat(currentPrice.toFixed(4)),
+            change24h: parseFloat(change24h.toFixed(4)),
+            changePercent: parseFloat(changePercent.toFixed(2)),
+            lastUpdate: new Date(lastPriceUpdate).toISOString()
+        });
+    } catch (error) {
+        console.error('[NRC API] Error fetching current price:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch price'
+        });
+    }
+});
+
+/**
+ * GET /api/nrc/price/history?period=24h|7d|30d
+ * Get historical price data
+ */
+router.get('/price/history', checkDB, (req, res) => {
+    try {
+        const { period = '24h' } = req.query;
+        
+        if (!['24h', '7d', '30d'].includes(period)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid period. Use 24h, 7d, or 30d'
+            });
+        }
+
+        const history = priceHistory[period] || [];
+
+        res.json({
+            success: true,
+            period,
+            data: history.map(p => ({
+                price: p.price,
+                timestamp: p.timestamp
+            })),
+            count: history.length
+        });
+    } catch (error) {
+        console.error('[NRC API] Error fetching price history:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch price history'
+        });
+    }
+});
+
+/**
+ * GET /api/nrc/price/stats
+ * Get price statistics and market data
+ */
+router.get('/price/stats', checkDB, (req, res) => {
+    try {
+        // Defensive check
+        if (!db.data || !db.data.activityFeed || !db.data.users) {
+            return res.json({
+                success: true,
+                stats: {
+                    currentPrice: parseFloat(currentPrice.toFixed(4)),
+                    volume24h: 0,
+                    trades24h: 0,
+                    totalCirculation: 0,
+                    marketCap: 0,
+                    activeTraders: 0,
+                    avgTransaction: 0,
+                    biggestTrade: 0,
+                    topEarner: null,
+                    trend: 'stable'
+                }
+            });
+        }
+
+        // Calculate stats
+        const activities = Array.from(db.data.activityFeed.values());
+        const last24h = activities.filter(a => {
+            const activityTime = new Date(a.timestamp).getTime();
+            const dayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            return activityTime > dayAgo;
+        });
+
+        const volume24h = last24h.reduce((sum, a) => sum + (a.amount || 0), 0);
+        const trades24h = last24h.filter(a => 
+            a.type === 'trade' || a.type === 'marketplace_sale'
+        ).length;
+
+        // Calculate total circulation
+        const totalCirculation = Array.from(db.data.users.values())
+            .reduce((sum, u) => sum + (u.balance || 0), 0);
+
+        // Calculate market cap (price * circulation)
+        const marketCap = currentPrice * totalCirculation;
+
+        // Active traders (unique users in last 24h)
+        const activeTraders = new Set(last24h.map(a => a.userId)).size;
+
+        // Average transaction size
+        const avgTransaction = trades24h > 0 ? volume24h / trades24h : 0;
+
+        // Biggest trade in last 24h
+        const biggestTrade = Math.max(...last24h.map(a => a.amount || 0), 0);
+
+        // Find top earner
+        const userEarnings = new Map();
+        last24h.forEach(a => {
+            if (a.type === 'earn' || a.type === 'daily' || a.type === 'work') {
+                const current = userEarnings.get(a.userId) || 0;
+                userEarnings.set(a.userId, current + (a.amount || 0));
+            }
+        });
+
+        let topEarner = null;
+        let topEarnings = 0;
+        for (const [userId, earnings] of userEarnings.entries()) {
+            if (earnings > topEarnings) {
+                topEarnings = earnings;
+                const activity = last24h.find(a => a.userId === userId);
+                topEarner = {
+                    userId,
+                    username: activity?.username || 'Unknown',
+                    avatar: activity?.avatar || null,
+                    earnings
+                };
+            }
+        }
+
+        // Market trend
+        let trend = 'stable';
+        if (priceHistory['24h'].length > 10) {
+            const recentPrices = priceHistory['24h'].slice(-10);
+            const avgRecent = recentPrices.reduce((sum, p) => sum + p.price, 0) / recentPrices.length;
+            const diff = ((currentPrice - avgRecent) / avgRecent) * 100;
+            
+            if (diff > 2) trend = 'up';
+            else if (diff < -2) trend = 'down';
+        }
+
+        res.json({
+            success: true,
+            stats: {
+                currentPrice: parseFloat(currentPrice.toFixed(4)),
+                volume24h: Math.round(volume24h),
+                trades24h,
+                totalCirculation: Math.round(totalCirculation),
+                marketCap: Math.round(marketCap),
+                activeTraders,
+                avgTransaction: Math.round(avgTransaction),
+                biggestTrade: Math.round(biggestTrade),
+                topEarner,
+                trend
+            }
+        });
+    } catch (error) {
+        console.error('[NRC API] Error fetching price stats:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch price stats'
+        });
+    }
+});
+
+/**
+ * GET /api/nrc/profile/:userId
+ * Get user profile with extended stats
+ */
+router.get('/profile/:userId', checkDB, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Check if requesting user is authenticated
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    // Get user data
+    const userData = db.data.users?.get(userId);
+    if (!userData) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Get achievements (if available)
+    const achievements = [];
+    if (db.data.userAchievements) {
+      for (const [key, data] of db.data.userAchievements.entries()) {
+        if (key.startsWith(userId)) {
+          achievements.push(data);
+        }
+      }
+    }
+
+    // Get recent activity
+    const recentActivity = [];
+    if (db.data.activityFeed) {
+      const allActivities = Array.from(db.data.activityFeed.values())
+        .filter(a => a.userId === userId)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 10);
+      
+      recentActivity.push(...allActivities);
+    }
+
+    // Calculate rank
+    let rank = 0;
+    if (db.data.users) {
+      const allUsers = Array.from(db.data.users.values());
+      const sortedByBalance = allUsers.sort((a, b) => (b.balance || 0) - (a.balance || 0));
+      rank = sortedByBalance.findIndex(u => u.userId === userId) + 1;
+    }
+
+    res.json({
+      success: true,
+      profile: {
+        userId: userData.userId,
+        username: userData.username || `User${userId.substring(0, 4)}`,
+        avatar: userData.avatar || null,
+        balance: userData.balance || 0,
+        rank,
+        joinedAt: userData.createdAt || new Date().toISOString(),
+        totalTrades: userData.totalTrades || 0,
+        totalEarned: userData.totalEarned || 0,
+        totalSpent: userData.totalSpent || 0,
+        level: userData.level || 1,
+        achievements,
+        recentActivity,
+        premiumTier: userData.premiumTier || 'free'
+      }
+    });
+  } catch (error) {
+    console.error('[NRC API] Error fetching profile:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch profile'
+    });
+  }
+});
+
+// Export price functions for socket use
+module.exports = { 
+    router, 
+    initDB,
+    calculateDynamicPrice,
+    updatePriceHistory,
+    getCurrentPrice: () => currentPrice,
+    setCurrentPrice: (price) => { currentPrice = price; lastPriceUpdate = Date.now(); }
+};
 

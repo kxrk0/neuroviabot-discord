@@ -16,10 +16,64 @@ function initNrcEvents(io) {
     // Event naming convention: nrc_<action>
     // Example: nrc_balance_updated, nrc_nft_purchased, etc.
 
-    // No special initialization needed here
-    // Events are emitted from various handlers in the bot
+    // Start price update interval (every 30 seconds)
+    startPriceUpdateInterval(io);
     
     console.log('[NRC Socket] NRC event listeners initialized');
+}
+
+/**
+ * Start interval for price updates
+ * Updates price every 30 seconds and broadcasts to all clients
+ * @param {Server} io - Socket.IO instance
+ */
+function startPriceUpdateInterval(io) {
+    const nrcRoutes = require('../routes/nrc');
+    
+    // Update price immediately
+    updateAndBroadcastPrice(io, nrcRoutes);
+    
+    // Then update every 30 seconds
+    setInterval(() => {
+        updateAndBroadcastPrice(io, nrcRoutes);
+    }, 30000); // 30 seconds
+
+    console.log('[NRC Socket] Price update interval started (30s)');
+}
+
+/**
+ * Calculate new price and broadcast to clients
+ * @param {Server} io - Socket.IO instance
+ * @param {object} nrcRoutes - NRC routes module with price functions
+ */
+function updateAndBroadcastPrice(io, nrcRoutes) {
+    try {
+        // Calculate new price
+        const newPrice = nrcRoutes.calculateDynamicPrice();
+        const oldPrice = nrcRoutes.getCurrentPrice();
+        
+        // Update current price
+        nrcRoutes.setCurrentPrice(newPrice);
+        
+        // Update price history
+        nrcRoutes.updatePriceHistory(newPrice);
+        
+        // Calculate change
+        const change = newPrice - oldPrice;
+        const changePercent = oldPrice > 0 ? (change / oldPrice) * 100 : 0;
+        
+        // Broadcast to all connected clients
+        io.emit('nrc_price_updated', {
+            price: parseFloat(newPrice.toFixed(4)),
+            change: parseFloat(change.toFixed(4)),
+            changePercent: parseFloat(changePercent.toFixed(2)),
+            timestamp: new Date().toISOString()
+        });
+        
+        console.log(`[NRC Price] Updated: $${newPrice.toFixed(4)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
+    } catch (error) {
+        console.error('[NRC Price] Error updating price:', error);
+    }
 }
 
 /**

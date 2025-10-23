@@ -7,33 +7,20 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-mo
 import { fetchBotStats } from '@/lib/api';
 import { useSocket } from '@/contexts/SocketContext';
 import {
-  MusicalNoteIcon,
-  ShieldCheckIcon,
-  CurrencyDollarIcon,
-  ChartBarIcon,
-  TicketIcon,
-  GiftIcon,
-  SparklesIcon,
-  BoltIcon,
-  RocketLaunchIcon,
   CommandLineIcon,
   UserGroupIcon,
   ServerIcon,
-  ChevronDownIcon,
-  ArrowRightOnRectangleIcon,
-  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import StatCounter from '@/components/StatCounter';
 import TestimonialCard from '@/components/TestimonialCard';
+import Navbar from '@/components/layout/Navbar';
 
 export default function Home() {
   const [stats, setStats] = useState({ guilds: 66, users: 59032, commands: 43 });
   const [globalStats, setGlobalStats] = useState({ totalServers: 0, totalUsers: 0, totalCommands: 39, nrcInCirculation: 0, activeTraders: 0 });
   const [mounted, setMounted] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en'>('tr');
-  const [languageOpen, setLanguageOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [statsUpdating, setStatsUpdating] = useState({ guilds: false, users: false, commands: false });
 
   // Socket bağlantısı
@@ -181,16 +168,19 @@ export default function Home() {
 
   const handleLogout = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://Neurovia.xyz';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
       setUser(null);
-      setUserMenuOpen(false);
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const handleLanguageChange = (lang: 'tr' | 'en') => {
+    setLanguage(lang);
   };
 
   const t = {
@@ -234,6 +224,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
+      {/* Navbar */}
+      <Navbar 
+        language={language}
+        onLanguageChange={handleLanguageChange}
+        user={user}
+        onLogout={handleLogout}
+      />
+
       {/* Animated Background - Fixed */}
       <div className="fixed inset-0 z-0">
         {/* Gradient Orbs with stagger animation */}
@@ -308,337 +306,8 @@ export default function Home() {
         }}></div>
             </div>
 
-      {/* Ultra Modern Hero-Style Navbar with Smooth Entry */}
-      <motion.nav 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-50"
-      >
-        {/* Glassmorphism Background with Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0b0f]/95 via-[#13151f]/95 to-[#1a1c2e]/95 backdrop-blur-2xl"></div>
-        
-        {/* Top Gradient Line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
-        
-        {/* Bottom Gradient Border */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-        
-        {/* Ambient Glow Effects */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-        <div className="relative max-w-[1400px] mx-auto px-6 lg:px-10">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo - Hero Style */}
-            <Link href="/" className="relative flex items-center gap-3 group z-10">
-              {/* Logo Glow Effect */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-200"></div>
-              
-              <motion.div 
-                whileHover={{ rotate: 360 }}
-                transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 flex items-center justify-center shadow-2xl shadow-purple-500/30"
-              >
-                {/* Inner Glow */}
-                <div className="absolute inset-0.5 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-2xl"></div>
-                
-                <motion.svg 
-                  className="relative w-7 h-7 text-white drop-shadow-lg" 
-                  fill="currentColor" 
-                  viewBox="0 0 24 24"
-                  animate={{ 
-                    scale: [1, 1.08, 1],
-                    rotate: [0, 5, -5, 0]
-                  }}
-                  transition={{ 
-                    duration: 4, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                >
-                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                </motion.svg>
-                
-                {/* Pulse Ring */}
-                <motion.div
-                  className="absolute inset-0 rounded-2xl border-2 border-purple-400"
-                  animate={{
-                    scale: [1, 1.3, 1.3],
-                    opacity: [0.5, 0, 0]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeOut"
-                  }}
-                />
-              </motion.div>
-              
-              <div className="relative flex flex-col">
-                <motion.span 
-                  className="text-2xl font-black tracking-tight"
-                  initial={{ backgroundPosition: "0% 50%" }}
-                  animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                  style={{
-                    background: "linear-gradient(90deg, #fff 0%, #c084fc 20%, #60a5fa 40%, #c084fc 60%, #fff 80%, #fff 100%)",
-                    backgroundSize: "200% auto",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  Neurovia
-                </motion.span>
-                {/* Tagline */}
-                <span className="text-[10px] text-gray-400 font-medium tracking-wider uppercase">Discord Bot</span>
-            </div>
-          </Link>
-          
-            {/* Center Navigation - Hero Style */}
-            <div className="hidden lg:flex items-center gap-2">
-              {/* Features Link */}
-              <Link 
-                href="/ozellikler"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
-              >
-                {t[language].features}
-              </Link>
-
-              {/* Commands Link */}
-              <Link 
-                href="/komutlar"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
-              >
-                {t[language].commands}
-              </Link>
-
-              {/* Contact Link */}
-              <Link 
-                href="/iletisim"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
-              >
-                {t[language].contact}
-              </Link>
-
-              {/* Feedback Link */}
-              <Link 
-                href="/geri-bildirim"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors"
-              >
-                {t[language].feedback}
-              </Link>
-
-              {/* NRC Coin Link */}
-              <Link 
-                href="/nrc-coin"
-                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:text-yellow-300 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <CurrencyDollarIcon className="w-4 h-4" />
-                NRC Coin
-              </Link>
-
-              {/* Servers Link - Only show if user is logged in */}
-              {user && (
-                <Link 
-                  href="/servers"
-                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <ServerIcon className="w-4 h-4" />
-                  Sunucularım
-                </Link>
-              )}
-          </div>
-
-            {/* Right Actions */}
-            <div className="flex items-center gap-3">
-              {/* Language Selector - Emoji Only */}
-              <div className="relative">
-                <motion.button
-                  onClick={() => setLanguageOpen(!languageOpen)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="hidden md:flex items-center justify-center w-10 h-10 text-sm font-bold hover:bg-white/5 rounded-lg transition-all border border-white/10"
-                >
-                  {language === 'tr' ? 'TR' : 'EN'}
-                </motion.button>
-                <AnimatePresence>
-                {languageOpen && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLanguageOpen(false);
-                      }} 
-                    />
-          <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute top-full right-0 mt-2 w-40 bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
-                    >
-                      <div className="p-1">
-                        <button
-                          onClick={() => {
-                            setLanguage('tr');
-                            setLanguageOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all ${
-                            language === 'tr' ? 'bg-purple-500/20 text-white' : 'text-gray-300 hover:bg-white/5'
-                          }`}
-                        >
-                          <span className="text-base">🇹🇷</span>
-                          Türkçe
-                        </button>
-                        <button
-                          onClick={() => {
-                            setLanguage('en');
-                            setLanguageOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all ${
-                            language === 'en' ? 'bg-purple-500/20 text-white' : 'text-gray-300 hover:bg-white/5'
-                          }`}
-                        >
-                          <span className="text-base">EN</span>
-                          English
-                        </button>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-                </AnimatePresence>
-              </div>
-
-              {/* Discord Login / User Profile */}
-              {user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
-                  >
-                    <img
-                      src={user.avatar 
-                        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
-                        : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`
-                      }
-                      alt={user.username}
-                      className="w-8 h-8 rounded-full ring-2 ring-purple-500/30 group-hover:ring-purple-500/60 transition-all"
-                    />
-                    <span className="hidden md:inline text-white font-semibold">{user.username}</span>
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  <AnimatePresence>
-                    {userMenuOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setUserMenuOpen(false)}
-                        />
-                        <motion.div
-                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute right-0 mt-2 w-56 rounded-xl bg-[#1a1c2e]/95 backdrop-blur-xl border border-white/10 shadow-2xl z-50 overflow-hidden"
-                        >
-                          {/* User Info */}
-                          <div className="p-4 border-b border-white/10 bg-gradient-to-br from-purple-500/10 to-blue-500/10">
-                            <p className="text-white font-semibold truncate">{user.username}</p>
-                            {user.discriminator && user.discriminator !== '0' && (
-                              <p className="text-gray-400 text-sm">#{user.discriminator}</p>
-                            )}
-                          </div>
-                          
-                          {/* Menu Items */}
-                          <div className="p-2">
-                            <Link
-                              href="/servers"
-                              className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                              onClick={() => setUserMenuOpen(false)}
-                            >
-                              <ServerIcon className="w-5 h-5" />
-                              <span className="text-sm font-medium">{t[language].myServers}</span>
-                            </Link>
-                            
-                            {/* Developer Panel Link - Only for developers */}
-                            {(user?.id === '315875588906680330' || user?.id === '413081778031427584') && (
-                              <Link
-                                href="/dev-panel"
-                                className="flex items-center gap-3 px-4 py-2.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
-                                onClick={() => setUserMenuOpen(false)}
-                              >
-                                <Cog6ToothIcon className="w-5 h-5" />
-                                <span className="text-sm font-medium">Developer Panel</span>
-                              </Link>
-                            )}
-                            
-                            <button
-                              onClick={() => {
-                                setUserMenuOpen(false);
-                                handleLogout();
-                              }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-                            >
-                              <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                              <span className="text-sm font-medium">{t[language].logout}</span>
-                            </button>
-                          </div>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <motion.a
-                  href={`https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative group flex items-center gap-2.5 px-6 py-3 text-sm font-bold overflow-hidden rounded-xl transition-all shadow-lg hover:shadow-xl"
-                >
-                  {/* Background with gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] to-[#7289DA] transition-all duration-150"></div>
-                  
-                  {/* Animated glow */}
-                  <motion.div
-                    animate={{
-                      opacity: [0.5, 0.8, 0.5]
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    className="absolute inset-0 bg-[#5865F2] blur-xl opacity-50"
-                  />
-                  
-                  {/* Content */}
-                  <div className="relative flex items-center gap-2.5 text-white z-10">
-                    <motion.svg 
-                      className="w-5 h-5" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                      whileHover={{ rotate: [0, -10, 10, 0] }}
-            transition={{ duration: 0.5 }}
-                    >
-                      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                    </motion.svg>
-                    <span className="hidden sm:inline font-bold tracking-wide drop-shadow-sm">{t[language].login}</span>
-                  </div>
-                  
-                  {/* Border glow */}
-                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity ring-2 ring-white/20"></div>
-                </motion.a>
-              )}
-            </div>
-          </div>
-        </div>
-      </motion.nav>
-
       {/* Hero Section - Enhanced MEE6 Style */}
-      <section className="relative z-1 min-h-[calc(100vh-20%)] flex overflow-hidden">
+      <section className="relative z-10 min-h-screen flex overflow-hidden pt-12">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -802,7 +471,7 @@ export default function Home() {
         </div>
 
         {/* Forest Background */}
-        <div className="absolute w-full h-full -z-1 left-0 pointer-events-none overflow-hidden">
+        <div className="absolute w-full h-full z-0 left-0 pointer-events-none overflow-hidden">
           <svg className="w-full absolute bottom-0" viewBox="0 0 1920 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 400V250C150 200 300 180 450 200C600 220 750 180 900 160C1050 140 1200 150 1350 180C1500 210 1650 190 1800 170C1920 155 1920 155 1920 155V400H0Z" fill="#0D0E15" fillOpacity="0.8"/>
             <path d="M0 400V280C150 250 300 240 450 260C600 280 750 250 900 235C1050 220 1200 230 1350 255C1500 280 1650 265 1800 245C1920 232 1920 232 1920 232V400H0Z" fill="#0D0E15" fillOpacity="0.6"/>
@@ -810,27 +479,39 @@ export default function Home() {
         </div>
 
         {/* Content */}
-        <div className="min-h-full w-full flex items-center justify-start pt-16">
-          <div className="mx-auto w-full max-w-[1240px] px-6 lg:px-10 py-6 lg:py-10 pt-10 lg:pt-24 lg:py-36">
+        <div className="min-h-full w-full flex items-center justify-start pt-6">
+          <div className="mx-auto w-full max-w-[1240px] px-6 lg:px-12 py-6 lg:py-8">
             <div className="w-full text-center md:w-3/5 md:mx-auto lg:mx-0 lg:text-left lg:w-2/5">
-              {/* Badge */}
+              {/* Badge - Compact Animated */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, y: -20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 backdrop-blur-sm"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 rounded-full bg-gradient-to-r from-purple-500/15 via-blue-500/15 to-cyan-500/15 border border-purple-400/30 backdrop-blur-xl shadow-[0_6px_24px_rgba(168,85,247,0.12)] hover:shadow-[0_8px_32px_rgba(168,85,247,0.2)] transition-all duration-500 group"
                 style={{ willChange: 'transform, opacity' }}
               >
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-blue-400"
-                />
-                <span className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-blue-300">
+                  className="relative"
+                >
+                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 blur-sm opacity-50" />
+                </motion.div>
+                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-blue-200 to-cyan-200 group-hover:from-purple-100 group-hover:via-blue-100 group-hover:to-cyan-100 transition-all duration-500">
                   ✨ Yeni Özellikler Eklendi
-            </span>
+                </span>
                 <motion.div
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                  animate={{ 
+                    scale: [1, 1.2, 1], 
+                    opacity: [0.4, 1, 0.4],
+                    boxShadow: [
+                      '0 0 0 rgba(34, 197, 94, 0)',
+                      '0 0 8px rgba(34, 197, 94, 0.5)',
+                      '0 0 0 rgba(34, 197, 94, 0)'
+                    ]
+                  }}
                   transition={{ duration: 2, repeat: Infinity }}
                   className="w-1.5 h-1.5 rounded-full bg-green-400"
                 />
@@ -872,53 +553,67 @@ export default function Home() {
             {t[language].description}
           </motion.p>
 
-          {/* Stats Row */}
+          {/* Stats Row - Modern Glassmorphism Design */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.6, 
-              delay: 0.35,
+              duration: 0.7, 
+              delay: 0.4,
               ease: [0.22, 1, 0.36, 1]
             }}
-            className="flex flex-wrap gap-4 mb-8 justify-center lg:justify-start"
+            className="flex flex-row flex-nowrap gap-2.5 mb-10 justify-center lg:justify-start"
             style={{ willChange: 'transform, opacity' }}
           >
             {[
-              { icon: CommandLineIcon, value: `${stats.commands || 29}+`, label: 'Komut', gradient: 'from-purple-500/10 to-pink-500/10', border: 'border-purple-500/20', key: 'commands' },
-              { icon: ServerIcon, value: stats.guilds || '72', label: 'Sunucu', gradient: 'from-amber-500/10 to-orange-500/10', border: 'border-amber-500/20', key: 'guilds' },
-              { icon: UserGroupIcon, value: stats.users.toLocaleString(), label: 'Kullanıcı', gradient: 'from-blue-500/10 to-cyan-500/10', border: 'border-blue-500/20', key: 'users' }
+              { icon: CommandLineIcon, value: `${stats.commands || 29}+`, label: 'Komut', color: 'purple', glow: 'rgba(168, 85, 247, 0.4)', key: 'commands' },
+              { icon: ServerIcon, value: stats.guilds || '72', label: 'Sunucu', color: 'amber', glow: 'rgba(251, 191, 36, 0.4)', key: 'guilds' },
+              { icon: UserGroupIcon, value: stats.users.toLocaleString(), label: 'Kullanıcı', color: 'blue', glow: 'rgba(59, 130, 246, 0.4)', key: 'users' }
             ].map((stat, index) => {
               const IconComponent = stat.icon;
               return (
               <motion.div
                 key={index}
-                initial={{ scale: 0, opacity: 0 }}
+                initial={{ scale: 0, opacity: 0, rotateY: -180 }}
                 animate={{ 
                   scale: 1, 
                   opacity: 1,
+                  rotateY: 0,
                   // Real-time güncelleme animasyonu
                   ...(statsUpdating[stat.key as keyof typeof statsUpdating] && {
-                    scale: [1, 1.15, 1],
-                    boxShadow: [
-                      '0 4px 6px rgba(0, 0, 0, 0.1)',
-                      '0 20px 40px rgba(88, 101, 242, 0.4)',
-                      '0 4px 6px rgba(0, 0, 0, 0.1)'
-                    ]
+                    scale: [1, 1.08, 1],
+                    y: [0, -4, 0]
                   })
                 }}
                 whileHover={{ 
-                  y: -2,
-                  transition: { duration: 0.2, ease: "easeOut" }
+                  y: -6,
+                  scale: 1.02,
+                  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
                 }}
+                whileTap={{ scale: 0.98 }}
                 transition={{ 
-                  duration: statsUpdating[stat.key as keyof typeof statsUpdating] ? 0.6 : 0.6, 
-                  delay: statsUpdating[stat.key as keyof typeof statsUpdating] ? 0 : 0.45 + index * 0.1,
-                  ease: [0.16, 1, 0.3, 1]
+                  duration: 0.7, 
+                  delay: 0.5 + index * 0.15,
+                  ease: [0.22, 1, 0.36, 1]
                 }}
                 style={{ willChange: 'transform, opacity' }}
-                className={`relative flex items-center gap-3 px-5 py-3 bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl border ${stat.border} transition-all duration-300 shadow-lg hover:shadow-xl`}
+                className="group relative"
               >
+                {/* Glassmorphism Card */}
+                <div className="relative flex items-center gap-3 px-5 py-3 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-2xl rounded-xl border border-white/10 overflow-hidden transition-all duration-500 shadow-[0_6px_24px_rgba(0,0,0,0.3)] group-hover:shadow-[0_12px_36px_rgba(0,0,0,0.4)]">
+                  {/* Animated Gradient Overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-br from-${stat.color}-500/10 via-transparent to-${stat.color}-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  
+                  {/* Glow Effect on Hover */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+                    style={{ background: `radial-gradient(circle at center, ${stat.glow}, transparent 70%)` }}
+                  />
+                  
+                  {/* Shimmer Effect */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                  </div>
                 {/* Pulse ring animasyonu - sadece güncelleme olduğunda */}
                 <AnimatePresence>
                   {statsUpdating[stat.key as keyof typeof statsUpdating] && (
@@ -948,79 +643,135 @@ export default function Home() {
                     </>
                   )}
                 </AnimatePresence>
-                
-                <IconComponent className="w-6 h-6 text-white filter drop-shadow-sm relative z-10" />
-                <div className="relative z-10">
+                  
+                  {/* Icon with Floating Animation */}
                   <motion.div 
-                    className="text-xl font-bold text-white leading-none mb-0.5"
-                    animate={statsUpdating[stat.key as keyof typeof statsUpdating] ? {
-                      scale: [1, 1.1, 1],
-                      color: ['#fff', '#60a5fa', '#fff']
-                    } : {}}
-                    transition={{ duration: 0.6 }}
+                    className="relative z-10"
+                    animate={{ 
+                      rotate: [0, 5, -5, 0],
+                      scale: [1, 1.05, 1]
+                    }}
+                    transition={{ 
+                      duration: 4, 
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
                   >
-                    {stat.value}
+                    <IconComponent className="w-6 h-6 text-white filter drop-shadow-[0_3px_10px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_4px_16px_rgba(255,255,255,0.5)] transition-all duration-500" />
                   </motion.div>
-                  <div className="text-xs font-medium text-gray-300 opacity-80 leading-none">{stat.label}</div>
+                  
+                  {/* Stats Text */}
+                  <div className="relative z-10">
+                    <motion.div 
+                      className="text-xl font-bold text-white leading-none mb-0.5 bg-clip-text"
+                      animate={statsUpdating[stat.key as keyof typeof statsUpdating] ? {
+                        scale: [1, 1.15, 1],
+                        filter: [
+                          'drop-shadow(0 0 0 rgba(96, 165, 250, 0))',
+                          'drop-shadow(0 0 12px rgba(96, 165, 250, 0.8))',
+                          'drop-shadow(0 0 0 rgba(96, 165, 250, 0))'
+                        ]
+                      } : {}}
+                      transition={{ duration: 0.6 }}
+                    >
+                      {stat.value}
+                    </motion.div>
+                    <div className="text-sm font-medium text-gray-300/90 leading-none group-hover:text-white transition-colors duration-300">{stat.label}</div>
+                  </div>
                 </div>
               </motion.div>
             );
             })}
           </motion.div>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Ultra Modern */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.6, 
-              delay: 0.6,
+              duration: 0.7, 
+              delay: 0.7,
               ease: [0.22, 1, 0.36, 1]
             }}
             className="flex flex-col md:flex-row justify-center lg:justify-start items-stretch gap-4 max-w-[168px] lg:max-w-none m-auto"
             style={{ willChange: 'transform, opacity' }}
           >
+            {/* Discord Button - Primary */}
             <motion.a
               href={`https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`}
               whileHover={{ 
-                scale: 1.05,
-                boxShadow: "0 20px 40px rgba(88, 101, 242, 0.5)"
+                scale: 1.06,
+                y: -2
               }}
-              whileTap={{ scale: 0.98 }}
-              className="relative flex shrink-0 rounded-xl items-center justify-center gap-2 bg-[#5865F2] text-white text-base px-8 py-4 font-bold shadow-xl"
+              whileTap={{ scale: 0.96 }}
+              className="group relative flex shrink-0 rounded-2xl items-center justify-center gap-3 overflow-hidden"
               style={{ willChange: 'transform' }}
             >
-              <svg 
-                width="20" 
-                height="20" 
-                viewBox="0 0 18 13" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M15.248 1.089A15.431 15.431 0 0011.534 0a9.533 9.533 0 00-.476.921 14.505 14.505 0 00-4.12 0A9.582 9.582 0 006.461 0a15.54 15.54 0 00-3.717 1.091C.395 4.405-.242 7.636.076 10.821A15.269 15.269 0 004.631 13c.369-.473.695-.974.975-1.499a9.896 9.896 0 01-1.536-.699c.13-.089.255-.18.377-.27 1.424.639 2.979.97 4.553.97 1.574 0 3.129-.331 4.553-.97.123.096.25.188.377.27a9.94 9.94 0 01-1.54.7c.28.525.607 1.026.976 1.498a15.2 15.2 0 004.558-2.178c.373-3.693-.639-6.895-2.676-9.733zM6.01 8.862c-.888 0-1.621-.767-1.621-1.712 0-.944.708-1.718 1.618-1.718.91 0 1.638.774 1.623 1.718-.016.945-.715 1.712-1.62 1.712zm5.98 0c-.889 0-1.62-.767-1.62-1.712 0-.944.708-1.718 1.62-1.718.912 0 1.634.774 1.618 1.718-.015.945-.713 1.712-1.618 1.712z" fill="currentColor"/>
-              </svg>
-              <span>{t[language].addToDiscord}</span>
+              {/* Gradient Background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] via-[#5865F2] to-[#4752C4] group-hover:scale-105 transition-transform duration-500" />
+              
+              {/* Animated Glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+              
+              {/* Shadow Effect */}
+              <div className="absolute inset-0 shadow-[0_8px_32px_rgba(88,101,242,0.4)] group-hover:shadow-[0_16px_48px_rgba(88,101,242,0.6)] transition-shadow duration-500" />
+              
+              {/* Content */}
+              <div className="relative flex items-center justify-center gap-3 px-8 py-4 text-white text-base font-bold">
+                <svg 
+                  width="22" 
+                  height="22" 
+                  viewBox="0 0 18 13" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="group-hover:scale-110 transition-transform duration-300"
+                >
+                  <path d="M15.248 1.089A15.431 15.431 0 0011.534 0a9.533 9.533 0 00-.476.921 14.505 14.505 0 00-4.12 0A9.582 9.582 0 006.461 0a15.54 15.54 0 00-3.717 1.091C.395 4.405-.242 7.636.076 10.821A15.269 15.269 0 004.631 13c.369-.473.695-.974.975-1.499a9.896 9.896 0 01-1.536-.699c.13-.089.255-.18.377-.27 1.424.639 2.979.97 4.553.97 1.574 0 3.129-.331 4.553-.97.123.096.25.188.377.27a9.94 9.94 0 01-1.54.7c.28.525.607 1.026.976 1.498a15.2 15.2 0 004.558-2.178c.373-3.693-.639-6.895-2.676-9.733zM6.01 8.862c-.888 0-1.621-.767-1.621-1.712 0-.944.708-1.718 1.618-1.718.91 0 1.638.774 1.623 1.718-.016.945-.715 1.712-1.62 1.712zm5.98 0c-.889 0-1.62-.767-1.62-1.712 0-.944.708-1.718 1.62-1.718.912 0 1.634.774 1.618 1.718-.015.945-.713 1.712-1.618 1.712z" fill="currentColor"/>
+                </svg>
+                <span className="group-hover:tracking-wide transition-all duration-300">{t[language].addToDiscord}</span>
+              </div>
             </motion.a>
 
+            {/* Features Button - Secondary Glassmorphism */}
             <motion.a
               href="#features"
               whileHover={{ 
-                scale: 1.05,
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                borderColor: "rgba(255, 255, 255, 0.4)"
+                scale: 1.06,
+                y: -2
               }}
-              whileTap={{ scale: 0.98 }}
-              className="relative flex shrink-0 rounded-xl items-center justify-center gap-2 bg-white/5 backdrop-blur-sm text-white text-base px-8 py-4 font-semibold border border-white/10"
+              whileTap={{ scale: 0.96 }}
+              className="group relative flex shrink-0 rounded-2xl items-center justify-center gap-2 overflow-hidden"
               style={{ willChange: 'transform' }}
             >
-              <span>{t[language].seeFeatures}</span>
-              <span>→</span>
+              {/* Glassmorphism Base */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl" />
+              
+              {/* Animated Border Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-blue-500/30 to-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ maskImage: 'linear-gradient(black, black) content-box, linear-gradient(black, black)', maskComposite: 'exclude', WebkitMaskComposite: 'xor', padding: '1px' }} />
+              
+              {/* Static Border */}
+              <div className="absolute inset-0 rounded-2xl border border-white/20 group-hover:border-white/40 transition-colors duration-500" />
+              
+              {/* Shimmer Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+              
+              {/* Content */}
+              <div className="relative flex items-center justify-center gap-2 px-8 py-4 text-white text-base font-semibold">
+                <span className="group-hover:tracking-wide transition-all duration-300">{t[language].seeFeatures}</span>
+                <motion.span 
+                  className="inline-block"
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  →
+                </motion.span>
+              </div>
             </motion.a>
           </motion.div>
               </div>
 
             {/* Character Image - Right Side */}
-            <div className="h-full md:w-1/2 translate-x-6 translate-y-6 md:translate-y-0 md:translate-x-0 md:absolute right-0 bottom-0 flex items-end justify-end pointer-events-none -z-1">
+            <div className="h-full md:w-1/2 translate-x-6 translate-y-6 md:translate-y-0 md:translate-x-0 md:absolute right-0 bottom-0 flex items-end justify-end pointer-events-none z-0">
           <motion.div
                 initial={{ opacity: 0, x: 50, scale: 0.9 }}
                 animate={{ 
@@ -1143,7 +894,7 @@ export default function Home() {
       </section>
 
       {/* Features Section - Compact Hero Style */}
-      <section id="features" className="relative z-1 py-20 lg:py-28" style={{
+      <section id="features" className="relative z-10 py-20 lg:py-28" style={{
         background: 'linear-gradient(rgb(19, 21, 31) -4.84%, rgb(29, 28, 47) 34.9%, rgb(33, 32, 54) 48.6%, rgb(51, 40, 62) 66.41%, rgb(98, 61, 83) 103.41%, rgb(140, 81, 102) 132.18%)'
       }}>
         {/* Forest Bottom */}

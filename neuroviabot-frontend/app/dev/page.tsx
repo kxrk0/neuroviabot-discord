@@ -238,6 +238,20 @@ export default function DeveloperOverview() {
             </div>
           </Link>
 
+          <Link href="/dev/marketplace-requests" className="bg-gray-800 hover:bg-gray-750 rounded-lg p-6 transition group">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition">
+                <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Product Requests</h3>
+                <p className="text-sm text-gray-400">Approve/deny marketplace products</p>
+              </div>
+            </div>
+          </Link>
+
           <Link href="/dev/guilds" className="bg-gray-800 hover:bg-gray-750 rounded-lg p-6 transition group">
             <div className="flex items-center gap-4 mb-4">
               <div className="p-3 bg-amber-500/20 rounded-lg group-hover:bg-amber-500/30 transition">

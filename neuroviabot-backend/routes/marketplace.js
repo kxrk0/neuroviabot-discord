@@ -300,5 +300,440 @@ router.post('/config/:guildId', async (req, res) => {
     }
 });
 
+// ==========================================
+// GET /api/marketplace/main
+// Get main store products (site-provided)
+// ==========================================
+router.get('/main', async (req, res) => {
+    try {
+        const { MarketplaceProduct } = require('../models/MarketplaceProduct');
+        
+        const {
+            category,
+            minPrice,
+            maxPrice,
+            search,
+            sort = 'newest',
+            page = 1,
+            limit = 20
+        } = req.query;
+
+        // Build query
+        const query = {
+            storeType: 'main',
+            isActive: true,
+            isPublished: true
+        };
+
+        if (category) {
+            query.category = category;
+        }
+
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice) query.price.$gte = parseInt(minPrice);
+            if (maxPrice) query.price.$lte = parseInt(maxPrice);
+        }
+
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Build sort
+        let sortQuery = {};
+        switch (sort) {
+            case 'oldest':
+                sortQuery = { publishedAt: 1 };
+                break;
+            case 'price-high':
+                sortQuery = { price: -1 };
+                break;
+            case 'price-low':
+                sortQuery = { price: 1 };
+                break;
+            case 'popular':
+                sortQuery = { purchases: -1 };
+                break;
+            case 'newest':
+            default:
+                sortQuery = { publishedAt: -1 };
+        }
+
+        // Pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [products, total] = await Promise.all([
+            MarketplaceProduct.find(query)
+                .sort(sortQuery)
+                .skip(skip)
+                .limit(parseInt(limit)),
+            MarketplaceProduct.countDocuments(query)
+        ]);
+
+        res.json({
+            success: true,
+            products,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error('[Marketplace] Error fetching main store:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch main store products'
+        });
+    }
+});
+
+// ==========================================
+// GET /api/marketplace/servers
+// List servers with marketplace stores
+// ==========================================
+router.get('/servers', async (req, res) => {
+    try {
+        const { MarketplaceProduct } = require('../models/MarketplaceProduct');
+        const { search, page = 1, limit = 20 } = req.query;
+
+        // Build aggregation pipeline
+        const pipeline = [
+            {
+                $match: {
+                    storeType: 'server',
+                    isActive: true,
+                    isPublished: true
+                }
+            },
+            {
+                $group: {
+                    _id: '$guildId',
+                    guildName: { $first: '$guildName' },
+                    guildIcon: { $first: '$guildIcon' },
+                    productCount: { $sum: 1 },
+                    totalSales: { $sum: '$purchases' },
+                    avgPrice: { $avg: '$price' }
+                }
+            },
+            {
+                $sort: { productCount: -1 }
+            }
+        ];
+
+        // Add search if provided
+        if (search) {
+            pipeline.unshift({
+                $match: {
+                    guildName: { $regex: search, $options: 'i' }
+                }
+            });
+        }
+
+        // Execute aggregation
+        const servers = await MarketplaceProduct.aggregate(pipeline);
+
+        // Pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const paginatedServers = servers.slice(skip, skip + parseInt(limit));
+
+        res.json({
+            success: true,
+            servers: paginatedServers,
+            pagination: {
+                total: servers.length,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(servers.length / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error('[Marketplace] Error fetching servers:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch servers'
+        });
+    }
+});
+
+// ==========================================
+// GET /api/marketplace/server/:guildId/products
+// Get server store products
+// ==========================================
+router.get('/server/:guildId/products', async (req, res) => {
+    try {
+        const { MarketplaceProduct } = require('../models/MarketplaceProduct');
+        const { guildId } = req.params;
+        const {
+            category,
+            minPrice,
+            maxPrice,
+            search,
+            sort = 'newest',
+            page = 1,
+            limit = 20
+        } = req.query;
+
+        // Build query
+        const query = {
+            storeType: 'server',
+            guildId,
+            isActive: true,
+            isPublished: true
+        };
+
+        if (category) {
+            query.category = category;
+        }
+
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice) query.price.$gte = parseInt(minPrice);
+            if (maxPrice) query.price.$lte = parseInt(maxPrice);
+        }
+
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Build sort
+        let sortQuery = {};
+        switch (sort) {
+            case 'oldest':
+                sortQuery = { publishedAt: 1 };
+                break;
+            case 'price-high':
+                sortQuery = { price: -1 };
+                break;
+            case 'price-low':
+                sortQuery = { price: 1 };
+                break;
+            case 'popular':
+                sortQuery = { purchases: -1 };
+                break;
+            case 'newest':
+            default:
+                sortQuery = { publishedAt: -1 };
+        }
+
+        // Pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [products, total, guildInfo] = await Promise.all([
+            MarketplaceProduct.find(query)
+                .sort(sortQuery)
+                .skip(skip)
+                .limit(parseInt(limit)),
+            MarketplaceProduct.countDocuments(query),
+            MarketplaceProduct.findOne({ guildId, isPublished: true })
+                .select('guildName guildIcon')
+        ]);
+
+        res.json({
+            success: true,
+            guild: guildInfo ? {
+                id: guildId,
+                name: guildInfo.guildName,
+                icon: guildInfo.guildIcon
+            } : null,
+            products,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error('[Marketplace] Error fetching server store:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch server store products'
+        });
+    }
+});
+
+// ==========================================
+// POST /api/marketplace/purchase/:productId
+// Purchase a marketplace product
+// ==========================================
+router.post('/purchase/:productId', async (req, res) => {
+    try {
+        const { MarketplaceProduct, MarketplaceOrder } = require('../models/MarketplaceProduct');
+        const { UserNRCData, Transaction } = require('../models/NRC');
+        const { nanoid } = require('nanoid');
+        const { productId } = req.params;
+        const { buyerId } = req.body;
+
+        if (!buyerId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Buyer ID is required'
+            });
+        }
+
+        // Get product
+        const product = await MarketplaceProduct.findOne({ productId });
+
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                error: 'Product not found'
+            });
+        }
+
+        if (!product.isActive || !product.isPublished) {
+            return res.status(400).json({
+                success: false,
+                error: 'Product is not available'
+            });
+        }
+
+        // Get buyer
+        const buyer = await UserNRCData.findOne({ userId: buyerId });
+
+        if (!buyer) {
+            return res.status(404).json({
+                success: false,
+                error: 'Buyer not found'
+            });
+        }
+
+        // Check balance
+        if (buyer.balance < product.price) {
+            return res.status(400).json({
+                success: false,
+                error: 'Insufficient balance'
+            });
+        }
+
+        // Get seller
+        const seller = await UserNRCData.findOne({ userId: product.ownerId });
+
+        if (!seller) {
+            return res.status(404).json({
+                success: false,
+                error: 'Seller not found'
+            });
+        }
+
+        // Create order
+        const orderId = `ORD_${nanoid(12)}`;
+        const order = new MarketplaceOrder({
+            orderId,
+            productId,
+            buyerId,
+            buyerUsername: buyer.discordUsername,
+            sellerId: product.ownerId,
+            sellerUsername: seller.discordUsername,
+            guildId: product.guildId,
+            guildName: product.guildName,
+            productSnapshot: {
+                title: product.title,
+                description: product.description,
+                category: product.category,
+                icon: product.icon,
+                images: product.images,
+                deliveryType: product.deliveryType,
+                deliveryData: product.deliveryData
+            },
+            price: product.price,
+            status: 'pending'
+        });
+
+        // Create NRC transaction (deduct from buyer)
+        const transactionId = `TXN_${nanoid(12)}`;
+        const transaction = new Transaction({
+            transactionId,
+            userId: buyerId,
+            type: 'marketplace_purchase',
+            amount: -product.price,
+            balanceBefore: buyer.balance,
+            balanceAfter: buyer.balance - product.price,
+            metadata: {
+                orderId,
+                productId,
+                productTitle: product.title,
+                sellerId: product.ownerId
+            }
+        });
+
+        // Update buyer balance
+        buyer.balance -= product.price;
+        buyer.totalSpent += product.price;
+
+        // Update seller balance
+        seller.balance += product.price;
+        seller.totalEarned += product.price;
+
+        // Update product stats
+        product.purchases += 1;
+        product.totalRevenue += product.price;
+        product.views += 1;
+
+        // Save all
+        await Promise.all([
+            order.save(),
+            transaction.save(),
+            buyer.save(),
+            seller.save(),
+            product.save()
+        ]);
+
+        // Create seller transaction
+        const sellerTransactionId = `TXN_${nanoid(12)}`;
+        const sellerTransaction = new Transaction({
+            transactionId: sellerTransactionId,
+            userId: product.ownerId,
+            type: 'marketplace_sale',
+            amount: product.price,
+            balanceBefore: seller.balance - product.price,
+            balanceAfter: seller.balance,
+            metadata: {
+                orderId,
+                productId,
+                productTitle: product.title,
+                buyerId
+            }
+        });
+        await sellerTransaction.save();
+
+        order.transactionId = transactionId;
+        await order.save();
+
+        // Emit socket events
+        const io = req.app.get('io');
+        if (io) {
+            // Notify seller
+            io.to(product.ownerId).emit('marketplace:product:purchased', {
+                orderId,
+                productId,
+                productTitle: product.title,
+                buyerUsername: buyer.discordUsername,
+                price: product.price
+            });
+        }
+
+        res.json({
+            success: true,
+            order,
+            message: 'Purchase successful'
+        });
+    } catch (error) {
+        console.error('[Marketplace] Error processing purchase:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to process purchase'
+        });
+    }
+});
+
 module.exports = router;
 
