@@ -467,7 +467,7 @@ export default function ServerDashboard() {
 
               {/* Features */}
               <div className="space-y-4">
-                {currentCategory?.features.map((feature) => {
+                {currentCategory?.features?.map((feature) => {
                   const isEnabled = settings[activeCategory]?.[feature.id] !== false;
                   const isExpanded = expandedFeature === feature.id;
 
