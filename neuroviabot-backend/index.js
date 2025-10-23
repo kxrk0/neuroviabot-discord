@@ -143,6 +143,7 @@ const nrcTradingRoutes = require('./routes/nrc-trading');
 const { router: nrcApiRoutes, initDB: initNrcDB } = require('./routes/nrc');
 const marketplaceRequestsRoutes = require('./routes/marketplace-requests');
 const developerMarketplaceRoutes = require('./routes/developer-marketplace');
+const serverStatsRoutes = require('./routes/server-stats');
 
 // Set up Audit Logger with Socket.IO
 const { getAuditLogger } = require('../src/utils/auditLogger');
@@ -197,6 +198,7 @@ app.use('/api/bot', require('./routes/bot-proxy'));
 app.use('/api/contact', contactRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/cms', cmsRoutes);
+app.use('/api/server-stats', serverStatsRoutes);
 
 // Health check route
 const healthRoutes = require('./routes/health');

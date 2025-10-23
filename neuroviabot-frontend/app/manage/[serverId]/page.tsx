@@ -37,6 +37,7 @@ import MemberManagement from '../../../components/dashboard/MemberManagement';
 import RoleEditor from '../../../components/dashboard/RoleEditor';
 import ChannelManager from '../../../components/dashboard/ChannelManager';
 import AuditLog from '../../../components/dashboard/AuditLog';
+import ServerStatsSettings from '../../../components/dashboard/ServerStatsSettings';
 import { useSocket } from '@/contexts/SocketContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { DocumentTextIcon, UsersIcon } from '@heroicons/react/24/outline';
@@ -81,6 +82,14 @@ const categories = [
     description: 'Sunucu değişikliklerini ve işlemleri takip edin',
     icon: DocumentTextIcon,
     color: 'from-red-500 to-orange-500',
+    premium: false,
+  },
+  {
+    id: 'server-stats',
+    name: 'Server Stats',
+    description: 'Real-time sunucu istatistikleri (Members, Bots, Total)',
+    icon: ChartBarIcon,
+    color: 'from-cyan-500 to-blue-500',
     premium: false,
   },
   {
@@ -1101,6 +1110,13 @@ export default function ServerDashboard() {
                   />
                 )}
 
+                {activeCategory === 'server-stats' && (
+                  <ServerStatsSettings 
+                    guildId={serverId} 
+                    userId={user?.id || 'unknown'} 
+                  />
+                )}
+
                 {activeCategory === 'reaction-roles' && (
                   <RoleReactionSettings 
                     guildId={serverId} 
@@ -1199,7 +1215,7 @@ export default function ServerDashboard() {
                 )}
                 
                 {/* Other Features */}
-                {activeCategory !== 'overview' && activeCategory !== 'members' && activeCategory !== 'channels' && activeCategory !== 'audit' && activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'reaction-roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features?.map((feature) => {
+                {activeCategory !== 'overview' && activeCategory !== 'members' && activeCategory !== 'channels' && activeCategory !== 'audit' && activeCategory !== 'server-stats' && activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'reaction-roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features?.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',

@@ -356,6 +356,11 @@ client.on('guildMemberAdd', async (member) => {
         await client.welcomeHandler.handleMemberJoin(member);
     }
     
+    // Server stats update
+    if (client.serverStatsHandler) {
+        await client.serverStatsHandler.handleMemberAdd(member);
+    }
+    
     // Real-time sync
     if (global.realtimeUpdates) {
         global.realtimeUpdates.memberJoin(member);
@@ -370,6 +375,11 @@ client.on('guildMemberRemove', async (member) => {
     // Goodbye message
     if (client.welcomeHandler) {
         await client.welcomeHandler.handleMemberLeave(member);
+    }
+    
+    // Server stats update
+    if (client.serverStatsHandler) {
+        await client.serverStatsHandler.handleMemberRemove(member);
     }
     
     // Real-time sync
@@ -745,6 +755,7 @@ const cmsApiRouter = require('./src/routes/cms-api');
 const nrcApiRouter = require('./src/routes/nrc-api');
 const { router: moderationApiRouter, setClient: setModerationClient } = require('./src/routes/moderation-api');
 const nrcTradingApiRouter = require('./src/routes/nrc-trading-api');
+const { router: serverStatsApiRouter, setClient: setServerStatsClient } = require('./src/routes/server-stats-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -756,6 +767,7 @@ apiApp.use('/api/bot/leveling', levelingRouter);
 apiApp.use('/api/bot/stats', botStatsRouter);
 apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
+apiApp.use('/api/bot/server-stats', serverStatsApiRouter);
 apiApp.use('/api/dev-bot', developerBotRouter);
 apiApp.use('/api/nrc', nrcApiRouter);
 apiApp.use('/api/nrc', nrcTradingApiRouter);
@@ -781,6 +793,7 @@ client.once('clientReady', async () => {
     setDeveloperBotClient(client);
     setBotCommandsClient(client);
     setModerationClient(client);
+    setServerStatsClient(client);
     
     // Activity Reward Handler'ı başlat
     activityRewardHandler = new ActivityRewardHandler(client);
@@ -835,6 +848,12 @@ client.once('clientReady', async () => {
     const tempBanScheduler = new TempBanScheduler(client);
     client.tempBanScheduler = tempBanScheduler;
     log('⏰ Temporary Ban Scheduler initialized', 'SUCCESS');
+    
+    // Server Stats Handler'ı başlat
+    const ServerStatsHandler = require('./src/handlers/serverStatsHandler');
+    const serverStatsHandler = new ServerStatsHandler(client);
+    client.serverStatsHandler = serverStatsHandler;
+    log('📊 Server Stats Handler initialized', 'SUCCESS');
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();
