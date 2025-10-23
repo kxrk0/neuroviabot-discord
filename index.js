@@ -500,6 +500,9 @@ async function setupSocketIO(client) {
                 socket.emit('join_guild', guild.id);
                 log(`🔗 Guild room'a join edildi: ${guild.name} (${guild.id})`, 'DEBUG');
             });
+            
+            // Socket'i client'a kaydet (audit logger için)
+            client.backendSocket = socket;
         });
 
         socket.on('disconnect', () => {
@@ -862,6 +865,16 @@ client.once('clientReady', async () => {
     const auditLogHandler = new AuditLogHandler(client);
     client.auditLogHandler = auditLogHandler;
     log('📋 Audit Log Handler initialized', 'SUCCESS');
+    
+    // AuditLogger'a Socket.IO instance set et (backend'e emit için)
+    const { getAuditLogger } = require('./src/utils/auditLogger');
+    const auditLogger = getAuditLogger();
+    if (client.backendSocket) {
+        auditLogger.setSocketClient(client.backendSocket);
+        log('📋 Audit Logger Socket.IO client set', 'SUCCESS');
+    } else {
+        log('⚠️ Backend socket not available for audit logger', 'WARNING');
+    }
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();

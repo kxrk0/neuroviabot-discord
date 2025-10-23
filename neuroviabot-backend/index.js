@@ -269,6 +269,16 @@ io.on('connection', (socket) => {
     io.emit(event, eventData);
     console.log(`[Socket.IO] Global event broadcasted to all clients`);
   });
+  
+  // Audit log entry from bot
+  socket.on('bot_audit_log_entry', (data) => {
+    const { guildId, entry } = data;
+    console.log(`[Socket.IO] 📋 Audit log entry received for guild ${guildId}:`, entry.action);
+    
+    // Broadcast to frontend clients in guild room
+    io.to(`guild_${guildId}`).emit('audit_log_entry', entry);
+    console.log(`[Socket.IO] 📋 Audit log broadcasted to guild_${guildId}`);
+  });
 
   socket.on('disconnect', () => {
     console.log(`[Socket.IO] Client disconnected: ${socket.id}`);

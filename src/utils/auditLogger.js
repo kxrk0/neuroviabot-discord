@@ -17,6 +17,15 @@ class AuditLogger {
         this.io = io;
         logger.info('[AuditLogger] Socket.IO instance set for real-time broadcasting');
     }
+    
+    /**
+     * Set Socket.IO client for emitting to backend
+     * @param {Object} socket - Socket.IO client instance
+     */
+    setSocketClient(socket) {
+        this.socketClient = socket;
+        logger.info('[AuditLogger] Socket.IO client set for backend communication');
+    }
 
     /**
      * Generate event signature for duplicate detection
@@ -137,25 +146,35 @@ class AuditLogger {
             logger.debug(`[AuditLogger] Logged action: ${action} in guild ${guildId}`);
 
             // Broadcast to Socket.IO clients in real-time
+            const formattedEntry = {
+                id: auditEntry.id,
+                type: action,
+                userId: auditEntry.executor?.id || 'System',
+                targetId: auditEntry.target?.id || null,
+                action: this.formatActionName(action),
+                details: {
+                    executor: auditEntry.executor,
+                    target: auditEntry.target,
+                    changes: auditEntry.changes,
+                    reason: auditEntry.reason,
+                },
+                severity: this.getSeverity(action),
+                timestamp: auditEntry.timestamp,
+            };
+            
+            // Try Socket.IO server (if available)
             if (this.io) {
-                const formattedEntry = {
-                    id: auditEntry.id,
-                    type: action,
-                    userId: auditEntry.executor?.id || 'System',
-                    targetId: auditEntry.target?.id || null,
-                    action: this.formatActionName(action),
-                    details: {
-                        executor: auditEntry.executor,
-                        target: auditEntry.target,
-                        changes: auditEntry.changes,
-                        reason: auditEntry.reason,
-                    },
-                    severity: this.getSeverity(action),
-                    timestamp: auditEntry.timestamp,
-                };
-
                 this.io.to(`guild_${guildId}`).emit('audit_log_entry', formattedEntry);
-                logger.debug(`[AuditLogger] Broadcasted audit log to guild_${guildId}`);
+                logger.debug(`[AuditLogger] Broadcasted audit log to guild_${guildId} via io.to`);
+            }
+            
+            // Try Socket.IO client (bot to backend)
+            if (this.socketClient && this.socketClient.connected) {
+                this.socketClient.emit('bot_audit_log_entry', {
+                    guildId,
+                    entry: formattedEntry
+                });
+                logger.debug(`[AuditLogger] Emitted audit log to backend via socket client`);
             }
 
             return auditEntry;
