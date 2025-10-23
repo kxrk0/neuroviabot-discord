@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   DocumentTextIcon,
@@ -106,13 +106,9 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
       // Clean up listener
       off('audit_log_entry', handleAuditLogEntry);
     };
-  }, [socket, guildId]);
+  }, [socket, guildId, on, off, showNotification]);
 
-  useEffect(() => {
-    fetchLogs();
-  }, [guildId, page, filter]);
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     if (!guildId) {
       console.log('[AuditLog] Cannot fetch logs - guildId is missing');
       setLoading(false);
@@ -147,7 +143,11 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [guildId, page, filter.type, filter.userId]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const exportLogs = async (format: 'json' | 'csv') => {
     try {
