@@ -918,15 +918,26 @@ class SimpleDatabase {
     }
 
     getAuditLogs(guildId, filters = {}) {
-        const logs = this.data.auditLogs.get(guildId) || [];
+        // Guild settings'den audit logları al (yeni format)
+        const settings = this.getGuildSettings(guildId);
+        let logs = settings.auditLogs || [];
+        
+        // Fallback: Eski audit logs map'inden al
+        if (logs.length === 0 && this.data.auditLogs.has(guildId)) {
+            logs = this.data.auditLogs.get(guildId) || [];
+        }
+        
         let filtered = [...logs];
 
         // Apply filters
         if (filters.type) {
-            filtered = filtered.filter(log => log.type === filters.type);
+            filtered = filtered.filter(log => log.action === filters.type || log.type === filters.type);
         }
         if (filters.userId) {
-            filtered = filtered.filter(log => log.userId === filters.userId);
+            filtered = filtered.filter(log => {
+                const executorId = log.executor?.id || log.userId;
+                return executorId === filters.userId;
+            });
         }
         if (filters.startDate) {
             filtered = filtered.filter(log => new Date(log.timestamp) >= new Date(filters.startDate));
@@ -934,6 +945,9 @@ class SimpleDatabase {
         if (filters.endDate) {
             filtered = filtered.filter(log => new Date(log.timestamp) <= new Date(filters.endDate));
         }
+
+        // Sort by timestamp (newest first)
+        filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
         // Pagination
         const page = parseInt(filters.page) || 1;

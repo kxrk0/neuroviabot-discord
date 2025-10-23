@@ -119,7 +119,7 @@ class AuditLogger {
                 timestamp: new Date().toISOString(),
             };
 
-            // Save to database
+            // Save to database (guild settings)
             const settings = this.db.getGuildSettings(guildId) || {};
             if (!settings.auditLogs) {
                 settings.auditLogs = [];
@@ -132,7 +132,7 @@ class AuditLogger {
                 settings.auditLogs = settings.auditLogs.slice(0, 1000);
             }
 
-            this.db.setGuildSettings(guildId, settings);
+            this.db.updateGuildSettings(guildId, settings);
 
             logger.debug(`[AuditLogger] Logged action: ${action} in guild ${guildId}`);
 

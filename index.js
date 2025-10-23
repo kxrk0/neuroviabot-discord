@@ -756,6 +756,7 @@ const nrcApiRouter = require('./src/routes/nrc-api');
 const { router: moderationApiRouter, setClient: setModerationClient } = require('./src/routes/moderation-api');
 const nrcTradingApiRouter = require('./src/routes/nrc-trading-api');
 const { router: serverStatsApiRouter, setClient: setServerStatsClient } = require('./src/routes/server-stats-api');
+const auditApiRouter = require('./src/routes/audit-api');
 
 const apiApp = express();
 apiApp.use(express.json());
@@ -768,6 +769,7 @@ apiApp.use('/api/bot/stats', botStatsRouter);
 apiApp.use('/api/bot/reaction-roles', reactionRolesRouter);
 apiApp.use('/api/bot/premium', premiumRouter);
 apiApp.use('/api/bot/server-stats', serverStatsApiRouter);
+apiApp.use('/api/bot/audit', auditApiRouter);
 apiApp.use('/api/dev-bot', developerBotRouter);
 apiApp.use('/api/nrc', nrcApiRouter);
 apiApp.use('/api/nrc', nrcTradingApiRouter);
@@ -854,6 +856,12 @@ client.once('clientReady', async () => {
     const serverStatsHandler = new ServerStatsHandler(client);
     client.serverStatsHandler = serverStatsHandler;
     log('📊 Server Stats Handler initialized', 'SUCCESS');
+    
+    // Audit Log Handler'ı başlat
+    const AuditLogHandler = require('./src/handlers/auditLogHandler');
+    const auditLogHandler = new AuditLogHandler(client);
+    client.auditLogHandler = auditLogHandler;
+    log('📋 Audit Log Handler initialized', 'SUCCESS');
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();

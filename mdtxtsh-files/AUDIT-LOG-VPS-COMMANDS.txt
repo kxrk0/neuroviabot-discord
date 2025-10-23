@@ -1,0 +1,176 @@
+╔════════════════════════════════════════════════════════════════╗
+║  📋 REAL-TIME AUDIT LOG SYSTEM - VPS DEPLOYMENT KOMUTLARI     ║
+╚════════════════════════════════════════════════════════════════╝
+
+🚀 OTOMATİK DEPLOYMENT (ÖNERİLEN)
+═══════════════════════════════════════════════════════════════
+
+cd /root/neuroviabot/bot/neuroviabot-discord
+git stash
+git pull origin main
+chmod +x deploy-audit-system.sh
+./deploy-audit-system.sh
+
+
+📋 MANUEL DEPLOYMENT
+═══════════════════════════════════════════════════════════════
+
+# 1. Git Pull
+cd /root/neuroviabot/bot/neuroviabot-discord
+git stash
+git pull origin main
+
+# 2. Bot Restart
+pm2 restart neuroviabot-discord
+
+# 3. Backend Restart
+pm2 restart neuroviabot-backend
+
+# 4. Frontend Rebuild & Restart
+cd /root/neuroviabot/bot/neuroviabot-frontend
+npm run build
+pm2 restart neuroviabot-frontend
+
+# 5. Save & Status
+pm2 save
+pm2 status
+
+
+✅ TEST ADIMLARI
+═══════════════════════════════════════════════════════════════
+
+1. Manage paneli aç: https://neuroviabot.xyz/manage/{serverId}
+
+2. "Denetim Günlüğü" sekmesine git
+
+3. Discord'da test işlemi yap:
+   - Mesaj sil
+   - Birini at/yasakla
+   - Rol oluştur/sil
+   - Kanal oluştur/sil
+   - Üye nickname değiştir
+
+4. Frontend'de real-time güncellemeyi gör (1 saniye içinde)
+
+5. Filtreleri test et:
+   - Search box
+   - Type filter
+   - Pagination (50+ log varsa)
+
+6. Export'u test et:
+   - "Dışa Aktar" butonuna tıkla
+   - JSON/CSV export
+
+
+🔍 DEBUG KOMUTLARI
+═══════════════════════════════════════════════════════════════
+
+# Bot logs (audit events kontrol)
+pm2 logs neuroviabot-discord --lines 100 | grep "Audit"
+
+# Backend logs
+pm2 logs neuroviabot-backend --lines 50
+
+# Frontend logs
+pm2 logs neuroviabot-frontend --lines 50
+
+# Tüm loglar
+pm2 logs --lines 100
+
+# Database kontrol
+cd /root/neuroviabot/bot/neuroviabot-discord/data
+cat database.json | jq '.guilds[] | select(.guildId == "YOUR_GUILD_ID") | .auditLogs'
+
+# API test
+curl -X GET "http://localhost:3002/api/bot/audit/YOUR_GUILD_ID" \
+  -H "x-api-key: your-secret-api-key"
+
+
+🛠️ SORUN GİDERME
+═══════════════════════════════════════════════════════════════
+
+# Frontend çalışmıyorsa
+cd /root/neuroviabot/bot/neuroviabot-frontend
+pm2 delete neuroviabot-frontend
+rm -rf .next node_modules
+npm install --legacy-peer-deps
+npm run build
+pm2 start "node_modules/.bin/next start -p 3001" --name "neuroviabot-frontend"
+pm2 save
+
+# Bot çalışmıyorsa
+pm2 restart neuroviabot-discord
+pm2 logs neuroviabot-discord --lines 50
+
+# Socket.IO bağlantı sorunu varsa
+pm2 restart neuroviabot-backend
+pm2 logs neuroviabot-backend --lines 50
+
+# Hepsini restart et
+pm2 restart all
+pm2 save
+
+
+📊 MONİTORİNG
+═══════════════════════════════════════════════════════════════
+
+# PM2 monitoring
+pm2 monit
+
+# Status
+pm2 status
+
+# Memory usage
+pm2 list
+
+# System resources
+htop
+
+
+✨ ÖZELLIKLER
+═══════════════════════════════════════════════════════════════
+
+✅ Real-time güncelleme (Socket.IO)
+✅ 11+ event tipi yakalanıyor:
+   - MEMBER_JOIN, MEMBER_LEAVE, MEMBER_KICK
+   - MEMBER_BAN, MEMBER_UNBAN, MEMBER_UPDATE
+   - ROLE_CREATE, ROLE_DELETE, ROLE_UPDATE
+   - CHANNEL_CREATE, CHANNEL_DELETE, CHANNEL_UPDATE
+   - MESSAGE_DELETE, MESSAGE_BULK_DELETE
+   - GUILD_UPDATE
+
+✅ Advanced filtering (search, type, date)
+✅ Pagination (50 log per page)
+✅ Export (JSON/CSV)
+✅ Severity-based styling (info/warning/danger)
+✅ Real-time notifications
+✅ Automatic cleanup (max 1000 logs per guild)
+✅ Performance optimized
+
+
+🎯 BAŞARI KRİTERLERİ
+═══════════════════════════════════════════════════════════════
+
+✅ Discord'da yapılan işlem 1 saniye içinde frontend'de görünüyor
+✅ Tüm event tipleri yakalanıyor
+✅ Filtering ve pagination çalışıyor
+✅ Export çalışıyor
+✅ Notification geliyor (warning/danger)
+✅ UI smooth ve responsive
+✅ Sistem gecikme yaşamıyor
+
+
+🎉 DEPLOYMENT TAMAMLANDI!
+═══════════════════════════════════════════════════════════════
+
+Sistem production-ready!
+
+Test için:
+https://neuroviabot.xyz/manage/{serverId} → Denetim Günlüğü
+
+Herhangi bir işlem yap Discord'da ve real-time güncellemeleri gör!
+
+╔════════════════════════════════════════════════════════════════╗
+║         🎊 AUDIT LOG SYSTEM BAŞARIYLA KURULDU! 🎊             ║
+╚════════════════════════════════════════════════════════════════╝
+
