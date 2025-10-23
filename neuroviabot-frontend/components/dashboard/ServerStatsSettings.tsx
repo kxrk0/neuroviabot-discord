@@ -85,6 +85,14 @@ export default function ServerStatsSettings({ guildId, userId }: ServerStatsSett
       }
     };
 
+    const handleStatsDeleted = (data: any) => {
+      if (data.guildId === guildId) {
+        showNotification('🗑️ Server stats kanalları silindi!', 'success');
+        fetchSettings();
+        setCurrentStats(null);
+      }
+    };
+
     // Join guild room
     socket.emit('join_guild', guildId);
 
@@ -92,12 +100,14 @@ export default function ServerStatsSettings({ guildId, userId }: ServerStatsSett
     on('server_stats_updated', handleStatsUpdated);
     on('server_stats_settings_updated', handleSettingsUpdated);
     on('server_stats_toggled', handleStatsToggled);
+    on('server_stats_deleted', handleStatsDeleted);
 
     return () => {
       socket.emit('leave_guild', guildId);
       off('server_stats_updated', handleStatsUpdated);
       off('server_stats_settings_updated', handleSettingsUpdated);
       off('server_stats_toggled', handleStatsToggled);
+      off('server_stats_deleted', handleStatsDeleted);
     };
   }, [socket, guildId]);
 

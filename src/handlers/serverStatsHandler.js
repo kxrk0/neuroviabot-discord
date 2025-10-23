@@ -291,24 +291,42 @@ class ServerStatsHandler {
         try {
             const settings = this.getGuildStatsSettings(guild.id);
             
-            // Kanalları sil
-            for (const channelType of ['members', 'bots', 'total']) {
+            logger.info(`🗑️ Server stats silme başlatıldı: ${guild.name}`);
+            
+            // Önce kanalları sil
+            const channelTypes = ['members', 'bots', 'total'];
+            for (const channelType of channelTypes) {
                 const channelId = settings.channelIds[channelType];
                 if (channelId) {
-                    const channel = guild.channels.cache.get(channelId);
-                    if (channel) {
-                        await channel.delete('Server stats devre dışı bırakıldı');
-                        logger.info(`🗑️ ${channelType} kanalı silindi: ${guild.name}`);
+                    try {
+                        const channel = guild.channels.cache.get(channelId);
+                        if (channel) {
+                            await channel.delete('Server stats devre dışı bırakıldı');
+                            logger.success(`✅ ${channelType} kanalı silindi: ${guild.name}`);
+                        } else {
+                            logger.warn(`⚠️ ${channelType} kanalı bulunamadı (${channelId})`);
+                        }
+                    } catch (channelError) {
+                        logger.error(`❌ ${channelType} kanalı silinirken hata:`, channelError.message);
                     }
                 }
             }
 
+            // Kısa bir bekleme (Discord API için)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
             // Kategoriyi sil
             if (settings.categoryId) {
-                const category = guild.channels.cache.get(settings.categoryId);
-                if (category) {
-                    await category.delete('Server stats devre dışı bırakıldı');
-                    logger.info(`🗑️ Kategori silindi: ${guild.name}`);
+                try {
+                    const category = guild.channels.cache.get(settings.categoryId);
+                    if (category) {
+                        await category.delete('Server stats devre dışı bırakıldı');
+                        logger.success(`✅ Kategori silindi: ${guild.name}`);
+                    } else {
+                        logger.warn(`⚠️ Kategori bulunamadı (${settings.categoryId})`);
+                    }
+                } catch (categoryError) {
+                    logger.error(`❌ Kategori silinirken hata:`, categoryError.message);
                 }
             }
 
@@ -321,10 +339,23 @@ class ServerStatsHandler {
             // Auto update'i durdur
             this.stopAutoUpdate(guild.id);
 
-            return { success: true };
+            logger.success(`✅ Server stats tamamen silindi: ${guild.name}`);
+            
+            // Socket.IO ile frontend'e bildir
+            if (this.client.socket) {
+                this.client.socket.emit('broadcast_to_guild', {
+                    guildId: guild.id,
+                    event: 'server_stats_deleted',
+                    data: {
+                        timestamp: new Date().toISOString()
+                    }
+                });
+            }
+
+            return { success: true, message: 'Server stats kanalları başarıyla silindi' };
 
         } catch (error) {
-            logger.error(`Stats kanalları silme hatası (${guild.name}):`, error);
+            logger.error(`❌ Stats kanalları silme hatası (${guild.name}):`, error);
             return { success: false, error: error.message };
         }
     }
