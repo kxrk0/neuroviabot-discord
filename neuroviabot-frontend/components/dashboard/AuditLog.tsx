@@ -71,7 +71,12 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   const { socket, on, off } = useSocket();
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !guildId) {
+      console.log('[AuditLog] Socket or guildId not available:', { socket: !!socket, guildId });
+      return;
+    }
+
+    console.log('[AuditLog] Setting up socket listeners for guild:', guildId);
 
     const handleAuditLogEntry = (entry: AuditEntry) => {
       console.log('📋 New audit log entry received:', entry);
@@ -88,6 +93,7 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
 
     // Join guild room
     socket.emit('join_guild', guildId);
+    console.log('[AuditLog] Joined guild room:', guildId);
 
     // Listen for audit log entries
     on('audit_log_entry', handleAuditLogEntry);
@@ -95,6 +101,7 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
     return () => {
       // Leave guild room
       socket.emit('leave_guild', guildId);
+      console.log('[AuditLog] Left guild room:', guildId);
       
       // Clean up listener
       off('audit_log_entry', handleAuditLogEntry);
@@ -106,6 +113,12 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   }, [guildId, page, filter]);
 
   const fetchLogs = async () => {
+    if (!guildId) {
+      console.log('[AuditLog] Cannot fetch logs - guildId is missing');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
@@ -116,17 +129,21 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
         ...(filter.userId && { userId: filter.userId }),
       });
 
+      console.log('[AuditLog] Fetching logs for guild:', guildId);
       const response = await fetch(`${API_URL}/api/audit/${guildId}?${params}`, {
         credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log('[AuditLog] Logs fetched:', data.logs?.length || 0, 'entries');
         setLogs(data.logs || []);
         setTotalPages(data.totalPages || 1);
+      } else {
+        console.error('[AuditLog] Failed to fetch logs:', response.status);
       }
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      console.error('[AuditLog] Error fetching audit logs:', error);
     } finally {
       setLoading(false);
     }

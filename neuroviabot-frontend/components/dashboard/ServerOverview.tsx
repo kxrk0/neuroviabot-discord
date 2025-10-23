@@ -62,13 +62,13 @@ export default function ServerOverview({ guildId, userId }: ServerOverviewProps)
           icon: guildData.icon,
           banner: guildData.banner,
           description: guildData.description,
-          memberCount: statsData.stats.memberCount,
-          onlineCount: statsData.stats.onlineMembers,
-          channelCount: statsData.stats.channelCount,
-          roleCount: statsData.stats.roleCount,
-          boostLevel: statsData.stats.boostLevel,
-          boostCount: statsData.stats.boostCount,
-          createdAt: statsData.stats.guildCreatedAt,
+          memberCount: statsData?.stats?.memberCount || 0,
+          onlineCount: statsData?.stats?.onlineMembers || 0,
+          channelCount: statsData?.stats?.channelCount || 0,
+          roleCount: statsData?.stats?.roleCount || 0,
+          boostLevel: statsData?.stats?.boostLevel || 0,
+          boostCount: statsData?.stats?.boostCount || 0,
+          createdAt: statsData?.stats?.guildCreatedAt || null,
         });
       } else if (guildResponse.ok) {
         // Fallback to basic guild data if stats fail
