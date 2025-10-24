@@ -65,7 +65,13 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   const [filter, setFilter] = useState({ type: '', userId: '', search: '' });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [mounted, setMounted] = useState(false);
   const { showNotification } = useNotification();
+
+  // Fix hydration mismatch - only render on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Socket.IO real-time updates
   const { socket, on, off } = useSocket();
@@ -179,6 +185,15 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
     }
     return true;
   });
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-pulse text-gray-400">Yükleniyor...</div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <LoadingSkeleton type="list" />;
