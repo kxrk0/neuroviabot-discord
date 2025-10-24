@@ -177,9 +177,12 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
 
   const fetchLogs = useCallback(async (pageNum: number = 1) => {
     if (!guildId) {
+      console.log('[AuditLog] fetchLogs called but no guildId');
       setLoading(false);
       return;
     }
+
+    console.log('[AuditLog] Fetching logs for guild:', guildId, 'page:', pageNum);
 
     try {
       if (pageNum === 1) {
@@ -196,12 +199,19 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
         ...(filter.severity && { severity: filter.severity }),
       });
 
-      const response = await fetch(`${API_URL}/api/audit/${guildId}?${params}`, {
+      const url = `${API_URL}/api/audit/${guildId}?${params}`;
+      console.log('[AuditLog] Fetching from URL:', url);
+
+      const response = await fetch(url, {
         credentials: 'include',
       });
 
+      console.log('[AuditLog] Response status:', response.status, response.statusText);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('[AuditLog] Response data:', data);
+        console.log('[AuditLog] Logs count:', data.logs?.length || 0);
         const newLogs = data.logs || [];
 
         if (pageNum === 1) {
@@ -213,7 +223,9 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
         setTotalPages(data.totalPages || 1);
         setHasMore(pageNum < (data.totalPages || 1));
       } else {
-        console.error('[AuditLog] Failed to fetch logs:', response.status);
+        console.error('[AuditLog] Failed to fetch logs:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('[AuditLog] Error response:', errorText);
         setLogs([]);
       }
     } catch (error) {
