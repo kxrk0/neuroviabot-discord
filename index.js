@@ -874,6 +874,14 @@ client.once('clientReady', async () => {
     
     // Socket client audit logger'a zaten setupSocketIO'da set edildi
     // Burada tekrar kontrol etmeye gerek yok
+
+    // AuditLogger'a Discord client'ı set et (kullanıcı bilgisini zenginleştirmek için)
+    {
+        const { getAuditLogger } = require('./src/utils/auditLogger');
+        const _auditLogger = getAuditLogger();
+        _auditLogger.setClient(client);
+        log('📋 Audit Logger Discord client set', 'SUCCESS');
+    }
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();

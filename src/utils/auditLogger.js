@@ -5,6 +5,7 @@ class AuditLogger {
     constructor() {
         this.db = getDatabase();
         this.io = null; // Socket.IO instance
+        this.client = null; // Discord client instance (optional for user enrichment)
         this.recentLogs = new Map(); // For duplicate detection (guildId -> recent logs)
         this.duplicateWindow = 5000; // 5 seconds window for duplicate detection
     }
@@ -25,6 +26,15 @@ class AuditLogger {
     setSocketClient(socket) {
         this.socketClient = socket;
         logger.info('[AuditLogger] Socket.IO client set for backend communication');
+    }
+
+    /**
+     * Set Discord client for user enrichment
+     * @param {Object} client - Discord.js Client
+     */
+    setClient(client) {
+        this.client = client;
+        logger.info('[AuditLogger] Discord client set for user enrichment');
     }
 
     /**
@@ -90,7 +100,7 @@ class AuditLogger {
      * @param {Object} options.changes - Changes made
      * @param {string} options.reason - Reason for the action
      */
-    log(options) {
+    async log(options) {
         try {
             const { guildId, action, executor, target, changes, reason } = options;
 
@@ -109,15 +119,36 @@ class AuditLogger {
             // Record this event
             this.recordSignature(signature);
 
+            // Prepare executor data with enrichment if necessary
+            let executorData = null;
+            if (executor) {
+                const execId = executor.id || executor;
+                let execUsername = executor.tag || executor.username || executor.globalName || null;
+                let execAvatar = executor.avatar || null;
+
+                // Enrich from Discord API if missing
+                if ((!execUsername || execAvatar === null) && this.client && execId) {
+                    try {
+                        const user = await this.client.users.fetch(execId);
+                        execUsername = execUsername || user.tag || user.username || user.globalName || 'Unknown';
+                        execAvatar = execAvatar !== null ? execAvatar : user.avatar || null;
+                    } catch (e) {
+                        logger.debug('[AuditLogger] Could not enrich executor from API:', e.message);
+                    }
+                }
+
+                executorData = {
+                    id: execId,
+                    username: execUsername || 'Unknown',
+                    avatar: execAvatar || null,
+                };
+            }
+
             const auditEntry = {
                 id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 guildId,
                 action,
-                executor: executor ? {
-                    id: executor.id || executor,
-                    username: executor.tag || executor.username || 'Unknown',
-                    avatar: executor.avatar || null,
-                } : null,
+                executor: executorData,
                 target: target ? {
                     id: target.id || target,
                     name: target.name || target.username || 'Unknown',
