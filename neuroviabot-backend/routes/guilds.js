@@ -101,6 +101,84 @@ router.get('/user', requireAuth, async (req, res) => {
   }
 });
 
+// Get guild features - Automatic detection of enabled features
+router.get('/:guildId/features', requireAuth, async (req, res) => {
+  const { guildId } = req.params;
+  
+  try {
+    const db = req.app.get('db');
+    const guildData = db.data.guilds.get(guildId);
+    
+    if (!guildData) {
+      return res.status(404).json({ error: 'Guild not found' });
+    }
+    
+    // Get settings from database
+    const settings = guildData.settings || {};
+    const serverStats = guildData.serverStats || {};
+    
+    // Build features object
+    const features = {
+      welcome: {
+        enabled: settings.welcome?.enabled || false,
+        configured: !!(settings.welcome?.channelId)
+      },
+      moderation: {
+        enabled: settings.moderation?.enabled || false,
+        autoMod: settings.moderation?.autoMod || false,
+        warnings: settings.moderation?.warnings?.enabled || false
+      },
+      leveling: {
+        enabled: settings.leveling?.enabled || false,
+        xpSystem: settings.leveling?.xpPerMessage > 0 || false,
+        roleRewards: (settings.leveling?.rewards?.length || 0) > 0
+      },
+      economy: {
+        enabled: settings.economy?.enabled || false,
+        nrcCoins: settings.economy?.nrcCoins?.enabled || false,
+        serverCurrency: settings.economy?.currency?.enabled || false
+      },
+      serverStats: {
+        enabled: serverStats.enabled || false,
+        channelsCreated: !!(serverStats.channelIds?.members && serverStats.channelIds?.bots),
+        autoUpdate: serverStats.autoUpdate || false
+      },
+      auditLog: {
+        enabled: settings.auditLog?.enabled || false,
+        logChannel: settings.auditLog?.channelId || null
+      },
+      reactionRoles: {
+        enabled: settings.reactionRoles?.enabled || false,
+        panels: settings.reactionRoles?.panels?.length || 0
+      },
+      automation: {
+        enabled: settings.automation?.enabled || false,
+        autoRole: settings.automation?.autoRole?.enabled || false,
+        scheduled: (settings.automation?.scheduledMessages?.length || 0) > 0
+      },
+      backup: {
+        enabled: settings.backup?.enabled || false,
+        backupCount: settings.backup?.backups?.length || 0
+      },
+      security: {
+        enabled: settings.security?.enabled || false,
+        guard: settings.security?.guard?.enabled || false,
+        verification: settings.security?.verification?.enabled || false
+      },
+      premium: {
+        active: guildData.premium?.active || false,
+        tier: guildData.premium?.tier || null,
+        features: guildData.premium?.features || []
+      }
+    };
+    
+    res.json({ features });
+  } catch (error) {
+    console.error('Error fetching guild features:', error);
+    res.status(500).json({ error: 'Failed to fetch guild features' });
+  }
+});
+
 // Get guild stats
 router.get('/:guildId/stats', requireAuth, async (req, res) => {
   const { guildId } = req.params;
