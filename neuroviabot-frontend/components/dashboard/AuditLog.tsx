@@ -105,7 +105,15 @@ function getAvatarUrl(userId: string, avatar?: string | null) {
   if (avatar) {
     return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png?size=128`;
   }
-  const defaultIndex = Number(BigInt(userId) % 6n);
+  // Some system events may not have a numeric userId (e.g., 'System')
+  let defaultIndex = 0;
+  if (/^\d+$/.test(userId)) {
+    try {
+      defaultIndex = Number(BigInt(userId) % 6n);
+    } catch {
+      defaultIndex = 0;
+    }
+  }
   return `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
 }
 
@@ -341,7 +349,7 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400">
-              Denetim Günlüğü
+              Denetim Kaydı
             </h2>
             <p className="text-sm text-gray-400 mt-1">
               Sunucudaki tüm işlemleri gerçek zamanlı takip edin

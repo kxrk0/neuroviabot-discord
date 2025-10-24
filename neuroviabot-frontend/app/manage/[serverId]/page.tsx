@@ -78,7 +78,7 @@ const categories = [
   },
   {
     id: 'audit',
-    name: 'Denetim Günlüğü',
+    name: 'Denetim Kaydı',
     description: 'Sunucu değişikliklerini ve işlemleri takip edin',
     icon: DocumentTextIcon,
     color: 'from-red-500 to-orange-500',
