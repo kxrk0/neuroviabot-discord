@@ -25,9 +25,35 @@ router.get('/:guildId', async (req, res) => {
         
         const result = db.getAuditLogs(guildId, filters);
         
+        // Transform logs to match frontend format
+        const transformedLogs = result.logs.map(log => {
+            // Extract executor info
+            const executorId = log.executor?.id || log.userId || 'System';
+            const executorUsername = log.executor?.username || log.username || 'Unknown User';
+            const executorAvatar = log.executor?.avatar || log.avatar || null;
+            
+            return {
+                id: log.id,
+                type: log.action || log.type,
+                userId: executorId,
+                targetId: log.target?.id || log.targetId || null,
+                action: log.action ? formatActionName(log.action) : (log.action || 'Unknown Action'),
+                details: {
+                    executor: log.executor,
+                    target: log.target,
+                    changes: log.changes || {},
+                    reason: log.reason,
+                },
+                severity: getSeverity(log.action || log.type),
+                timestamp: log.timestamp,
+                username: executorUsername,
+                avatar: executorAvatar,
+            };
+        });
+        
         res.json({
             success: true,
-            logs: result.logs,
+            logs: transformedLogs,
             total: result.total,
             page: result.page,
             totalPages: result.totalPages,
@@ -42,6 +68,41 @@ router.get('/:guildId', async (req, res) => {
         });
     }
 });
+
+// Helper function to format action names
+function formatActionName(action) {
+    const actionNames = {
+        'ROLE_CREATE': 'Rol Oluşturuldu',
+        'ROLE_UPDATE': 'Rol Güncellendi',
+        'ROLE_DELETE': 'Rol Silindi',
+        'CHANNEL_CREATE': 'Kanal Oluşturuldu',
+        'CHANNEL_UPDATE': 'Kanal Güncellendi',
+        'CHANNEL_DELETE': 'Kanal Silindi',
+        'MEMBER_BAN': 'Üye Yasaklandı',
+        'MEMBER_KICK': 'Üye Atıldı',
+        'MEMBER_UPDATE': 'Üye Güncellendi',
+        'MEMBER_JOIN': 'Üye Katıldı',
+        'MEMBER_LEAVE': 'Üye Ayrıldı',
+        'MEMBER_UNBAN': 'Yasak Kaldırıldı',
+        'SETTINGS_CHANGE': 'Ayarlar Değiştirildi',
+        'MESSAGE_DELETE': 'Mesaj Silindi',
+        'MESSAGE_BULK_DELETE': 'Toplu Mesaj Silindi',
+        'GUILD_UPDATE': 'Sunucu Güncellendi',
+    };
+    return actionNames[action] || action;
+}
+
+// Helper function to get severity
+function getSeverity(action) {
+    const dangerActions = ['ROLE_DELETE', 'CHANNEL_DELETE', 'MEMBER_BAN', 'MESSAGE_BULK_DELETE'];
+    const warningActions = ['ROLE_UPDATE', 'CHANNEL_UPDATE', 'MEMBER_KICK', 'SETTINGS_CHANGE', 'MEMBER_UPDATE', 'GUILD_UPDATE'];
+    const successActions = ['ROLE_CREATE', 'CHANNEL_CREATE', 'MEMBER_JOIN', 'MEMBER_UNBAN'];
+    
+    if (dangerActions.includes(action)) return 'danger';
+    if (warningActions.includes(action)) return 'warning';
+    if (successActions.includes(action)) return 'success';
+    return 'info';
+}
 
 // Export audit logs
 router.get('/:guildId/export', async (req, res) => {
