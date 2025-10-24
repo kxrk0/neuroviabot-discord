@@ -189,6 +189,9 @@ class AuditLogger {
                     changes: auditEntry.changes,
                     reason: auditEntry.reason,
                 },
+                // Expose username/avatar at top-level for frontend convenience
+                username: auditEntry.executor?.username || 'Unknown',
+                avatar: auditEntry.executor?.avatar || null,
                 severity: this.getSeverity(action),
                 timestamp: auditEntry.timestamp,
             };
