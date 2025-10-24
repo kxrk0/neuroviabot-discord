@@ -84,8 +84,30 @@ jobs:
             echo "📦 FRONTEND: Installing Dependencies"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             cd /root/neuroviabot/bot/neuroviabot-frontend
+            
+            # Check Node.js version
+            echo "🔹 Node.js version: $(node --version)"
+            echo "🔹 NPM version: $(npm --version)"
+            
+            # Install dependencies
             npm install
-            echo "✅ Dependencies installed"
+            INSTALL_EXIT_CODE=$?
+            
+            if [ $INSTALL_EXIT_CODE -eq 0 ]; then
+              echo "✅ Dependencies installed successfully"
+              
+              # Verify critical packages
+              if [ -f "node_modules/.bin/next" ]; then
+                echo "✅ Next.js binary found"
+              else
+                echo "❌ Next.js binary NOT FOUND after install!"
+                echo "🚨 Critical dependency missing"
+                exit 1
+              fi
+            else
+              echo "❌ npm install FAILED with exit code $INSTALL_EXIT_CODE"
+              exit 1
+            fi
             echo ""
 
       - name: 🏗️ Build Frontend
@@ -101,8 +123,25 @@ jobs:
             echo "🏗️ FRONTEND: Building Application"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             cd /root/neuroviabot/bot/neuroviabot-frontend
+            
+            # Run build and capture exit code
             npm run build
-            echo "✅ Build completed"
+            BUILD_EXIT_CODE=$?
+            
+            if [ $BUILD_EXIT_CODE -eq 0 ]; then
+              echo "✅ Build completed successfully"
+              
+              # Verify .next directory was created
+              if [ -d ".next" ]; then
+                echo "✅ .next build directory found"
+              else
+                echo "❌ .next directory NOT FOUND after build!"
+                exit 1
+              fi
+            else
+              echo "❌ Build FAILED with exit code $BUILD_EXIT_CODE"
+              exit 1
+            fi
             echo ""
 
       - name: 🔄 Restart Frontend Service
@@ -126,13 +165,13 @@ jobs:
             pm2 stop neuroviabot-frontend 2>/dev/null || echo "ℹ️ Frontend was not running"
             pm2 delete neuroviabot-frontend 2>/dev/null || echo "ℹ️ Frontend was not in PM2"
             
-            # Verify Next.js binary exists
-            echo "🔍 Checking Next.js installation..."
-            if [ -f "/root/neuroviabot/bot/neuroviabot-frontend/node_modules/.bin/next" ]; then
-              echo "✅ Next.js binary found"
+            # Verify build exists before starting
+            echo "🔍 Verifying frontend build..."
+            if [ -d "/root/neuroviabot/bot/neuroviabot-frontend/.next" ]; then
+              echo "✅ Frontend build found (.next directory exists)"
             else
-              echo "❌ Next.js binary NOT FOUND!"
-              echo "🚨 Frontend dependencies may not be installed correctly"
+              echo "❌ Frontend build NOT FOUND!"
+              echo "🚨 .next directory is missing. Build may have failed."
               exit 1
             fi
             
