@@ -25,6 +25,9 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             withCredentials: true,
             transports: ['websocket', 'polling'],
         });
+        
+        // Set socket immediately so components can access it
+        setSocket(newSocket);
 
         newSocket.on('connect', () => {
             console.log('[Socket] Connected:', newSocket.id);
@@ -40,8 +43,6 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             console.error('[Socket] Connection error:', error);
             setConnected(false);
         });
-
-        setSocket(newSocket);
 
         return () => {
             newSocket.close();
