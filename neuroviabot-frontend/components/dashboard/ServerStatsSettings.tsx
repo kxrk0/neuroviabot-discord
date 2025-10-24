@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useSocket } from '@/contexts/SocketContext';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useGuildFeatures } from '@/hooks/useGuildFeatures';
 import LoadingSkeleton from '../LoadingSkeleton';
 
 interface ServerStatsSettingsProps {
@@ -52,6 +53,9 @@ export default function ServerStatsSettings({ guildId, userId }: ServerStatsSett
   const [updating, setUpdating] = useState(false);
   const { socket, on, off } = useSocket();
   const { showNotification } = useNotification();
+  
+  // Feature Detection - Automatically detect if server stats is enabled
+  const { features, isFeatureEnabled } = useGuildFeatures(guildId);
 
   useEffect(() => {
     fetchSettings();

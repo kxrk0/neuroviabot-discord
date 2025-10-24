@@ -71,18 +71,22 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   const { socket, on, off } = useSocket();
 
   useEffect(() => {
-    if (!socket || !guildId) {
-      console.log('[AuditLog] Socket or guildId not available:', { socket: !!socket, guildId });
-      return;
-    }
-
-    console.log('[AuditLog] Setting up socket listeners for guild:', guildId);
+    if (!socket || !guildId) return;
 
     const handleAuditLogEntry = (entry: AuditEntry) => {
-      console.log('📋 New audit log entry received:', entry);
+      if (!entry || !entry.id) {
+        console.warn('[AuditLog] Invalid entry received:', entry);
+        return;
+      }
+
+      console.log('[AuditLog] New entry:', entry.action);
       
-      // Add new entry to the top of the list
-      setLogs(prevLogs => [entry, ...prevLogs]);
+      // Add new entry to the top of the list (avoid duplicates)
+      setLogs(prevLogs => {
+        const exists = prevLogs.some(log => log.id === entry.id);
+        if (exists) return prevLogs;
+        return [entry, ...prevLogs];
+      });
       
       // Show notification for important events
       if (entry.severity === 'danger' || entry.severity === 'warning') {
@@ -91,9 +95,8 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
       }
     };
 
-    // Join guild room
+    // Join guild room for real-time audit logs
     socket.emit('join_guild', guildId);
-    console.log('[AuditLog] Joined guild room:', guildId);
 
     // Listen for audit log entries
     on('audit_log_entry', handleAuditLogEntry);
@@ -101,7 +104,6 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
     return () => {
       // Leave guild room
       socket.emit('leave_guild', guildId);
-      console.log('[AuditLog] Left guild room:', guildId);
       
       // Clean up listener
       off('audit_log_entry', handleAuditLogEntry);
@@ -110,7 +112,6 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
 
   const fetchLogs = useCallback(async () => {
     if (!guildId) {
-      console.log('[AuditLog] Cannot fetch logs - guildId is missing');
       setLoading(false);
       return;
     }
@@ -125,21 +126,22 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
         ...(filter.userId && { userId: filter.userId }),
       });
 
-      console.log('[AuditLog] Fetching logs for guild:', guildId);
       const response = await fetch(`${API_URL}/api/audit/${guildId}?${params}`, {
         credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log('[AuditLog] Logs fetched:', data.logs?.length || 0, 'entries');
         setLogs(data.logs || []);
         setTotalPages(data.totalPages || 1);
       } else {
         console.error('[AuditLog] Failed to fetch logs:', response.status);
+        // Show user-friendly error
+        setLogs([]);
       }
     } catch (error) {
       console.error('[AuditLog] Error fetching audit logs:', error);
+      setLogs([]);
     } finally {
       setLoading(false);
     }
