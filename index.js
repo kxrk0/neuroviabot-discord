@@ -503,6 +503,12 @@ async function setupSocketIO(client) {
             
             // Socket'i client'a kaydet (audit logger için)
             client.backendSocket = socket;
+            
+            // AuditLogger'a Socket.IO client'ı set et
+            const { getAuditLogger } = require('./src/utils/auditLogger');
+            const auditLogger = getAuditLogger();
+            auditLogger.setSocketClient(socket);
+            log('📋 Audit Logger Socket.IO client set', 'SUCCESS');
         });
 
         socket.on('disconnect', () => {
@@ -866,15 +872,8 @@ client.once('clientReady', async () => {
     client.auditLogHandler = auditLogHandler;
     log('📋 Audit Log Handler initialized', 'SUCCESS');
     
-    // AuditLogger'a Socket.IO instance set et (backend'e emit için)
-    const { getAuditLogger } = require('./src/utils/auditLogger');
-    const auditLogger = getAuditLogger();
-    if (client.backendSocket) {
-        auditLogger.setSocketClient(client.backendSocket);
-        log('📋 Audit Logger Socket.IO client set', 'SUCCESS');
-    } else {
-        log('⚠️ Backend socket not available for audit logger', 'WARNING');
-    }
+    // Socket client audit logger'a zaten setupSocketIO'da set edildi
+    // Burada tekrar kontrol etmeye gerek yok
     
     // Monitoring Service'i başlat
     monitoring = getMonitoringService();
