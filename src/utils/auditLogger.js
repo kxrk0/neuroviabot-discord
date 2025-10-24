@@ -115,7 +115,7 @@ class AuditLogger {
                 action,
                 executor: executor ? {
                     id: executor.id || executor,
-                    username: executor.username || 'Unknown',
+                    username: executor.tag || executor.username || 'Unknown',
                     avatar: executor.avatar || null,
                 } : null,
                 target: target ? {
