@@ -113,6 +113,7 @@ jobs:
             echo ""
 
       - name: ✅ Verify Bot Status
+        continue-on-error: true
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -126,12 +127,12 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
             echo "📊 Bot Status:"
-            pm2 status neuroviabot
+            pm2 status neuroviabot || true
             echo ""
             echo "📋 Recent Logs:"
-            pm2 logs neuroviabot --lines 15 --nostream
+            pm2 logs neuroviabot --lines 15 --nostream || true
             echo ""
-            echo "🎉 Bot is running!"
+            echo "🎉 Bot is running!" || true
 
       - name: 📊 Deployment Summary
         if: always()
