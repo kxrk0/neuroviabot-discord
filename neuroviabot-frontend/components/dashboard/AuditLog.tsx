@@ -248,7 +248,14 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
       ) : (
         <div className="space-y-3">
           {filteredLogs.map((log, index) => {
-            const SeverityIcon = severityIcons[log.severity];
+            // Safety checks to prevent React error #130
+            if (!log || !log.id || !log.severity) {
+              console.warn('[AuditLog] Invalid log entry:', log);
+              return null;
+            }
+            
+            const SeverityIcon = severityIcons[log.severity] || InformationCircleIcon;
+            const severityColor = severityColors[log.severity] || severityColors.info;
             
             return (
               <motion.div
@@ -259,7 +266,7 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
                 className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition"
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${severityColors[log.severity]} flex items-center justify-center flex-shrink-0`}>
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${severityColor} flex items-center justify-center flex-shrink-0`}>
                     <SeverityIcon className="w-5 h-5 text-white" />
                   </div>
 

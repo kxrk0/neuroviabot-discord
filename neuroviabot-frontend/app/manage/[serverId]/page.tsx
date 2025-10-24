@@ -832,21 +832,21 @@ export default function ServerDashboard() {
 
         {/* Sidebar with smooth animations */}
         <motion.aside 
-          initial={{ x: -300, opacity: 0 }}
+          initial={false}
           animate={{ 
             x: 0,
             opacity: 1 
           }}
-          transition={{ duration: 0.3, type: "spring", stiffness: 100 }}
-          className={`fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 shadow-2xl z-40 flex flex-col transition-transform duration-300 ${
+          transition={{ duration: 0.15, type: "tween", ease: "easeOut" }}
+          className={`fixed left-0 top-16 bottom-0 w-72 bg-gray-900/80 backdrop-blur-xl border-r border-white/10 shadow-2xl z-40 flex flex-col transition-transform duration-200 ease-out ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
           {/* Server Info with gradient */}
           <motion.div 
-            initial={{ y: -20, opacity: 0 }}
+            initial={false}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.15 }}
             className="p-6 border-b border-white/10 bg-gradient-to-br from-purple-500/10 to-blue-500/10"
           >
             <div className="relative">
@@ -978,9 +978,9 @@ export default function ServerDashboard() {
               return (
                 <motion.button
                   key={category.id}
-                  initial={{ x: -50, opacity: 0 }}
+                  initial={false}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
+                  transition={{ duration: 0.15 }}
                   whileHover={{ scale: 1.02, x: 4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setActiveCategory(category.id)}

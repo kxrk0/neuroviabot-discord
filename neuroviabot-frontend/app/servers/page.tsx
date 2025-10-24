@@ -147,7 +147,7 @@ export default function ServersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-y-auto">
       {/* Animated Background */}
       <div className="fixed inset-0 z-0">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -244,9 +244,9 @@ export default function ServersPage() {
       </motion.nav>
 
       {/* Content */}
-      <div className="relative z-10 pt-16">
+      <div className="relative z-10 pt-16 min-h-screen">
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-6 py-12">
+        <main className="max-w-7xl mx-auto px-6 py-12 pb-24">
           {/* Server Grid */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

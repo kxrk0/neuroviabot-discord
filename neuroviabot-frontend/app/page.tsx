@@ -698,7 +698,12 @@ export default function Home() {
           >
             {/* Discord Button - Primary */}
             <motion.a
-              href={`https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`}
+              href={user ? 
+                "https://discord.com/oauth2/authorize?client_id=773539215098249246&permissions=8&integration_type=0&scope=bot+applications.commands" :
+                `https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
               whileHover={{ 
                 scale: 1.06,
                 y: -2
@@ -733,14 +738,14 @@ export default function Home() {
             </motion.a>
 
             {/* Features Button - Secondary Glassmorphism */}
-            <motion.a
-              href="#features"
+            <Link href="/ozellikler">
+            <motion.div
               whileHover={{ 
                 scale: 1.06,
                 y: -2
               }}
               whileTap={{ scale: 0.96 }}
-              className="group relative flex shrink-0 rounded-2xl items-center justify-center gap-2 overflow-hidden"
+              className="group relative flex shrink-0 rounded-2xl items-center justify-center gap-2 overflow-hidden cursor-pointer"
               style={{ willChange: 'transform' }}
             >
               {/* Glassmorphism Base */}
@@ -766,7 +771,8 @@ export default function Home() {
                   →
                 </motion.span>
               </div>
-            </motion.a>
+            </motion.div>
+            </Link>
           </motion.div>
               </div>
 
