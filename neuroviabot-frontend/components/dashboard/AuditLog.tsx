@@ -287,7 +287,7 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   };
 
   const filteredLogs = useMemo(() => {
-    return logs.filter(log => {
+    const filtered = logs.filter(log => {
       if (filter.search) {
         const searchLower = filter.search.toLowerCase();
         return (
@@ -299,6 +299,8 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
       }
       return true;
     });
+    console.log('[AuditLog] Filtered logs:', filtered.length, 'Total logs:', logs.length);
+    return filtered;
   }, [logs, filter.search]);
 
   if (!mounted) {
