@@ -89,8 +89,8 @@ jobs:
             echo "🔹 Node.js version: $(node --version)"
             echo "🔹 NPM version: $(npm --version)"
             
-            # Install dependencies
-            npm install
+            # Install dependencies with legacy peer deps for compatibility
+            npm install --legacy-peer-deps
             INSTALL_EXIT_CODE=$?
             
             if [ $INSTALL_EXIT_CODE -eq 0 ]; then
