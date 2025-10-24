@@ -341,9 +341,7 @@ export default function ServerDashboard() {
       }
     };
 
-    // Join guild room
-    socket.emit('join_guild', serverId);
-
+    // Each component handles its own guild room joining
     // Listen to events
     on('settings_updated', handleSettingsUpdated);
     on('member_action', handleMemberAction);
@@ -351,9 +349,6 @@ export default function ServerDashboard() {
     on('channel_update', handleChannelUpdate);
 
     return () => {
-      // Leave guild room
-      socket.emit('leave_guild', serverId);
-      
       // Clean up listeners
       off('settings_updated', handleSettingsUpdated);
       off('member_action', handleMemberAction);
