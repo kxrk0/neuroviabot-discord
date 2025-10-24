@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'neuroviabot-backend/**'
+      - 'src/routes/audit-api.js'
       - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
 
