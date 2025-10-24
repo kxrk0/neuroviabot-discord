@@ -131,7 +131,12 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   const { socket, on, off } = useSocket();
 
   useEffect(() => {
-    if (!socket || !guildId) return;
+    if (!socket || !guildId) {
+      console.log('[AuditLog] Waiting for socket and guildId...', { socket: !!socket, guildId });
+      return;
+    }
+
+    console.log('[AuditLog] Socket ready, joining guild room:', guildId);
 
     const handleAuditLogEntry = (entry: AuditEntry) => {
       if (!entry || !entry.id) {
@@ -159,10 +164,12 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
     };
 
     // Join guild room
+    console.log('[AuditLog] Emitting join_guild:', guildId);
     socket.emit('join_guild', guildId);
     on('audit_log_entry', handleAuditLogEntry);
 
     return () => {
+      console.log('[AuditLog] Leaving guild room:', guildId);
       socket.emit('leave_guild', guildId);
       off('audit_log_entry', handleAuditLogEntry);
     };
