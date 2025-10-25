@@ -139,9 +139,24 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   const { socket, on, off } = useSocket();
 
   useEffect(() => {
-    if (!socket || !guildId) {
-      console.log('[AuditLog] Waiting for socket and guildId...', { socket: !!socket, guildId });
+    // Early return if prerequisites aren't met - suppress logs to avoid console noise
+    if (!socket || !guildId || guildId === 'unknown') {
       return;
+    }
+
+    // Wait for socket to be connected before joining room
+    if (!socket.connected) {
+      // Set up a one-time connect listener to join once connected
+      const handleConnect = () => {
+        console.log('[AuditLog] Socket connected, joining guild room:', guildId);
+        socket.emit('join_guild', guildId);
+      };
+      
+      socket.once('connect', handleConnect);
+      
+      return () => {
+        socket.off('connect', handleConnect);
+      };
     }
 
     console.log('[AuditLog] Socket ready, joining guild room:', guildId);
@@ -184,8 +199,8 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   }, [socket, guildId, on, off, showNotification]);
 
   const fetchLogs = useCallback(async (pageNum: number = 1) => {
-    if (!guildId) {
-      console.log('[AuditLog] fetchLogs called but no guildId');
+    if (!guildId || guildId === 'unknown') {
+      console.log('[AuditLog] fetchLogs called but no valid guildId');
       setLoading(false);
       return;
     }
@@ -218,14 +233,26 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('[AuditLog] Response data:', data);
-        console.log('[AuditLog] Logs count:', data.logs?.length || 0);
+        console.log('[AuditLog] Response data structure:', {
+          success: data.success,
+          logsCount: data.logs?.length || 0,
+          total: data.total,
+          page: data.page,
+          totalPages: data.totalPages
+        });
+        
         const newLogs = data.logs || [];
+        console.log('[AuditLog] Setting logs, page:', pageNum, 'count:', newLogs.length);
 
         if (pageNum === 1) {
           setLogs(newLogs);
+          console.log('[AuditLog] Initial logs set:', newLogs.length, 'entries');
         } else {
-          setLogs(prev => [...prev, ...newLogs]);
+          setLogs(prev => {
+            const combined = [...prev, ...newLogs];
+            console.log('[AuditLog] Appended logs, new total:', combined.length);
+            return combined;
+          });
         }
 
         setTotalPages(data.totalPages || 1);
@@ -234,21 +261,29 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
         console.error('[AuditLog] Failed to fetch logs:', response.status, response.statusText);
         const errorText = await response.text();
         console.error('[AuditLog] Error response:', errorText);
-        setLogs([]);
+        // Don't clear logs on error, just log it
+        if (pageNum === 1) {
+          setLogs([]);
+        }
       }
     } catch (error) {
       console.error('[AuditLog] Error fetching audit logs:', error);
-      setLogs([]);
+      // Don't clear logs on error unless it's the first page
+      if (pageNum === 1) {
+        setLogs([]);
+      }
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   }, [guildId, filter.type, filter.severity]);
 
+  // Fetch logs when component mounts or when guildId/filters change
   useEffect(() => {
     setPage(1);
     fetchLogs(1);
-  }, [fetchLogs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guildId, filter.type, filter.severity]);
 
   const loadMore = () => {
     const nextPage = page + 1;
