@@ -147,24 +147,7 @@ export default function ServersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-y-auto">
-      <style jsx global>{`
-        /* Custom scrollbar styling */
-        ::-webkit-scrollbar {
-          width: 10px;
-          height: 10px;
-        }
-        ::-webkit-scrollbar-track {
-          background: rgba(15, 15, 20, 0.5);
-        }
-        ::-webkit-scrollbar-thumb {
-          background: rgba(139, 92, 246, 0.5);
-          border-radius: 5px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(139, 92, 246, 0.8);
-        }
-      `}</style>
+    <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative">
       {/* Animated Background */}
       <div className="fixed inset-0 z-0">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -261,7 +244,7 @@ export default function ServersPage() {
       </motion.nav>
 
       {/* Content */}
-      <div className="relative z-10 pt-16 min-h-screen overflow-y-auto">
+      <div className="relative z-10 pt-16 min-h-screen">
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-6 py-12 pb-24">
           {/* Server Grid */}
