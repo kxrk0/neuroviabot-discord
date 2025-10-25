@@ -174,7 +174,15 @@ export default function Navbar({ language, onLanguageChange, user, onLogout }: N
                       className="navbar__user-dropdown"
                     >
                       <div className="navbar__user-info">
-                        <p className="navbar__user-info-name">{user.username}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="navbar__user-info-name">{user.username}</p>
+                          {(user?.id === '315875588906680330' || user?.id === '413081778031427584') && (
+                            <span className="relative inline-flex items-center px-2 py-1 text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 animate-pulse">
+                              <span className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 rounded blur-sm animate-pulse" />
+                              <span className="relative z-10" style={{ textShadow: '0 0 10px rgba(168,85,247,0.8), 0 0 20px rgba(168,85,247,0.4)' }}>Developer</span>
+                            </span>
+                          )}
+                        </div>
                         {user.discriminator && user.discriminator !== '0' && (
                           <p className="navbar__user-info-tag">#{user.discriminator}</p>
                         )}

@@ -24,7 +24,20 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize from localStorage if available
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('neurovia_user');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          localStorage.removeItem('neurovia_user');
+        }
+      }
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -54,11 +67,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData = await res.json();
         if (userData && userData.id) {
           setUser(userData);
+          // Cache user data in localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('neurovia_user', JSON.stringify(userData));
+          }
         } else {
           setUser(null);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('neurovia_user');
+          }
         }
       } else {
         setUser(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('neurovia_user');
+        }
       }
     } catch (error) {
       // Silently fail - user is just not authenticated
@@ -83,6 +106,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       credentials: 'include'
     });
     setUser(null);
+    // Clear cached user data
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('neurovia_user');
+    }
   };
 
   const refreshUser = async () => {

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
@@ -22,6 +23,9 @@ import {
 import Navbar from '@/components/layout/Navbar';
 
 export default function FeaturesPage() {
+  const { user, logout } = useAuth();
+  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
+
   const features = [
     {
       icon: CurrencyDollarIcon,
@@ -136,10 +140,10 @@ export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
       <Navbar 
-        language="tr"
-        onLanguageChange={() => {}}
-        user={null}
-        onLogout={() => {}}
+        language={language}
+        onLanguageChange={setLanguage}
+        user={user}
+        onLogout={logout}
       />
 
       {/* Animated Background - Fixed */}

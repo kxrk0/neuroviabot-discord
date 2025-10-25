@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
+import Navbar from '@/components/layout/Navbar';
 import { 
   ArrowRightIcon, 
   BoltIcon, 
@@ -77,6 +79,8 @@ function StatCard({ value, label, index }: any) {
 }
 
 export default function NRCAboutPage() {
+  const { user, logout } = useAuth();
+  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef(null);
   
@@ -137,6 +141,14 @@ export default function NRCAboutPage() {
 
   return (
     <div className="nrc-about-v2" ref={containerRef}>
+      {/* Navbar */}
+      <Navbar 
+        language={language}
+        onLanguageChange={setLanguage}
+        user={user}
+        onLogout={logout}
+      />
+
       {/* Animated Background */}
       <div className="nrc-about-v2__bg">
         <div className="nrc-about-v2__bg-gradient" />
