@@ -541,17 +541,14 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
 
                       {/* Details Toggle - Always show button if details exist */}
                       {hasDetails && (
-                        <div className="mt-3">
+                        <div className="mt-3 border-t border-white/5 pt-3">
                           <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              toggleExpanded(log.id);
-                            }}
-                            className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors font-medium"
+                            type="button"
+                            onClick={() => toggleExpanded(log.id)}
+                            className="flex items-center gap-2 px-3 py-2 text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-all font-medium cursor-pointer"
                           >
-                            <ChevronDownIcon className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-                            {isExpanded ? 'Detayları Gizle' : 'Detayları Göster'}
+                            <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                            <span>{isExpanded ? 'Detayları Gizle' : 'Detayları Göster'}</span>
                           </button>
 
                           <AnimatePresence>
@@ -560,11 +557,81 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="mt-2 p-3 bg-black/20 rounded-lg overflow-hidden"
+                                transition={{ duration: 0.2 }}
+                                className="mt-3 overflow-hidden"
                               >
-                                <pre className="text-xs text-gray-400 overflow-x-auto">
-                                  {JSON.stringify(log.details, null, 2)}
-                                </pre>
+                                <div className="p-4 bg-black/30 rounded-lg border border-white/5">
+                                  <h4 className="text-xs font-semibold text-purple-400 mb-3 flex items-center gap-2">
+                                    <DocumentTextIcon className="w-4 h-4" />
+                                    Detaylı Bilgiler
+                                  </h4>
+                                  
+                                  {/* Executor Info */}
+                                  {log.details.executor && (
+                                    <div className="mb-3 p-3 bg-white/5 rounded-lg">
+                                      <p className="text-xs text-gray-500 mb-1">İşlemi Yapan:</p>
+                                      <div className="flex items-center gap-2">
+                                        <img
+                                          src={getAvatarUrl(log.details.executor.id, log.details.executor.avatar)}
+                                          alt={log.details.executor.username}
+                                          className="w-6 h-6 rounded-full"
+                                        />
+                                        <div>
+                                          <p className="text-sm text-white font-medium">{log.details.executor.username}</p>
+                                          <p className="text-xs text-gray-400 font-mono">{log.details.executor.id}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Target Info */}
+                                  {log.details.target && (
+                                    <div className="mb-3 p-3 bg-white/5 rounded-lg">
+                                      <p className="text-xs text-gray-500 mb-1">Hedef:</p>
+                                      <p className="text-sm text-white font-medium">{log.details.target.name}</p>
+                                      <p className="text-xs text-gray-400 font-mono">{log.details.target.id}</p>
+                                      <p className="text-xs text-gray-500">Tür: {log.details.target.type}</p>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Changes */}
+                                  {log.details.changes && Object.keys(log.details.changes).length > 0 && (
+                                    <div className="mb-3 p-3 bg-white/5 rounded-lg">
+                                      <p className="text-xs text-gray-500 mb-2">Değişiklikler:</p>
+                                      <div className="space-y-2">
+                                        {Object.entries(log.details.changes).map(([key, value]: [string, any]) => (
+                                          <div key={key} className="text-xs">
+                                            <span className="text-purple-400 font-medium">{key}:</span>
+                                            <div className="mt-1 pl-3 space-y-1">
+                                              {value.old !== undefined && (
+                                                <p className="text-red-400">Eski: {JSON.stringify(value.old)}</p>
+                                              )}
+                                              {value.new !== undefined && (
+                                                <p className="text-green-400">Yeni: {JSON.stringify(value.new)}</p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Reason */}
+                                  {log.details.reason && (
+                                    <div className="p-3 bg-white/5 rounded-lg">
+                                      <p className="text-xs text-gray-500 mb-1">Sebep:</p>
+                                      <p className="text-sm text-gray-300">{log.details.reason}</p>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Raw JSON Toggle */}
+                                  <details className="mt-3">
+                                    <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-400">Ham JSON Verisi</summary>
+                                    <pre className="mt-2 p-2 bg-black/20 rounded text-xs text-gray-400 overflow-x-auto">
+                                      {JSON.stringify(log.details, null, 2)}
+                                    </pre>
+                                  </details>
+                                </div>
                               </motion.div>
                             )}
                           </AnimatePresence>

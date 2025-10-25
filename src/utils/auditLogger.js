@@ -312,10 +312,22 @@ class AuditLogger {
             'CHANNEL_DELETE': 'Kanal Silindi',
             'MEMBER_BAN': 'Üye Yasaklandı',
             'MEMBER_KICK': 'Üye Atıldı',
+            'MEMBER_UNBAN': 'Yasak Kaldırıldı',
             'MEMBER_UPDATE': 'Üye Güncellendi',
+            'MEMBER_JOIN': 'Üye Katıldı',
+            'MEMBER_LEAVE': 'Üye Ayrıldı',
             'SETTINGS_CHANGE': 'Ayarlar Değiştirildi',
             'MESSAGE_DELETE': 'Mesaj Silindi',
             'MESSAGE_BULK_DELETE': 'Toplu Mesaj Silindi',
+            'GUILD_UPDATE': 'Sunucu Güncellendi',
+            'EMOJI_CREATE': 'Emoji Oluşturuldu',
+            'EMOJI_DELETE': 'Emoji Silindi',
+            'EMOJI_UPDATE': 'Emoji Güncellendi',
+            'WEBHOOK_CREATE': 'Webhook Oluşturuldu',
+            'WEBHOOK_DELETE': 'Webhook Silindi',
+            'WEBHOOK_UPDATE': 'Webhook Güncellendi',
+            'INVITE_CREATE': 'Davet Oluşturuldu',
+            'INVITE_DELETE': 'Davet Silindi',
         };
         return actionNames[action] || action;
     }
@@ -326,11 +338,13 @@ class AuditLogger {
      * @returns {string} Severity level
      */
     getSeverity(action) {
-        const dangerActions = ['ROLE_DELETE', 'CHANNEL_DELETE', 'MEMBER_BAN', 'MESSAGE_BULK_DELETE'];
-        const warningActions = ['ROLE_UPDATE', 'CHANNEL_UPDATE', 'MEMBER_KICK', 'SETTINGS_CHANGE'];
+        const dangerActions = ['ROLE_DELETE', 'CHANNEL_DELETE', 'MEMBER_BAN', 'MESSAGE_BULK_DELETE', 'WEBHOOK_DELETE', 'EMOJI_DELETE'];
+        const warningActions = ['ROLE_UPDATE', 'CHANNEL_UPDATE', 'MEMBER_KICK', 'SETTINGS_CHANGE', 'MEMBER_UPDATE', 'GUILD_UPDATE', 'WEBHOOK_UPDATE', 'EMOJI_UPDATE'];
+        const successActions = ['ROLE_CREATE', 'CHANNEL_CREATE', 'MEMBER_JOIN', 'MEMBER_UNBAN', 'EMOJI_CREATE', 'WEBHOOK_CREATE', 'INVITE_CREATE'];
         
         if (dangerActions.includes(action)) return 'danger';
         if (warningActions.includes(action)) return 'warning';
+        if (successActions.includes(action)) return 'success';
         return 'info';
     }
 }
