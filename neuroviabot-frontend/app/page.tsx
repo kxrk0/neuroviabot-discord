@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
@@ -166,7 +166,7 @@ export default function Home() {
     }
   }, [connected, on, off, stats]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
       await fetch(`${API_URL}/api/auth/logout`, {
@@ -177,11 +177,11 @@ export default function Home() {
     } catch (error) {
       console.error('Logout error:', error);
     }
-  };
+  }, []);
 
-  const handleLanguageChange = (lang: 'tr' | 'en') => {
+  const handleLanguageChange = useCallback((lang: 'tr' | 'en') => {
     setLanguage(lang);
-  };
+  }, []);
 
   const t = {
     tr: {
@@ -277,23 +277,25 @@ export default function Home() {
           }}
         />
         
-        {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
+        {/* Floating particles - Reduced for performance */}
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-purple-400 rounded-full"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: `${(i * 12.5) % 100}%`,
+              top: `${(i * 15) % 100}%`,
+              willChange: 'transform, opacity'
             }}
             animate={{
-              y: [0, -100, 0],
-              opacity: [0, 1, 0],
+              y: [0, -80, 0],
+              opacity: [0, 0.6, 0],
             }}
             transition={{
-              duration: 3 + Math.random() * 2,
+              duration: 6,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: i * 0.5,
+              ease: "easeInOut"
             }}
           />
         ))}
@@ -351,109 +353,64 @@ export default function Home() {
             style={{ willChange: 'transform, opacity' }}
           />
           
-          {/* Floating Particles - Enhanced & Continuous Movement */}
-          {[...Array(25)].map((_, i) => {
+          {/* Floating Particles - Reduced for performance */}
+          {[...Array(10)].map((_, i) => {
             const colors = [
-              'rgba(168, 85, 247, 0.6)',   // Purple
-              'rgba(139, 92, 246, 0.5)',   // Violet
-              'rgba(59, 130, 246, 0.6)',   // Blue
-              'rgba(96, 165, 250, 0.5)',   // Light Blue
-              'rgba(236, 72, 153, 0.5)',   // Pink
-              'rgba(219, 39, 119, 0.4)',   // Hot Pink
+              'rgba(168, 85, 247, 0.5)',
+              'rgba(59, 130, 246, 0.5)',
+              'rgba(236, 72, 153, 0.4)'
             ];
-            const size = 2 + (i % 4);
-            const baseDuration = 8 + (i % 6);
-            const delay = (i * 0.2) % 3;
-            const xRange = 60 + (i % 40);
-            const yRange = 100 + (i % 80);
+            const size = 2 + (i % 3);
             
             return (
               <motion.div
                 key={i}
                 animate={{
-                  y: [
-                    0, 
-                    -yRange * 0.3, 
-                    -yRange * 0.7, 
-                    -yRange, 
-                    -yRange * 1.2, 
-                    -yRange * 0.8, 
-                    -yRange * 0.4, 
-                    0
-                  ],
-                  x: [
-                    0, 
-                    xRange * 0.3, 
-                    xRange * 0.7, 
-                    xRange, 
-                    xRange * 0.6, 
-                    -xRange * 0.3, 
-                    -xRange * 0.1, 
-                    0
-                  ],
-                  opacity: [0, 0.3, 0.6, 0.8, 0.9, 0.7, 0.4, 0],
-                  scale: [0, 0.5, 0.8, 1, 1.1, 0.9, 0.6, 0],
-                  rotate: [0, 45, 90, 135, 180, 225, 270, 360]
+                  y: [0, -100, 0],
+                  opacity: [0, 0.6, 0],
                 }}
                 transition={{
-                  duration: baseDuration,
+                  duration: 10,
                   repeat: Infinity,
-                  delay,
-                  ease: [0.45, 0.05, 0.55, 0.95],
-                  times: [0, 0.15, 0.3, 0.5, 0.65, 0.8, 0.9, 1]
+                  delay: i * 0.8,
+                  ease: "easeInOut"
                 }}
                 className="absolute"
                 style={{
-                  left: `${(i * 4) % 100}%`,
-                  top: `${10 + (i % 7) * 12}%`,
+                  left: `${(i * 10) % 100}%`,
+                  top: `${10 + (i % 5) * 15}%`,
                   width: `${size}px`,
                   height: `${size}px`,
                   borderRadius: '50%',
                   background: colors[i % colors.length],
-                  willChange: 'transform, opacity',
-                  boxShadow: `0 0 ${size * 3}px ${colors[i % colors.length]}, 0 0 ${size * 6}px ${colors[i % colors.length].replace('0.6', '0.3')}`
+                  willChange: 'transform, opacity'
                 }}
               />
             );
           })}
           
-          {/* Additional Decorative Stars - Enhanced Movement */}
-          {[...Array(15)].map((_, i) => {
-            const xMove = 20 + (i % 15);
-            const yMove = 20 + (i % 20);
-            
-            return (
-              <motion.div
-                key={`star-${i}`}
-                animate={{
-                  x: [0, xMove, -xMove, xMove * 0.5, -xMove * 0.3, 0],
-                  y: [0, -yMove, yMove * 0.5, -yMove * 0.7, yMove, 0],
-                  opacity: [0.2, 0.6, 1, 0.7, 0.4, 0.2],
-                  scale: [0.8, 1, 1.2, 1.1, 0.9, 0.8],
-                  rotate: [0, 60, 120, 180, 240, 300, 360]
-                }}
-                transition={{
-                  duration: 4 + (i % 5),
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: [0.45, 0.05, 0.55, 0.95]
-                }}
-                className="absolute"
-                style={{
-                  left: `${(i * 6) % 95}%`,
-                  top: `${(i * 5) % 90}%`,
-                  width: '6px',
-                  height: '6px',
-                  willChange: 'transform, opacity'
-                }}
-              >
-                <div className="relative w-full h-full">
-                  <div className="absolute inset-0 bg-white/60 rounded-full blur-sm" />
-                  <div className="absolute inset-0.5 bg-purple-300/80 rounded-full" />
-                </div>
-              </motion.div>
-            );
-          })}
+          {/* Decorative Stars - Simplified */}
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={`star-${i}`}
+              animate={{
+                opacity: [0.3, 0.8, 0.3],
+                scale: [0.9, 1.1, 0.9]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                delay: i * 0.5,
+                ease: "easeInOut"
+              }}
+              className="absolute w-1.5 h-1.5 bg-white/60 rounded-full"
+              style={{
+                left: `${(i * 16) % 95}%`,
+                top: `${(i * 12) % 90}%`,
+                willChange: 'transform, opacity'
+              }}
+            />
+          ))}
           
           {/* Decorative Circles */}
           <motion.div
@@ -571,6 +528,7 @@ export default function Home() {
               { icon: UserGroupIcon, value: stats.users.toLocaleString(), label: 'Kullanıcı', color: 'blue', glow: 'rgba(59, 130, 246, 0.4)', key: 'users' }
             ].map((stat, index) => {
               const IconComponent = stat.icon;
+              const isUpdating = statsUpdating[stat.key as keyof typeof statsUpdating];
               return (
               <motion.div
                 key={index}
@@ -580,7 +538,7 @@ export default function Home() {
                   opacity: 1,
                   rotateY: 0,
                   // Real-time güncelleme animasyonu
-                  ...(statsUpdating[stat.key as keyof typeof statsUpdating] && {
+                  ...(isUpdating && {
                     scale: [1, 1.08, 1],
                     y: [0, -4, 0]
                   })
@@ -616,7 +574,7 @@ export default function Home() {
                   </div>
                 {/* Pulse ring animasyonu - sadece güncelleme olduğunda */}
                 <AnimatePresence>
-                  {statsUpdating[stat.key as keyof typeof statsUpdating] && (
+                  {isUpdating && (
                     <>
                       <motion.div
                         initial={{ scale: 1, opacity: 0.5 }}
@@ -664,7 +622,7 @@ export default function Home() {
                   <div className="relative z-10">
                     <motion.div 
                       className="text-xl font-bold text-white leading-none mb-0.5 bg-clip-text"
-                      animate={statsUpdating[stat.key as keyof typeof statsUpdating] ? {
+                      animate={isUpdating ? {
                         scale: [1, 1.15, 1],
                         filter: [
                           'drop-shadow(0 0 0 rgba(96, 165, 250, 0))',
@@ -844,45 +802,6 @@ export default function Home() {
                       style={{ willChange: 'transform, opacity' }}
                     />
                     
-                    {/* Orbiting particles */}
-                    {[0, 120, 240].map((angle, i) => (
-                      <motion.div
-                        key={i}
-                        animate={{
-                          rotate: 360
-                        }}
-                        transition={{
-                          duration: 10 + i * 2,
-                          repeat: Infinity,
-                          ease: "linear"
-                        }}
-                        className="absolute inset-0 flex items-center justify-center"
-                        style={{
-                          transformOrigin: 'center',
-                          willChange: 'transform'
-                        }}
-                      >
-                        <motion.div
-                          animate={{
-                            scale: [1, 1.3, 1],
-                            opacity: [0.4, 0.8, 0.4]
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: i * 0.3
-                          }}
-                          className="w-3 h-3 rounded-full bg-purple-400"
-                          style={{
-                            position: 'absolute',
-                            top: '30%',
-                            left: '50%',
-                            transform: `translate(-50%, -50%) translateY(-120px) rotate(${angle}deg) translateX(150px)`
-                          }}
-                        />
-                      </motion.div>
-                    ))}
                     
                     <svg viewBox="0 0 400 600" className="w-full h-full drop-shadow-2xl relative z-10">
                       <circle cx="200" cy="150" r="80" fill="#8B5CF6" opacity="0.3"/>
@@ -927,39 +846,31 @@ export default function Home() {
             className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl"
           />
           
-          {/* Floating Particles */}
-          {[...Array(15)].map((_, i) => {
-            const size = 2 + (i % 3);
-            const baseDuration = 8 + (i % 4);
-            const delay = (i * 0.2) % 3;
-            
-            return (
-              <motion.div
-                key={i}
-                animate={{
-                  y: [0, -80, 0],
-                  x: [0, 40, -20, 0],
-                  opacity: [0, 0.6, 0],
-                  scale: [0, 1, 0]
-                }}
-                transition={{
-                  duration: baseDuration,
-                  repeat: Infinity,
-                  delay,
-                  ease: "easeInOut"
-                }}
-                className="absolute"
-                style={{
-                  left: `${(i * 6) % 100}%`,
-                  top: `${10 + (i % 7) * 12}%`,
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  borderRadius: '50%',
-                  background: i % 3 === 0 ? 'rgba(168, 85, 247, 0.6)' : i % 3 === 1 ? 'rgba(59, 130, 246, 0.6)' : 'rgba(236, 72, 153, 0.5)'
-                }}
-              />
-            );
-          })}
+          {/* Floating Particles - Reduced from 15 to 5 for performance */}
+          {[...Array(5)].map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{
+                y: [0, -80, 0],
+                opacity: [0, 0.4, 0],
+              }}
+              transition={{
+                duration: 12,
+                repeat: Infinity,
+                delay: i * 2,
+                ease: "easeInOut"
+              }}
+              className="absolute"
+              style={{
+                left: `${(i * 20) % 100}%`,
+                top: `${20 + i * 15}%`,
+                width: '3px',
+                height: '3px',
+                borderRadius: '50%',
+                background: i % 2 === 0 ? 'rgba(168, 85, 247, 0.5)' : 'rgba(59, 130, 246, 0.5)'
+              }}
+            />
+          ))}
         </div>
 
         {/* Forest Bottom */}

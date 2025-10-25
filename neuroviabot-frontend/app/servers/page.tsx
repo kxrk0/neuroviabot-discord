@@ -131,16 +131,9 @@ export default function ServersPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="fixed inset-0 z-0">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-        </div>
-
-        <div className="relative z-10 flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-400 text-lg">Sunucular yükleniyor...</p>
+          <p className="text-gray-400 text-lg">Sunucular yükleniyar...</p>
         </div>
       </div>
     );
@@ -148,11 +141,10 @@ export default function ServersPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative">
-      {/* Animated Background */}
+      {/* Static Background - removed animations for performance */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-15"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-15"></div>
         
         {/* Grid Pattern */}
         <div className="absolute inset-0" style={{
@@ -260,66 +252,30 @@ export default function ServersPage() {
               className="mb-12"
             >
               <div className="flex items-center gap-4 mb-6">
-                <motion.div 
-                  className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: 48 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                ></motion.div>
-                <motion.h1 
-                  className="text-5xl font-black text-white"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                >
+                <div className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full" />
+                <h1 className="text-5xl font-black text-white">
                   Sunucu{' '}
-                  <motion.span 
-                    className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400"
-                    animate={{
-                      backgroundPosition: ['0%', '100%', '0%']
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    style={{
-                      backgroundSize: '200% 100%'
-                    }}
-                  >
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400">
                     Yönetimi
-                  </motion.span>
-                </motion.h1>
+                  </span>
+                </h1>
               </div>
               
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className="flex items-center gap-4 ml-16"
-              >
+              <div className="flex items-center gap-4 ml-16">
                 <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
-                  <motion.div 
-                    className="w-2 h-2 bg-green-400 rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  ></motion.div>
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                   <span className="text-gray-300 font-medium">
                     {loading ? 'Yükleniyor...' : `${guilds.length} sunucu bulundu`}
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
-                  <motion.div 
-                    className="w-2 h-2 bg-blue-400 rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  ></motion.div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                   <span className="text-gray-300 font-medium">
                     {guilds.filter(g => g.botPresent).length} bot aktif
                   </span>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
 
             {guilds.length === 0 ? (
@@ -341,35 +297,20 @@ export default function ServersPage() {
                 {guilds.map((guild, index) => (
                   <motion.div
                     key={guild.id}
-                    initial={{ opacity: 0, y: 30, rotateX: -15 }}
-                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ 
-                      duration: 0.6, 
-                      delay: index * 0.08,
-                      type: "spring",
-                      stiffness: 120
+                      duration: 0.3, 
+                      delay: Math.min(index * 0.05, 0.4)
                     }}
                     whileHover={{ 
-                      scale: 1.03, 
-                      y: -8,
-                      rotateY: 2,
-                      transition: { type: "spring", stiffness: 400, damping: 17 }
+                      y: -4,
+                      transition: { duration: 0.2 }
                     }}
-                    className="group relative perspective-1000"
+                    className="group relative"
                   >
-                    {/* Animated gradient border */}
-                    <motion.div 
-                      className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-500"
-                      animate={{
-                        backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "linear"
-                      }}
-                      style={{ backgroundSize: '200% 200%' }}
-                    />
+                    {/* Static gradient border - no animation for performance */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-75 blur-md transition-opacity duration-300" />
                     
                     {/* Glow effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-pink-500/0 group-hover:from-purple-500/5 group-hover:via-blue-500/5 group-hover:to-pink-500/5 rounded-2xl blur-2xl transition-all duration-500"></div>
