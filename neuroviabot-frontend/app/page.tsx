@@ -899,270 +899,383 @@ export default function Home() {
             </div>
       </section>
 
-      {/* Features Section - Compact Hero Style */}
-      <section id="features" className="relative z-10 py-20 lg:py-28" style={{
+      {/* Features Section - Hero Style Glassmorphism */}
+      <section id="features" className="relative z-10 py-20 lg:py-28 overflow-hidden" style={{
         background: 'linear-gradient(rgb(19, 21, 31) -4.84%, rgb(29, 28, 47) 34.9%, rgb(33, 32, 54) 48.6%, rgb(51, 40, 62) 66.41%, rgb(98, 61, 83) 103.41%, rgb(140, 81, 102) 132.18%)'
       }}>
+        {/* Animated Background Effects - Hero Style */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Gradient Orbs */}
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.15, 0.25, 0.15],
+              x: [0, 50, 0],
+              y: [0, 30, 0]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.1, 0.2, 0.1],
+              x: [0, -30, 0],
+              y: [0, 50, 0]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl"
+          />
+          
+          {/* Floating Particles */}
+          {[...Array(15)].map((_, i) => {
+            const size = 2 + (i % 3);
+            const baseDuration = 8 + (i % 4);
+            const delay = (i * 0.2) % 3;
+            
+            return (
+              <motion.div
+                key={i}
+                animate={{
+                  y: [0, -80, 0],
+                  x: [0, 40, -20, 0],
+                  opacity: [0, 0.6, 0],
+                  scale: [0, 1, 0]
+                }}
+                transition={{
+                  duration: baseDuration,
+                  repeat: Infinity,
+                  delay,
+                  ease: "easeInOut"
+                }}
+                className="absolute"
+                style={{
+                  left: `${(i * 6) % 100}%`,
+                  top: `${10 + (i % 7) * 12}%`,
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  borderRadius: '50%',
+                  background: i % 3 === 0 ? 'rgba(168, 85, 247, 0.6)' : i % 3 === 1 ? 'rgba(59, 130, 246, 0.6)' : 'rgba(236, 72, 153, 0.5)'
+                }}
+              />
+            );
+          })}
+        </div>
+
         {/* Forest Bottom */}
-        <div className="absolute w-full h-full left-0 pointer-events-none overflow-hidden">
-          <svg className="w-full absolute bottom-0" viewBox="0 0 1920 400" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.5">
+        <div className="absolute w-full h-full left-0 bottom-0 pointer-events-none overflow-hidden">
+          <svg className="w-full absolute bottom-0" viewBox="0 0 1920 400" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.3">
             <path d="M0 400V250C150 200 300 180 450 200C600 220 750 180 900 160C1050 140 1200 150 1350 180C1500 210 1650 190 1800 170C1920 155 1920 155 1920 155V400H0Z" fill="#0D0E15" fillOpacity="0.8"/>
             <path d="M0 400V280C150 250 300 240 450 260C600 280 750 250 900 235C1050 220 1200 230 1350 255C1500 280 1650 265 1800 245C1920 232 1920 232 1920 232V400H0Z" fill="#0D0E15" fillOpacity="0.6"/>
           </svg>
         </div>
 
         <div className="relative w-full max-w-[1240px] mx-auto px-6 lg:px-10">
-          {/* Section Header - Compact */}
+          {/* Section Header - Hero Style */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ 
-              duration: 0.4,
-              ease: "easeOut"
+              duration: 0.6,
+              ease: [0.22, 1, 0.36, 1]
             }}
             className="text-center mb-16"
           >
-            <h2 className="text-white text-4xl md:text-5xl font-bold mb-4 leading-tight">
+            <motion.h2 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-blue-200 text-4xl md:text-5xl font-bold mb-4 leading-tight"
+            >
               {t[language].whatCanYouDo}
-            </h2>
-            <p className="text-base text-gray-200 max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-base md:text-lg text-gray-300 max-w-2xl mx-auto"
+            >
               {t[language].whatCanYouDoDesc}
-            </p>
+            </motion.p>
           </motion.div>
 
-          {/* Feature Grid - Compact 3-Column */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Music Feature - Compact */}
+          {/* Feature Grid - Glassmorphism Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {/* Music Feature */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ 
-                duration: 0.4,
+                duration: 0.5,
                 delay: 0,
-                ease: [0.16, 1, 0.3, 1]
+                ease: [0.22, 1, 0.36, 1]
               }}
               whileHover={{ 
-                scale: 1.03,
-                transition: { duration: 0.15, ease: "easeOut" }
+                y: -8,
+                scale: 1.02,
+                transition: { duration: 0.3, ease: "easeOut" }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-200"
+              className="group relative"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:to-blue-500/5 transition-all duration-300"></div>
-              <div className="relative p-6">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
-                >
-                  🎵
-                </motion.div>
-                <h3 className="text-xl font-bold text-white mb-2">Müzik Çal</h3>
-                <p className="text-purple-300 text-xs font-medium mb-3">YouTube • Spotify • SoundCloud</p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  Kristal kalitede müzik, sıra yönetimi ve ses kontrolü.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Sıra</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Filtre</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Lyrics</span>
-        </div>
-              </div>
-            </motion.div>
+              {/* Glassmorphism Card */}
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] backdrop-blur-xl p-6 md:p-7 transition-all duration-500 ease-out hover:border-purple-500/50 hover:shadow-[0_8px_32px_rgba(168,85,247,0.2)]">
+                {/* Animated Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-purple-500/5 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </div>
 
-            {/* Moderation Feature - Compact */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ 
-                duration: 0.4,
-                delay: 0.1,
-                ease: [0.16, 1, 0.3, 1]
-              }}
-              whileHover={{ 
-                scale: 1.03,
-                transition: { duration: 0.15, ease: "easeOut" }
-              }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all duration-200"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 transition-all duration-300"></div>
-              <div className="relative p-6">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -5 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
-                >
-                  🛡️
-                </motion.div>
-                <h3 className="text-xl font-bold text-white mb-2">Akıllı Moderasyon</h3>
-                <p className="text-blue-300 text-xs font-medium mb-3">Otomatik • Güvenli • Hızlı</p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  Spam ve zararlı içerik engellemesi, log kayıtları.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Auto-Mod</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Logs</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Warn</span>
-        </div>
-              </div>
-            </motion.div>
-
-            {/* Economy Feature - Compact */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ 
-            duration: 0.4,
-            delay: 0.2,
-            ease: [0.16, 1, 0.3, 1]
-          }}
-          whileHover={{ 
-            scale: 1.03,
-            transition: { duration: 0.15, ease: "easeOut" }
-          }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/50 hover:shadow-[0_0_30px_rgba(34,197,94,0.15)] transition-all duration-200"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/5 group-hover:to-emerald-500/5 transition-all duration-300"></div>
-              <div className="relative p-6">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
-                >
-                  💰
-                </motion.div>
-                <h3 className="text-xl font-bold text-white mb-2">Ekonomi Sistemi</h3>
-                <p className="text-green-300 text-xs font-medium mb-3">Para • Mağaza • Casino</p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  Sanal para, özel mağaza ve casino oyunları.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Daily</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Shop</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Games</span>
+                {/* Content */}
+                <div className="relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-4xl shadow-lg mb-5 ring-1 ring-white/10 group-hover:ring-purple-400/30 transition-all duration-300"
+                  >
+                    🎵
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-200 transition-colors duration-300">Müzik Çal</h3>
+                  <p className="text-purple-300/80 text-xs font-medium mb-3">YouTube • Spotify • SoundCloud</p>
+                  <p className="text-gray-300/90 text-sm leading-relaxed mb-4">
+                    Kristal kalitede müzik, sıra yönetimi ve ses kontrolü.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Sıra</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Filtre</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Lyrics</span>
+                  </div>
                 </div>
               </div>
-        </motion.div>
+            </motion.div>
 
-            {/* Leveling Feature - Compact */}
+            {/* Moderation Feature */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ 
-                duration: 0.4,
+                duration: 0.5,
+                delay: 0.1,
+                ease: [0.22, 1, 0.36, 1]
+              }}
+              whileHover={{ 
+                y: -8,
+                scale: 1.02,
+                transition: { duration: 0.3, ease: "easeOut" }
+              }}
+              className="group relative"
+            >
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] backdrop-blur-xl p-6 md:p-7 transition-all duration-500 ease-out hover:border-blue-500/50 hover:shadow-[0_8px_32px_rgba(59,130,246,0.2)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </div>
+                <div className="relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: -5 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-4xl shadow-lg mb-5 ring-1 ring-white/10 group-hover:ring-blue-400/30 transition-all duration-300"
+                  >
+                    🛡️
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-200 transition-colors duration-300">Akıllı Moderasyon</h3>
+                  <p className="text-blue-300/80 text-xs font-medium mb-3">Otomatik • Güvenli • Hızlı</p>
+                  <p className="text-gray-300/90 text-sm leading-relaxed mb-4">
+                    Spam ve zararlı içerik engellemesi, log kayıtları.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Auto-Mod</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Logs</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Warn</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Economy Feature */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ 
+                duration: 0.5,
+                delay: 0.2,
+                ease: [0.22, 1, 0.36, 1]
+              }}
+              whileHover={{ 
+                y: -8,
+                scale: 1.02,
+                transition: { duration: 0.3, ease: "easeOut" }
+              }}
+              className="group relative"
+            >
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] backdrop-blur-xl p-6 md:p-7 transition-all duration-500 ease-out hover:border-green-500/50 hover:shadow-[0_8px_32px_rgba(34,197,94,0.2)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 via-green-500/5 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </div>
+                <div className="relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center text-4xl shadow-lg mb-5 ring-1 ring-white/10 group-hover:ring-green-400/30 transition-all duration-300"
+                  >
+                    💰
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-200 transition-colors duration-300">Ekonomi Sistemi</h3>
+                  <p className="text-green-300/80 text-xs font-medium mb-3">Para • Mağaza • Casino</p>
+                  <p className="text-gray-300/90 text-sm leading-relaxed mb-4">
+                    Sanal para, özel mağaza ve casino oyunları.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Daily</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Shop</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Games</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Leveling Feature */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ 
+                duration: 0.5,
                 delay: 0,
-                ease: [0.16, 1, 0.3, 1]
+                ease: [0.22, 1, 0.36, 1]
               }}
               whileHover={{ 
-                scale: 1.03,
-                transition: { duration: 0.15, ease: "easeOut" }
+                y: -8,
+                scale: 1.02,
+                transition: { duration: 0.3, ease: "easeOut" }
               }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_30px_rgba(234,179,8,0.15)] transition-all duration-200"
+              className="group relative"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/5 group-hover:to-orange-500/5 transition-all duration-300"></div>
-              <div className="relative p-6">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -5 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
-                >
-                  ⭐
-                </motion.div>
-                <h3 className="text-xl font-bold text-white mb-2">Seviye & Çekiliş</h3>
-                <p className="text-yellow-300 text-xs font-medium mb-3">XP • Roller • Giveaway</p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  XP sistemi, seviye atlama ve heyecan verici çekilişler.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Leveling</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Ranks</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Giveaway</span>
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] backdrop-blur-xl p-6 md:p-7 transition-all duration-500 ease-out hover:border-yellow-500/50 hover:shadow-[0_8px_32px_rgba(234,179,8,0.2)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 via-yellow-500/5 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </div>
-        </div>
-            </motion.div>
-
-            {/* Social Media - Compact */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ 
-                duration: 0.4,
-                delay: 0.1,
-                ease: [0.16, 1, 0.3, 1]
-              }}
-              whileHover={{ 
-                scale: 1.03,
-                transition: { duration: 0.15, ease: "easeOut" }
-              }}
-              className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-pink-500/50 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] transition-all duration-200"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 to-rose-500/0 group-hover:from-pink-500/5 group-hover:to-rose-500/5 transition-all duration-300"></div>
-              <div className="relative p-6">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
-                >
-                  📱
-                </motion.div>
-                <h3 className="text-xl font-bold text-white mb-2">Sosyal Medya</h3>
-                <p className="text-pink-300 text-xs font-medium mb-3">Twitch • YouTube • X (Twitter)</p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  Canlı yayın ve sosyal medya bildirimleri.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Twitch</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">YouTube</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">RSS</span>
-                </div>
-        </div>
-            </motion.div>
-
-            {/* AI & Custom - Compact */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ 
-            duration: 0.4,
-            delay: 0.2,
-            ease: [0.16, 1, 0.3, 1]
-          }}
-          whileHover={{ 
-            scale: 1.03,
-            transition: { duration: 0.15, ease: "easeOut" }
-          }}
-          className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all duration-200"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-teal-500/0 group-hover:from-cyan-500/5 group-hover:to-teal-500/5 transition-all duration-300"></div>
-              <div className="relative p-6">
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -5 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/20 flex items-center justify-center text-3xl shadow-lg mb-4"
-                >
-                  ✨
-                </motion.div>
-                <h3 className="text-xl font-bold text-white mb-2">AI & Özelleştirme</h3>
-                <p className="text-cyan-300 text-xs font-medium mb-3">Avatar • İsim • Kişilik</p>
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  Yapay zeka destekli özelleştirme ve branding.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">AI Chat</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Custom</span>
-                  <span className="px-3 py-1 bg-white/10 text-white text-xs font-medium rounded-lg">Brand</span>
+                <div className="relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: -5 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center text-4xl shadow-lg mb-5 ring-1 ring-white/10 group-hover:ring-yellow-400/30 transition-all duration-300"
+                  >
+                    ⭐
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-yellow-200 transition-colors duration-300">Seviye & Çekiliş</h3>
+                  <p className="text-yellow-300/80 text-xs font-medium mb-3">XP • Roller • Giveaway</p>
+                  <p className="text-gray-300/90 text-sm leading-relaxed mb-4">
+                    XP sistemi, seviye atlama ve heyecan verici çekilişler.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Leveling</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Ranks</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Giveaway</span>
+                  </div>
                 </div>
               </div>
-        </motion.div>
+            </motion.div>
+
+            {/* Social Media Feature */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ 
+                duration: 0.5,
+                delay: 0.1,
+                ease: [0.22, 1, 0.36, 1]
+              }}
+              whileHover={{ 
+                y: -8,
+                scale: 1.02,
+                transition: { duration: 0.3, ease: "easeOut" }
+              }}
+              className="group relative"
+            >
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] backdrop-blur-xl p-6 md:p-7 transition-all duration-500 ease-out hover:border-pink-500/50 hover:shadow-[0_8px_32px_rgba(236,72,153,0.2)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 via-pink-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </div>
+                <div className="relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-16 h-16 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center text-4xl shadow-lg mb-5 ring-1 ring-white/10 group-hover:ring-pink-400/30 transition-all duration-300"
+                  >
+                    📱
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-pink-200 transition-colors duration-300">Sosyal Medya</h3>
+                  <p className="text-pink-300/80 text-xs font-medium mb-3">Twitch • YouTube • X (Twitter)</p>
+                  <p className="text-gray-300/90 text-sm leading-relaxed mb-4">
+                    Canlı yayın ve sosyal medya bildirimleri.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Twitch</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">YouTube</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">RSS</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* AI & Customization Feature */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ 
+                duration: 0.5,
+                delay: 0.2,
+                ease: [0.22, 1, 0.36, 1]
+              }}
+              whileHover={{ 
+                y: -8,
+                scale: 1.02,
+                transition: { duration: 0.3, ease: "easeOut" }
+              }}
+              className="group relative"
+            >
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] backdrop-blur-xl p-6 md:p-7 transition-all duration-500 ease-out hover:border-cyan-500/50 hover:shadow-[0_8px_32px_rgba(6,182,212,0.2)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 via-cyan-500/5 to-teal-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </div>
+                <div className="relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: -5 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/20 flex items-center justify-center text-4xl shadow-lg mb-5 ring-1 ring-white/10 group-hover:ring-cyan-400/30 transition-all duration-300"
+                  >
+                    ✨
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-200 transition-colors duration-300">AI & Özelleştirme</h3>
+                  <p className="text-cyan-300/80 text-xs font-medium mb-3">Avatar • İsim • Kişilik</p>
+                  <p className="text-gray-300/90 text-sm leading-relaxed mb-4">
+                    Yapay zeka destekli özelleştirme ve branding.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">AI Chat</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Custom</span>
+                    <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/90 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors">Brand</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Bottom CTA - Compact */}
+          {/* Bottom CTA - Hero Style */}
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -1170,53 +1283,40 @@ export default function Home() {
             transition={{ 
               duration: 0.7, 
               delay: 0.3,
-              ease: [0.22, 1, 0.36, 1],
-              type: "spring",
-              stiffness: 100,
-              damping: 20
+              ease: [0.22, 1, 0.36, 1]
             }}
-            className="mt-12 text-center"
+            className="mt-16 text-center"
           >
-          <motion.p
+            <motion.p
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
+              viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="text-gray-200 text-base mb-6"
-          >
-              Ve daha fazlası! <span className="text-white font-bold">50+ özellik</span> ile sunucunu kontrol et.
-          </motion.p>
+              className="text-gray-200 text-base md:text-lg mb-8"
+            >
+              Ve daha fazlası! <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 font-bold">50+ özellik</span> ile sunucunu kontrol et.
+            </motion.p>
             <motion.a
               href={`https://discord.com/oauth2/authorize?response_type=code&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI || 'https://neuroviabot.xyz/api/auth/callback')}&scope=identify%20email%20guilds&client_id=773539215098249246`}
               whileHover={{ 
                 scale: 1.05,
+                y: -2,
                 transition: { duration: 0.2 }
               }}
               whileTap={{ scale: 0.98 }}
-              className="group relative inline-flex items-center gap-3 px-8 py-4 overflow-hidden rounded-2xl text-white text-base font-bold shadow-xl transition-all duration-300 hover:shadow-2xl"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 overflow-hidden rounded-2xl transition-all duration-300"
             >
-              {/* Animated gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] via-[#7289DA] to-[#5865F2] bg-[length:200%_100%] group-hover:bg-[length:100%_100%] transition-all duration-500"></div>
+              {/* Gradient Background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2] via-[#5865F2] to-[#4752C4] group-hover:scale-105 transition-transform duration-500"></div>
               
-              {/* Animated glow layer */}
-              <motion.div
-                animate={{
-                  opacity: [0.5, 0.8, 0.5]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute inset-0 bg-[#5865F2] blur-xl opacity-60"
-              />
+              {/* Animated Glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               
-              {/* Top shine bar */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+              {/* Shadow Effect */}
+              <div className="absolute inset-0 shadow-[0_8px_32px_rgba(88,101,242,0.4)] group-hover:shadow-[0_16px_48px_rgba(88,101,242,0.6)] transition-shadow duration-500"></div>
               
               {/* Content */}
-              <div className="relative z-10 flex items-center gap-3">
-                {/* Discord icon with bounce */}
+              <div className="relative flex items-center gap-3 text-white text-base font-bold">
                 <motion.svg 
                   className="w-6 h-6" 
                   fill="currentColor" 
@@ -1228,16 +1328,12 @@ export default function Home() {
                 >
                   <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
                 </motion.svg>
-                
-                <span className="font-bold tracking-wide">Hemen Başla - Ücretsiz</span>
-                
-                {/* Arrow with slide animation */}
+                <span className="group-hover:tracking-wide transition-all duration-300">Hemen Başla - Ücretsiz</span>
                 <motion.svg 
                   className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                  initial={{ x: 0 }}
                   animate={{ x: [0, 4, 0] }}
                   transition={{
                     duration: 1.5,
@@ -1247,91 +1343,12 @@ export default function Home() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </motion.svg>
-        </div>
-
-              {/* Bottom glow ring */}
-              <div className="absolute inset-0 rounded-2xl ring-1 ring-white/20 group-hover:ring-white/40 transition-all duration-300"></div>
+              </div>
             </motion.a>
           </motion.div>
-            </div>
-      </section>
-
-      {/* Global Stats Section */}
-      <section className="relative py-24 overflow-hidden" style={{
-        background: 'linear-gradient(rgb(19, 21, 31) 0%, rgb(29, 28, 47) 50%, rgb(33, 32, 54) 100%)'
-      }}>
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
-              Topluluğumuza Katıl
-            </h2>
-            <p className="text-xl text-gray-300">
-              Binlerce sunucu ve milyonlarca kullanıcının tercih ettiği bot
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-            {[
-              { 
-                label: 'Sunucu', 
-                value: globalStats.totalServers || stats.guilds, 
-                icon: '🏆',
-                gradient: 'from-purple-500 to-pink-500'
-              },
-              { 
-                label: 'Kullanıcı', 
-                value: globalStats.totalUsers || stats.users, 
-                icon: '👥',
-                gradient: 'from-blue-500 to-cyan-500'
-              },
-              { 
-                label: 'Komut', 
-                value: globalStats.totalCommands, 
-                suffix: '+',
-                icon: '⚡',
-                gradient: 'from-amber-500 to-orange-500'
-              },
-              { 
-                label: 'NRC Dolaşımda', 
-                value: globalStats.nrcInCirculation, 
-                icon: '💰',
-                gradient: 'from-green-500 to-emerald-500'
-              },
-              { 
-                label: 'Aktif Trader', 
-                value: globalStats.activeTraders, 
-                icon: '📈',
-                gradient: 'from-pink-500 to-rose-500'
-              }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-                className="relative group"
-              >
-                <div className={`absolute -inset-0.5 bg-gradient-to-r ${stat.gradient} rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-300`}></div>
-                <div className="relative bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 text-center">
-                  <div className="text-4xl mb-3">{stat.icon}</div>
-                  <div className={`text-3xl md:text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${stat.gradient}`}>
-                    <StatCounter value={stat.value} suffix={stat.suffix || ''} />
-                  </div>
-                  <p className="text-gray-400 text-sm font-medium">{stat.label}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
+
 
       {/* Testimonials Section */}
       <section className="relative py-24 overflow-hidden" style={{

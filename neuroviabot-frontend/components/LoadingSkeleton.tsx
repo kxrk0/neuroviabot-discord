@@ -3,8 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function LoadingSkeleton({ type = 'card' }: { type?: 'card' | 'list' | 'table' | 'stats' }) {
-  if (type === 'stats') {
+export default function LoadingSkeleton({ type = 'card' }: { type?: 'card' | 'list' | 'table' | 'stats' | 'settings' }) {
+  if (type === 'settings' || type === 'stats') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (

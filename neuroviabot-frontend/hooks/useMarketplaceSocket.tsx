@@ -14,12 +14,12 @@ interface MarketplaceNotification {
 }
 
 export function useMarketplaceSocket() {
-  const { socket, isConnected } = useSocket();
+  const { socket, connected } = useSocket();
   const [notifications, setNotifications] = useState<MarketplaceNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (!socket || !isConnected) return;
+    if (!socket || !connected) return;
 
     // Listen for marketplace request created (for developers)
     socket.on('marketplace:request:created', (data: any) => {
@@ -103,7 +103,7 @@ export function useMarketplaceSocket() {
       socket.off('marketplace:product:published');
       socket.off('marketplace:product:purchased');
     };
-  }, [socket, isConnected]);
+  }, [socket, connected]);
 
   const markAsRead = (notificationId: string) => {
     setNotifications(prev =>
