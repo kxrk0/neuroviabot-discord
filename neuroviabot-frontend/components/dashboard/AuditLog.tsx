@@ -467,7 +467,10 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
               const config = severityConfig[log.severity] || severityConfig.info;
               const ActionIcon = actionIcons[log.type] || actionIcons.default;
               const isExpanded = expandedLogs.has(log.id);
-              const hasDetails = log.details && Object.keys(log.details).length > 0;
+              // Check if details exist and has meaningful content (not just empty objects)
+              const hasDetails = log.details && typeof log.details === 'object' && 
+                (log.details.executor || log.details.target || log.details.changes || log.details.reason || 
+                 Object.keys(log.details).some(key => log.details[key] != null && log.details[key] !== ''));
 
               return (
                 <motion.div
@@ -536,14 +539,18 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
                         </div>
                       </div>
 
-                      {/* Details Toggle */}
+                      {/* Details Toggle - Always show button if details exist */}
                       {hasDetails && (
-                        <div>
+                        <div className="mt-3">
                           <button
-                            onClick={() => toggleExpanded(log.id)}
-                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-300 transition-colors mt-2"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleExpanded(log.id);
+                            }}
+                            className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors font-medium"
                           >
-                            <ChevronDownIcon className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            <ChevronDownIcon className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                             {isExpanded ? 'Detayları Gizle' : 'Detayları Göster'}
                           </button>
 

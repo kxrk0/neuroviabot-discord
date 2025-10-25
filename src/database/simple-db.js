@@ -251,6 +251,8 @@ class SimpleDatabase {
         const current = this.getGuildSettings(guildId);
         const updated = { ...current, ...settings };
         this.data.settings.set(guildId, updated);
+        // Persist immediately so audit logs survive reloads
+        this.saveData();
         return updated;
     }
 
@@ -918,13 +920,21 @@ class SimpleDatabase {
     }
 
     getAuditLogs(guildId, filters = {}) {
-        // Guild settings'den audit logları al (yeni format)
+        // First try to get from new location (in settings)
         const settings = this.getGuildSettings(guildId);
         let logs = settings.auditLogs || [];
         
-        // Fallback: Eski audit logs map'inden al
-        if (logs.length === 0 && this.data.auditLogs.has(guildId)) {
-            logs = this.data.auditLogs.get(guildId) || [];
+        // Then merge with old location (audit logs map)
+        if (this.data.auditLogs.has(guildId)) {
+            const oldLogs = this.data.auditLogs.get(guildId) || [];
+            // Merge and deduplicate by ID
+            const logsMap = new Map();
+            [...logs, ...oldLogs].forEach(log => {
+                if (log && log.id) {
+                    logsMap.set(log.id, log);
+                }
+            });
+            logs = Array.from(logsMap.values());
         }
         
         let filtered = [...logs];

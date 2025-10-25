@@ -173,6 +173,8 @@ class AuditLogger {
             }
 
             this.db.updateGuildSettings(guildId, settings);
+            // Also write to legacy map for compatibility
+            try { this.db.addAuditLog(guildId, auditEntry); } catch (e) { /* ignore */ }
 
             logger.debug(`[AuditLogger] Logged action: ${action} in guild ${guildId}`);
 

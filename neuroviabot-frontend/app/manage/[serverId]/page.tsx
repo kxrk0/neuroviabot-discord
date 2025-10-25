@@ -687,7 +687,24 @@ export default function ServerDashboard() {
   const currentCategory = categories.find(c => c.id === activeCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative">
+    <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
+      <style jsx global>{`
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+          background: rgba(15, 15, 20, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+          background: rgba(139, 92, 246, 0.5);
+          border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: rgba(139, 92, 246, 0.8);
+        }
+      `}</style>
       {/* Animated Background */}
       <div className="fixed inset-0 z-0">
         <motion.div 
@@ -963,7 +980,7 @@ export default function ServerDashboard() {
           </motion.div>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             {/* Categories with stagger animation */}
             <div className="p-3">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Kategoriler</p>
@@ -1022,7 +1039,7 @@ export default function ServerDashboard() {
         </motion.aside>
 
         {/* Main Content */}
-        <main className="flex-1 ml-0 lg:ml-72 p-4 lg:p-8 min-h-screen">
+        <main className="flex-1 ml-0 lg:ml-72 p-4 lg:p-8 min-h-screen overflow-y-auto max-h-screen">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeCategory}
