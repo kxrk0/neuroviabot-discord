@@ -5,10 +5,10 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const {
-      name,
-      email,
-      discordTag,
-      serverName,
+      discordUserId,
+      discordUsername,
+      discordAvatar,
+      selectedGuildId,
       feedbackType,
       rating,
       experienceAreas,
@@ -17,19 +17,10 @@ router.post('/', async (req, res) => {
     } = req.body;
 
     // Validation
-    if (!name || !email || !feedbackType || !rating || !title || !message) {
+    if (!discordUserId || !discordUsername || !feedbackType || !rating || !title || !message) {
       return res.status(400).json({
         success: false,
         message: 'Lütfen tüm gerekli alanları doldurun.'
-      });
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Geçersiz e-posta adresi.'
       });
     }
 
@@ -52,10 +43,9 @@ router.post('/', async (req, res) => {
 
     // Log the feedback
     console.log('[FEEDBACK] New feedback submission:', {
-      name,
-      email,
-      discordTag,
-      serverName,
+      discordUserId,
+      discordUsername,
+      selectedGuildId,
       feedbackType,
       rating,
       experienceAreas: experienceAreas?.length || 0,
@@ -73,10 +63,10 @@ router.post('/', async (req, res) => {
       const feedbackId = `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const feedbackData = {
         id: feedbackId,
-        name,
-        email,
-        discordTag,
-        serverName,
+        discordUserId,
+        discordUsername,
+        discordAvatar,
+        selectedGuildId,
         feedbackType,
         rating,
         experienceAreas,
@@ -110,10 +100,8 @@ router.post('/', async (req, res) => {
                  feedbackType === 'negative' ? 0xF04747 :
                  feedbackType === 'suggestion' ? 0xFAA61A : 0xFF9800,
           fields: [
-            { name: 'Ad Soyad', value: name, inline: true },
-            { name: 'E-posta', value: email, inline: true },
-            { name: 'Discord', value: discordTag || 'Belirtilmedi', inline: true },
-            { name: 'Sunucu', value: serverName || 'Belirtilmedi', inline: true },
+            { name: 'Discord User', value: `${discordUsername} (${discordUserId})`, inline: true },
+            { name: 'Sunucu ID', value: selectedGuildId || 'Belirtilmedi', inline: true },
             { name: 'Tür', value: feedbackType, inline: true },
             { name: 'Puan', value: ratingStars + ` (${rating}/5)`, inline: true },
             ...(experienceAreas && experienceAreas.length > 0 ? [{
