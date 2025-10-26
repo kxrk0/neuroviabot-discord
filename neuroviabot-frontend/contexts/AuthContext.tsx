@@ -78,32 +78,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Check if developer and show notification
           if (wasNotLoggedIn && DEVELOPER_IDS.includes(userData.id)) {
-            setShowDevNotification(true);
-            // Play success notification sound using Web Audio API
-            try {
-              const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-              const oscillator = audioContext.createOscillator();
-              const gainNode = audioContext.createGain();
-              
-              oscillator.connect(gainNode);
-              gainNode.connect(audioContext.destination);
-              
-              // Play a pleasant notification sound (C major chord)
-              oscillator.type = 'sine';
-              oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-              oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-              oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
-              
-              gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-              gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-              
-              oscillator.start(audioContext.currentTime);
-              oscillator.stop(audioContext.currentTime + 0.5);
-            } catch (err) {
-              console.log('Audio play failed:', err);
+            // Mark that dev notification should be shown
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('neurovia_show_dev_notification', 'true');
             }
-            // Hide notification after 5 seconds
-            setTimeout(() => setShowDevNotification(false), 5000);
+          }
+          
+          // Check if we should show dev notification (after redirect)
+          if (typeof window !== 'undefined') {
+            const shouldShow = localStorage.getItem('neurovia_show_dev_notification');
+            if (shouldShow === 'true' && DEVELOPER_IDS.includes(userData.id)) {
+              localStorage.removeItem('neurovia_show_dev_notification');
+              setShowDevNotification(true);
+              
+              // Play success notification sound using Web Audio API
+              setTimeout(() => {
+                try {
+                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                  const oscillator = audioContext.createOscillator();
+                  const gainNode = audioContext.createGain();
+                  
+                  oscillator.connect(gainNode);
+                  gainNode.connect(audioContext.destination);
+                  
+                  // Play a pleasant notification sound (C major chord)
+                  oscillator.type = 'sine';
+                  oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                  oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+                  oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+                  
+                  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                  
+                  oscillator.start(audioContext.currentTime);
+                  oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (err) {
+                  console.log('Audio play failed:', err);
+                }
+              }, 500); // Delay to ensure page is loaded
+              
+              // Hide notification after 5 seconds
+              setTimeout(() => setShowDevNotification(false), 5000);
+            }
           }
         } else {
           setUser(null);
