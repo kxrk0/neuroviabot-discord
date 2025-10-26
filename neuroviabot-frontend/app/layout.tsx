@@ -2,7 +2,6 @@ import './globals.scss';
 import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
 import { NotificationProvider } from '../contexts/NotificationContext';
-import { NeuroCoinProvider } from '../contexts/NeuroCoinContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { SocketProvider } from '../contexts/SocketContext';
 import { AuthProvider } from '../contexts/AuthContext';
@@ -107,9 +106,7 @@ export default function RootLayout({
           <LanguageProvider>
             <SocketProvider>
               <NotificationProvider>
-                <NeuroCoinProvider>
-                  {children}
-                </NeuroCoinProvider>
+                {children}
               </NotificationProvider>
             </SocketProvider>
           </LanguageProvider>

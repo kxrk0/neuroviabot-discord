@@ -40,6 +40,7 @@ import ServerStatsSettings from '../../../components/dashboard/ServerStatsSettin
 import { useSocket } from '@/contexts/SocketContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { DocumentTextIcon, UsersIcon } from '@heroicons/react/24/outline';
+import Navbar from '@/components/layout/Navbar';
 
 // Feature Categories - NEW MANAGEMENT CATEGORIES FIRST
 const categories = [
@@ -277,7 +278,7 @@ export default function ServerDashboard() {
   const [settings, setSettings] = useState<any>({});
   const [initialLoading, setInitialLoading] = useState(true); // Only for initial page load
   const [user, setUser] = useState<any>(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
   const [guildMenuOpen, setGuildMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
@@ -589,6 +590,19 @@ export default function ServerDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const API_URL = (process.env as any).NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
@@ -694,101 +708,24 @@ export default function ServerDashboard() {
         />
       </div>
 
-      {/* Navbar */}
-      <motion.nav 
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
-        className="fixed top-0 left-0 right-0 h-16 bg-gray-900/80 backdrop-blur-xl border-b border-white/10 z-50 flex items-center justify-between px-6 shadow-xl"
-      >
-        <div className="flex items-center gap-4">
-          {/* Mobile Hamburger Menu */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-            </svg>
-          </div>
-          <span className="text-xl font-black text-white">NeuroViaBot</span>
-        </Link>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Notifications */}
-          <button className="relative p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <BellIcon className="w-6 h-6 text-gray-300" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {/* User Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              {user && (
-                <>
-                  <img
-                    src={user.avatar 
-                      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
-                      : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`
-                    }
-                    alt={user.username}
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <span className="text-white font-semibold text-sm">{user.username}</span>
-                </>
-              )}
-            </button>
-
-            {userMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setUserMenuOpen(false)}
-                />
-                <div className="absolute right-0 mt-2 w-48 rounded-lg bg-[#2c2f38] border border-white/10 shadow-xl z-50 overflow-hidden">
-                  <div className="p-3 border-b border-white/10">
-                    <p className="text-white font-semibold text-sm">{user?.username}</p>
-                    {user?.discriminator && user.discriminator !== '0' && (
-                      <p className="text-gray-400 text-xs">#{user.discriminator}</p>
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <Link
-                      href="/"
-                      className="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors text-sm"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Ana Sayfa
-                    </Link>
-                    <Link
-                      href="/servers"
-                      className="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors text-sm"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Sunucularım
-                    </Link>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </motion.nav>
+      {/* Navbar with Mobile Menu Button */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar 
+          language={language} 
+          onLanguageChange={setLanguage} 
+          user={user} 
+          onLogout={handleLogout}
+        />
+        {/* Mobile Hamburger Menu - Positioned separately */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-4 left-4 z-[60] p-2 rounded-lg bg-gray-900/80 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
+        >
+          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
 
       <div className="flex pt-16 relative z-10">
         {/* Mobile Sidebar Overlay */}

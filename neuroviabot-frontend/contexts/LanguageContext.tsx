@@ -43,8 +43,6 @@ interface Translations {
     features: {
         moderation: string;
         moderation_desc: string;
-        economy: string;
-        economy_desc: string;
         leveling: string;
         leveling_desc: string;
         automod: string;
@@ -59,7 +57,6 @@ interface Translations {
         members: string;
         analytics: string;
         moderation: string;
-        economy: string;
         leveling: string;
         welcome: string;
         logs: string;
@@ -125,8 +122,6 @@ const translations: Record<Language, Translations> = {
         features: {
             moderation: 'Moderasyon',
             moderation_desc: 'Güçlü moderasyon araçları ile sunucunuzu yönetin',
-            economy: 'Ekonomi Sistemi',
-            economy_desc: 'NeuroCoin ekonomisi ile kullanıcılarınızı aktif tutun',
             leveling: 'Seviye Sistemi',
             leveling_desc: 'Seviye ve ödül sistemi ile etkileşimi artırın',
             automod: 'Otomatik Moderasyon',
@@ -141,7 +136,6 @@ const translations: Record<Language, Translations> = {
             members: 'Üyeler',
             analytics: 'Analitik',
             moderation: 'Moderasyon',
-            economy: 'Ekonomi',
             leveling: 'Seviye Sistemi',
             welcome: 'Hoş Geldin Mesajı',
             logs: 'Loglar',
@@ -197,8 +191,6 @@ const translations: Record<Language, Translations> = {
         features: {
             moderation: 'Moderation',
             moderation_desc: 'Manage your server with powerful moderation tools',
-            economy: 'Economy System',
-            economy_desc: 'Keep users engaged with NeuroCoin economy',
             leveling: 'Leveling System',
             leveling_desc: 'Increase engagement with leveling and rewards',
             automod: 'Auto-Moderation',
@@ -213,7 +205,6 @@ const translations: Record<Language, Translations> = {
             members: 'Members',
             analytics: 'Analytics',
             moderation: 'Moderation',
-            economy: 'Economy',
             leveling: 'Leveling',
             welcome: 'Welcome Message',
             logs: 'Logs',

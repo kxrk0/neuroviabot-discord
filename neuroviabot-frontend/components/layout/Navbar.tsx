@@ -7,7 +7,6 @@ import {
   ServerIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
-  CurrencyDollarIcon,
   ChevronDownIcon,
   SparklesIcon,
   CommandLineIcon,
@@ -113,13 +112,6 @@ export default function Navbar({ language, onLanguageChange, user, onLogout }: N
           >
             <ChatBubbleBottomCenterTextIcon className="navbar__link-icon" />
             <span className="navbar__link-text">{t.feedback}</span>
-          </Link>
-          <Link 
-            href="/nrc/about" 
-            className="navbar__link navbar__link--nrc navbar__link--expandable"
-          >
-            <CurrencyDollarIcon className="navbar__link-icon" />
-            <span className="navbar__link-text">NRC Coin</span>
           </Link>
           {user && (
             <Link 
