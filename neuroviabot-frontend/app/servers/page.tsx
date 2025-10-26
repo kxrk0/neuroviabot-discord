@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/layout/Navbar';
 import {
   ServerIcon,
   PlusIcon,
@@ -32,7 +31,6 @@ export default function ServersPage() {
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterBotPresent, setFilterBotPresent] = useState<boolean | null>(null);
@@ -148,7 +146,7 @@ export default function ServersPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0F0F14] via-[#1A1B23] to-[#0F0F14] relative overflow-hidden">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-400 text-lg">Sunucular yükleniyar...</p>
+          <p className="text-gray-400 text-lg">Sunucular yükleniyor...</p>
         </div>
       </div>
     );
@@ -168,56 +166,101 @@ export default function ServersPage() {
         }}></div>
       </div>
 
-      {/* Navbar */}
-      <Navbar 
-        language={language} 
-        onLanguageChange={setLanguage} 
-        user={user} 
-        onLogout={handleLogout}
-      />
-
       {/* Content */}
-      <div className="relative z-10 pt-16 min-h-screen">
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-6 py-12 pb-24">
-          {/* Server Grid */}
+      <div className="relative z-10 min-h-screen">
+        {/* Back to Home Button */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-6 left-6 z-10"
+        >
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 backdrop-blur-sm transition-all group"
+          >
+            <svg className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Ana Sayfa</span>
+          </Link>
+        </motion.div>
+
+        {/* User Profile - Top Right */}
+        {user && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            className="absolute top-6 right-6 z-10 flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm"
+          >
+            <img
+              src={
+                user.avatar
+                  ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+                  : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`
+              }
+              alt={user.username}
+              className="w-8 h-8 rounded-full"
+            />
+            <div className="hidden sm:block">
+              <p className="text-sm font-semibold text-white">{user.username}</p>
+              <button
+                onClick={handleLogout}
+                className="text-xs text-gray-400 hover:text-red-400 transition-colors"
+              >
+                Çıkış Yap
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Main Content */}
+        <main className="max-w-[1400px] mx-auto px-6 py-24 pb-24">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
           >
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-12"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+              className="inline-block p-4 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl mb-6 ring-2 ring-white/10"
             >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-1 w-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full" />
-                <h1 className="text-5xl font-black text-white">
-                  Sunucu{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400">
-                    Yönetimi
-                  </span>
-                </h1>
-              </div>
-              
-              <div className="flex flex-wrap items-center gap-4 ml-16">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  <span className="text-gray-300 font-medium">
-                    {loading ? 'Yükleniyor...' : `${filteredGuilds.length} sunucu`}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                  <span className="text-gray-300 font-medium">
-                    {guilds.filter(g => g.botPresent).length} bot aktif
-                  </span>
-                </div>
-              </div>
+              <svg className="w-12 h-12 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </motion.div>
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400">
+              Sunucu Yönetimi
+            </h1>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+              Discord sunucularınızı profesyonelce yönetin, ayarlarınızı özelleştirin.
+            </p>
+            
+            {/* Stats */}
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-gray-300 font-medium text-sm">
+                  {loading ? 'Yükleniyor...' : `${filteredGuilds.length} Sunucu`}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                <span className="text-gray-300 font-medium text-sm">
+                  {guilds.filter(g => g.botPresent).length} Bot Aktif
+                </span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                <span className="text-gray-300 font-medium text-sm">
+                  {guilds.filter(g => !g.botPresent).length} Bot Eklenebilir
+                </span>
+              </div>
+            </div>
+          </motion.div>
 
             {/* Search, Filter and View Controls */}
             <motion.div
@@ -496,7 +539,6 @@ export default function ServersPage() {
                 ))}
               </div>
             )}
-          </motion.div>
         </main>
       </div>
     </div>

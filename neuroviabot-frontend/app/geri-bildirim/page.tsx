@@ -59,8 +59,13 @@ export default function FeedbackPage() {
   async function fetchUserGuilds() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://neuroviabot.xyz';
-      const response = await axios.get(`${API_URL}/api/guilds`, { withCredentials: true });
-      if (response.data.success) setUserGuilds(response.data.guilds || []);
+      const response = await fetch(`${API_URL}/api/guilds/user`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const guilds = await response.json();
+        setUserGuilds(guilds || []);
+      }
     } catch (error) {
       console.error('Failed to fetch guilds:', error);
     }

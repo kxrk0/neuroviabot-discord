@@ -40,7 +40,7 @@ import ServerStatsSettings from '../../../components/dashboard/ServerStatsSettin
 import { useSocket } from '@/contexts/SocketContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { DocumentTextIcon, UsersIcon } from '@heroicons/react/24/outline';
-import Navbar from '@/components/layout/Navbar';
+import ManageNavbar from '@/components/layout/ManageNavbar';
 
 // Feature Categories - NEW MANAGEMENT CATEGORIES FIRST
 const categories = [
@@ -708,24 +708,15 @@ export default function ServerDashboard() {
         />
       </div>
 
-      {/* Navbar with Mobile Menu Button */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar 
-          language={language} 
-          onLanguageChange={setLanguage} 
-          user={user} 
-          onLogout={handleLogout}
-        />
-        {/* Mobile Hamburger Menu - Positioned separately */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed top-4 left-4 z-[60] p-2 rounded-lg bg-gray-900/80 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
-        >
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
+      {/* Custom Manage Navbar */}
+      <ManageNavbar
+        user={user}
+        guild={guild}
+        guilds={guilds}
+        onLogout={handleLogout}
+        onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
+        unreadCount={unreadCount}
+      />
 
       <div className="flex pt-16 relative z-10">
         {/* Mobile Sidebar Overlay */}
@@ -921,17 +912,6 @@ export default function ServerDashboard() {
               );
             })}
             </div>
-          </div>
-
-          {/* Back Button */}
-          <div className="p-4 border-t border-white/10">
-            <Link
-              href="/servers"
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-all"
-            >
-              <ArrowLeftIcon className="w-4 h-4" />
-              <span className="font-semibold text-sm">Sunuculara Dön</span>
-            </Link>
           </div>
         </motion.aside>
 
