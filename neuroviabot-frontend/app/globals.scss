@@ -38,6 +38,35 @@
 @tailwind utilities;
 
 // ==========================================
+// 📜 Custom Scrollbar Styles
+// ==========================================
+@layer utilities {
+  /* Custom scrollbar for manage panel sidebar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.3);
+    border-radius: 10px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.5);
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.7);
+  }
+}
+
+// ==========================================
 // 🎯 Custom Cursor - Removed (Using Default Browser Cursor)
 // ==========================================
 

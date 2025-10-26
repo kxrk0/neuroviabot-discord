@@ -1284,21 +1284,21 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                quote: "Neurovia sayesinde sunucumuzun yönetimi çok kolaylaştı. NRC ekonomi sistemi kullanıcılarımızı çok aktif tutuyor!",
+                quote: "Neurovia sayesinde sunucumuzun yönetimi çok kolaylaştı. Seviye sistemi ve tepki rolleri sayesinde kullanıcılarımızı çok aktif tutuyor!",
                 author: "Ahmet Y.",
                 server: "GamersHub TR",
                 rating: 5
               },
               {
-                quote: "Moderasyon araçları gerçekten güçlü. Özellikle auto-mod özelliği spam sorununu tamamen çözdü.",
+                quote: "Moderasyon araçları gerçekten güçlü. Özellikle auto-mod ve güvenlik özellikleri spam sorununu tamamen çözdü.",
                 author: "Zeynep K.",
                 server: "Topluluk Merkezi",
                 rating: 5
               },
               {
-                quote: "P2P trading sistemi harika! Kullanıcılar kendi aralarında ticaret yapabiliyor, sunucumuz çok daha eğlenceli oldu.",
+                quote: "Hoşgeldin mesajları ve otomasyon sistemi harika! Sunucu yönetimi artık çok daha kolay ve kullanıcılar kendilerini özel hissediyor.",
                 author: "Mehmet S.",
-                server: "EconoTR",
+                server: "Community Hub",
                 rating: 5
               }
             ].map((testimonial, index) => (
@@ -1397,7 +1397,7 @@ export default function Home() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-gray-200 text-base leading-relaxed mb-6"
               >
-                Discord sunucunu yönetmek için ihtiyacın olan her şey. Müzik, moderasyon, ekonomi ve daha fazlası.
+                Discord sunucunu yönetmek için ihtiyacın olan her şey. Moderasyon, otomasyon, güvenlik ve daha fazlası.
               </motion.p>
               {/* Social Links - Stagger Animation */}
           <div className="flex items-center gap-3">

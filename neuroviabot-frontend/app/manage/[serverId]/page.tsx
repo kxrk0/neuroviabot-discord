@@ -778,97 +778,12 @@ export default function ServerDashboard() {
                     <p className="text-gray-400 text-xs">{guild?.memberCount || 0} üye</p>
                   </div>
                 </div>
-                
-                {/* Server Switcher Button */}
-                {guilds.length > 1 && (
-                  <motion.div 
-                    className="relative flex items-center"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2, delay: 0.1 }}
-                  >
-                    <button
-                      onClick={() => setGuildMenuOpen(!guildMenuOpen)}
-                      className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-150 flex items-center justify-center"
-                      title="Sunucu değiştir"
-                    >
-                      <ChevronDownIcon className="w-4 h-4 text-gray-400" />
-                    </button>
-
-                    <AnimatePresence>
-                      {guildMenuOpen && (
-                        <>
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
-                            className="fixed inset-0 z-[55]"
-                            onClick={() => setGuildMenuOpen(false)}
-                          />
-                          <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                            transition={{ 
-                              duration: 0.1, 
-                              ease: "easeOut"
-                            }}
-                            className="absolute left-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-[60]"
-                          >
-                            <div className="p-3 border-b border-gray-700">
-                              <h3 className="text-white font-semibold text-sm">Sunucularınız</h3>
-                              <p className="text-gray-400 text-xs">Yönetmek için bir sunucu seçin</p>
-                            </div>
-                            <div className="max-h-64 overflow-y-auto scrollbar-hide">
-                              {guilds.map((guildItem, index) => (
-                                <motion.div
-                                  key={guildItem.id}
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: index * 0.05 }}
-                                >
-                                  <Link
-                                    href={`/manage/${guildItem.id}`}
-                                    className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-700 transition-all duration-200 hover:scale-[1.02] ${
-                                      guildItem.id === guild.id ? 'bg-gray-700/50' : ''
-                                    }`}
-                                    onClick={() => setGuildMenuOpen(false)}
-                                  >
-                                  {guildItem.icon ? (
-                                    <img
-                                      src={`https://cdn.discordapp.com/icons/${guildItem.id}/${guildItem.icon}.png?size=32`}
-                                      alt={guildItem.name}
-                                      className="w-10 h-10 rounded-full"
-                                    />
-                                  ) : (
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white">
-                                      {guildItem.name.charAt(0)}
-                                    </div>
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="text-white font-medium text-sm break-words leading-tight">{guildItem.name}</div>
-                                    <div className="text-gray-400 text-xs">{guildItem.memberCount || 'N/A'} üye</div>
-                                  </div>
-                                  {guildItem.id === guild.id && (
-                                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                                  )}
-                                  </Link>
-                                </motion.div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                )}
               </div>
             </div>
           </motion.div>
 
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          {/* Scrollable content with custom scrollbar */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-gray-800/30 hover:scrollbar-thumb-purple-500/70">
             {/* Categories with stagger animation */}
             <div className="p-3">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Kategoriler</p>

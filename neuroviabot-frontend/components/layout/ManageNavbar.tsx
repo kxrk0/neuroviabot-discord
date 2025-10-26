@@ -10,6 +10,7 @@ import {
   ServerIcon,
   ArrowRightOnRectangleIcon,
   Cog6ToothIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 
 interface ManageNavbarProps {
@@ -30,6 +31,7 @@ export default function ManageNavbar({
   unreadCount = 0 
 }: ManageNavbarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [serverMenuOpen, setServerMenuOpen] = useState(false);
 
   return (
     <motion.nav 
@@ -84,6 +86,103 @@ export default function ManageNavbar({
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
+          {/* Server Switcher */}
+          {guild && guilds.length > 1 && (
+            <div className="relative hidden lg:block">
+              <button
+                onClick={() => setServerMenuOpen(!serverMenuOpen)}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/30 transition-all group"
+              >
+                <div className="relative">
+                  {guild.icon ? (
+                    <img
+                      src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=64`}
+                      alt={guild.name}
+                      className="w-8 h-8 rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                      <span className="text-white text-xs font-black">{guild.name?.charAt(0)}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col items-start max-w-[150px]">
+                  <span className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors truncate w-full">
+                    {guild.name}
+                  </span>
+                  <span className="text-xs text-gray-500">{guilds.length} sunucu</span>
+                </div>
+                <ChevronDownIcon
+                  className={`w-4 h-4 text-gray-400 group-hover:text-blue-400 transition-all duration-300 ${
+                    serverMenuOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {serverMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setServerMenuOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute right-0 mt-3 w-80 rounded-2xl bg-gray-800/95 backdrop-blur-xl border border-white/10 shadow-2xl shadow-blue-500/10 z-50 overflow-hidden"
+                    >
+                      <div className="p-4 border-b border-white/10 bg-gradient-to-br from-blue-500/10 to-purple-500/10">
+                        <h3 className="text-white font-bold text-sm">Sunucu Değiştir</h3>
+                        <p className="text-gray-400 text-xs mt-1">Yönetmek için bir sunucu seçin</p>
+                      </div>
+                      <div className="max-h-[400px] overflow-y-auto p-2">
+                        {guilds.map((g, index) => (
+                          <motion.div
+                            key={g.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                          >
+                            <Link
+                              href={`/manage/${g.id}`}
+                              onClick={() => setServerMenuOpen(false)}
+                              className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${
+                                g.id === guild.id
+                                  ? 'bg-blue-500/10 border border-blue-500/30'
+                                  : 'hover:bg-white/5 border border-transparent hover:border-white/10'
+                              }`}
+                            >
+                              {g.icon ? (
+                                <img
+                                  src={`https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64`}
+                                  alt={g.name}
+                                  className="w-12 h-12 rounded-xl"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                                  <span className="text-white text-lg font-black">{g.name.charAt(0)}</span>
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-white font-semibold text-sm truncate">{g.name}</p>
+                                <p className="text-gray-400 text-xs">{g.memberCount || 'N/A'} üye</p>
+                              </div>
+                              {g.id === guild.id && (
+                                <CheckCircleIcon className="w-5 h-5 text-blue-400" />
+                              )}
+                            </Link>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
           {/* User Menu */}
           {user && (
             <div className="relative">
