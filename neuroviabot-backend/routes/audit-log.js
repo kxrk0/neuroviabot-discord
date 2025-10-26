@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
-const AuditLog = require('../models/AuditLog');
-const { isMongoConnected } = require('../config/database');
+const { getAuditLogStorage } = require('../utils/auditLogStorage');
 
-const BOT_API_URL = process.env.BOT_API_URL || 'http://localhost:3002';
-const BOT_API_KEY = process.env.BOT_API_KEY || 'your-secret-api-key';
+const auditStorage = getAuditLogStorage();
 
 const requireAuth = (req, res, next) => {
   // Allow requests - audit logs are public for authenticated dashboard users
@@ -31,23 +28,10 @@ router.get('/:guildId', requireAuth, async (req, res) => {
       });
     }
     
-    // Check MongoDB connection
-    if (!isMongoConnected()) {
-      console.warn('[AuditLog] MongoDB not connected, returning empty logs');
-      return res.json({
-        success: true,
-        logs: [],
-        total: 0,
-        page: 1,
-        totalPages: 0,
-        warning: 'Database not connected'
-      });
-    }
-    
     console.log('[AuditLog] Fetching logs for guild:', guildId, { page, limit, type, severity });
     
-    // Fetch from MongoDB - persistent storage
-    const result = await AuditLog.getLogs(guildId, {
+    // Fetch from JSON storage
+    const result = await auditStorage.getLogs(guildId, {
       page: parseInt(page),
       limit: parseInt(limit),
       action,
@@ -88,18 +72,16 @@ router.get('/:guildId/export', requireAuth, async (req, res) => {
     const { guildId } = req.params;
     const { format = 'json' } = req.query;
     
-    const response = await axios.get(`${BOT_API_URL}/api/bot/audit/${guildId}/export`, {
-      headers: { 'x-api-key': BOT_API_KEY },
-      params: { format },
-      timeout: 30000
-    });
+    const data = await auditStorage.exportLogs(guildId, format);
     
     if (format === 'csv') {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="audit-log-${guildId}.csv"`);
+      res.send(data);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(data);
     }
-    
-    res.send(response.data);
   } catch (error) {
     console.error('[AuditLog] Error exporting:', error.message);
     res.status(500).json({ success: false, error: 'Failed to export audit logs' });
@@ -112,7 +94,7 @@ router.post('/:guildId', requireAuth, async (req, res) => {
     const { guildId } = req.params;
     const logData = { ...req.body, guildId };
     
-    const log = await AuditLog.logAction(logData);
+    const log = await auditStorage.logAction(logData);
     
     res.json({
       success: true,
@@ -129,7 +111,7 @@ router.get('/:guildId/stats', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
     
-    const stats = await AuditLog.getStats(guildId);
+    const stats = await auditStorage.getStats(guildId);
     
     res.json({
       success: true,
