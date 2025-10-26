@@ -81,7 +81,7 @@ export default function ServersPage() {
   };
 
   const handleManageServer = (guildId: string) => {
-    // Redirect to specific guild manage page
+    // Instant redirect without loading - manage page will handle its own loading
     router.push(`/manage/${guildId}`);
   };
 

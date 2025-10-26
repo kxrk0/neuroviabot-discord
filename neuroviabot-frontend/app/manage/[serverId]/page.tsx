@@ -936,30 +936,122 @@ export default function ServerDashboard() {
               }}
               style={{ willChange: 'transform, opacity' }} // Hardware acceleration
             >
-              {/* Category Header */}
-              <div className="mb-8">
-                <div className="flex items-center gap-4 mb-3">
+              {/* Category Header - Hero Style */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mb-8 relative overflow-hidden rounded-3xl border border-white/10"
+              >
+                {/* Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-900/95 via-gray-900/90 to-gray-900/95 backdrop-blur-xl">
                   {currentCategory && (
-                    <>
-                      <div className={`p-4 rounded-2xl bg-gradient-to-br ${currentCategory.color}`}>
-                        <currentCategory.icon className="w-8 h-8 text-white" />
-                      </div>
-                      <div>
-                        <h1 className="text-3xl font-black text-white flex items-center gap-3">
-                          {currentCategory.name}
-                          {currentCategory.premium && (
-                            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-xs font-bold text-white flex items-center gap-1">
-                              <SparklesIcon className="w-4 h-4" />
-                              PREMIUM
-                            </span>
-                          )}
-                        </h1>
-                        <p className="text-gray-400 mt-1">{currentCategory.description}</p>
-                      </div>
-                    </>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${currentCategory.color} opacity-10`} />
                   )}
                 </div>
-              </div>
+                
+                {/* Animated Glow Effect */}
+                {currentCategory && (
+                  <motion.div
+                    className={`absolute -inset-1 bg-gradient-to-r ${currentCategory.color} opacity-20 blur-2xl`}
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      opacity: [0.1, 0.2, 0.1],
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                )}
+
+                {/* Content */}
+                <div className="relative z-10 p-8 md:p-12">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    {currentCategory && (
+                      <>
+                        {/* Icon with Animation */}
+                        <motion.div 
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ 
+                            type: "spring", 
+                            stiffness: 200,
+                            delay: 0.1 
+                          }}
+                          className="relative"
+                        >
+                          <div className={`absolute inset-0 bg-gradient-to-br ${currentCategory.color} rounded-3xl blur-xl opacity-50`} />
+                          <div className={`relative p-5 rounded-3xl bg-gradient-to-br ${currentCategory.color} shadow-2xl`}>
+                            <currentCategory.icon className="w-12 h-12 text-white" />
+                          </div>
+                        </motion.div>
+                        
+                        {/* Text Content */}
+                        <div className="flex-1">
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <div className="flex flex-wrap items-center gap-3 mb-2">
+                              <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-white">
+                                {currentCategory.name}
+                              </h1>
+                              {currentCategory.premium && (
+                                <motion.span 
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                                  className="px-4 py-2 rounded-2xl bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 text-sm font-bold text-white flex items-center gap-2 shadow-lg shadow-yellow-500/30"
+                                >
+                                  <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                  >
+                                    <SparklesIcon className="w-5 h-5" />
+                                  </motion.div>
+                                  PREMIUM
+                                </motion.span>
+                              )}
+                            </div>
+                            <motion.p 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.3 }}
+                              className="text-gray-300 text-lg max-w-2xl"
+                            >
+                              {currentCategory.description}
+                            </motion.p>
+                          </motion.div>
+                          
+                          {/* Stats or Info Cards */}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="flex flex-wrap gap-3 mt-6"
+                          >
+                            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                              <span className="text-sm font-medium text-gray-300">Aktif</span>
+                            </div>
+                            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm flex items-center gap-2">
+                              <Cog6ToothIcon className="w-4 h-4 text-blue-400" />
+                              <span className="text-sm font-medium text-gray-300">Özelleştirilebilir</span>
+                            </div>
+                            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm flex items-center gap-2">
+                              <BoltIcon className="w-4 h-4 text-purple-400" />
+                              <span className="text-sm font-medium text-gray-300">Anlık Güncelleme</span>
+                            </div>
+                          </motion.div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
 
               {/* Features */}
               <div className="space-y-4">
