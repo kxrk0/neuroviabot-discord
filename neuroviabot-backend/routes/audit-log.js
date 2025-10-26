@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const AuditLog = require('../models/AuditLog');
+const { isMongoConnected } = require('../config/database');
 
 const BOT_API_URL = process.env.BOT_API_URL || 'http://localhost:3002';
 const BOT_API_KEY = process.env.BOT_API_KEY || 'your-secret-api-key';
@@ -27,6 +28,19 @@ router.get('/:guildId', requireAuth, async (req, res) => {
         total: 0,
         page: 1,
         totalPages: 0
+      });
+    }
+    
+    // Check MongoDB connection
+    if (!isMongoConnected()) {
+      console.warn('[AuditLog] MongoDB not connected, returning empty logs');
+      return res.json({
+        success: true,
+        logs: [],
+        total: 0,
+        page: 1,
+        totalPages: 0,
+        warning: 'Database not connected'
       });
     }
     
@@ -56,13 +70,14 @@ router.get('/:guildId', requireAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('[AuditLog] Error fetching logs:', error.message, error.stack);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch audit logs',
+    // Return empty array instead of 500 error for better UX
+    res.json({ 
+      success: true, 
       logs: [],
       total: 0,
       page: 1,
-      totalPages: 0
+      totalPages: 0,
+      error: 'Database error, showing empty logs'
     });
   }
 });
