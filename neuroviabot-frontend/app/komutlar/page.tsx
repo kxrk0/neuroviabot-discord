@@ -13,7 +13,9 @@ import {
   Cog6ToothIcon,
   SparklesIcon,
   CommandLineIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  ClipboardDocumentIcon,
+  CheckIcon
 } from '@heroicons/react/24/outline';
 
 interface Command {
@@ -50,6 +52,17 @@ export default function CommandsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedCommand(text);
+      setTimeout(() => setCopiedCommand(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   useEffect(() => {
     fetchCommands();
@@ -301,7 +314,7 @@ export default function CommandsPage() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3, delay: 0.05 * index }}
-                          className="relative p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/0 border border-white/10 hover:border-purple-500/30 transition-all"
+                          className="group relative p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/0 border border-white/10 hover:border-purple-500/30 transition-all"
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
@@ -325,9 +338,22 @@ export default function CommandsPage() {
                               <div className="space-y-2">
                                 <div className="flex items-start gap-2">
                                   <span className="text-sm text-gray-500 font-semibold min-w-[80px]">Kullanım:</span>
-                                  <code className="text-sm text-purple-400 bg-purple-500/10 px-2 py-1 rounded">
-                                    {command.usage}
-                                  </code>
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <code className="text-sm text-purple-400 bg-purple-500/10 px-2 py-1 rounded">
+                                      {command.usage}
+                                    </code>
+                                    <button
+                                      onClick={() => copyToClipboard(command.usage)}
+                                      className="p-1.5 rounded-lg hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100"
+                                      title="Copy command"
+                                    >
+                                      {copiedCommand === command.usage ? (
+                                        <CheckIcon className="w-4 h-4 text-green-400" />
+                                      ) : (
+                                        <ClipboardDocumentIcon className="w-4 h-4 text-gray-400" />
+                                      )}
+                                    </button>
+                                  </div>
                                 </div>
                                 {command.permissions && (
                                   <div className="flex items-start gap-2">
