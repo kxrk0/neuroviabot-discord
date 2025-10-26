@@ -53,6 +53,8 @@ export default function CommandsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
+  const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -67,6 +69,58 @@ export default function CommandsPage() {
   useEffect(() => {
     fetchCommands();
   }, []);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Focus search with /
+      if (e.key === '/' && document.activeElement !== searchInputRef.current) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      // Skip if typing in input
+      if (document.activeElement?.tagName === 'INPUT') return;
+
+      if (!selectedCategory) return;
+
+      const currentCategory = filteredCategories.find(c => c.id === selectedCategory);
+      if (!currentCategory) return;
+
+      const commandCount = currentCategory.commands.length;
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedCommandIndex(prev => (prev + 1) % commandCount);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedCommandIndex(prev => (prev - 1 + commandCount) % commandCount);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          const selectedCommand = currentCategory.commands[selectedCommandIndex];
+          if (selectedCommand) {
+            copyToClipboard(selectedCommand.usage);
+          }
+          break;
+        case 'Escape':
+          setSelectedCategory(null);
+          setSelectedCommandIndex(0);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCategory, filteredCategories, selectedCommandIndex]);
+
+  // Reset selected command index when category changes
+  useEffect(() => {
+    setSelectedCommandIndex(0);
+  }, [selectedCategory]);
 
   async function fetchCommands() {
     try {
@@ -230,13 +284,20 @@ export default function CommandsPage() {
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
+                ref={searchInputRef}
                 type="text"
-                placeholder="Komut ara... (örn: economy, ban, slot)"
+                placeholder="Komut ara... (örn: economy, ban, slot) - / tuşuna basarak ara"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
               />
             </div>
+            <p className="text-center text-gray-500 text-sm mt-2">
+              <kbd className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs">/</kbd> Arama,{' '}
+              <kbd className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs">↑</kbd>
+              <kbd className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs">↓</kbd> Gezinme,{' '}
+              <kbd className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs">Enter</kbd> Kopyala
+            </p>
           </div>
         </motion.div>
 
@@ -314,7 +375,11 @@ export default function CommandsPage() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3, delay: 0.05 * index }}
-                          className="group relative p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/0 border border-white/10 hover:border-purple-500/30 transition-all"
+                          className={`group relative p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/0 border transition-all ${
+                            selectedCommandIndex === index
+                              ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30'
+                              : 'border-white/10 hover:border-purple-500/30'
+                          }`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">

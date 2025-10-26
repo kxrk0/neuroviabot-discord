@@ -10,7 +10,8 @@ function errorHandler(err, req, res, next) {
     body: req.body,
     query: req.query,
     user: req.user?.id,
-    ip: req.ip
+    ip: req.ip,
+    requestId: req.requestId
   });
 
   // Determine status code
@@ -20,7 +21,7 @@ function errorHandler(err, req, res, next) {
   const userMessage = getUserFriendlyMessage(err, statusCode);
 
   // Log to console for debugging
-  console.error(`[ErrorHandler] ${req.method} ${req.path}:`, err.message);
+  console.error(`[ErrorHandler] ${req.method} ${req.path} [${req.requestId || 'N/A'}]:`, err.message);
   if (statusCode === 500) {
     console.error(err.stack);
   }
@@ -30,6 +31,7 @@ function errorHandler(err, req, res, next) {
     success: false,
     error: userMessage,
     message: process.env.NODE_ENV === 'development' ? err.message : userMessage,
+    requestId: req.requestId,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 }

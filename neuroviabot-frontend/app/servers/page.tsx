@@ -4,13 +4,17 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   ServerIcon,
   PlusIcon,
   Cog6ToothIcon,
   UsersIcon,
   ShieldCheckIcon,
   ArrowRightOnRectangleIcon,
+  MagnifyingGlassIcon,
+  Squares2X2Icon,
+  ListBulletIcon,
+  FunnelIcon,
 } from '@heroicons/react/24/outline';
 
 interface Guild {
@@ -28,6 +32,9 @@ export default function ServersPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filterBotPresent, setFilterBotPresent] = useState<boolean | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -127,6 +134,13 @@ export default function ServersPage() {
       console.error('Logout error:', error);
     }
   };
+
+  // Filter and search guilds
+  const filteredGuilds = guilds.filter(guild => {
+    const matchesSearch = guild.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterBotPresent === null || guild.botPresent === filterBotPresent;
+    return matchesSearch && matchesFilter;
+  });
 
   if (loading) {
     return (
@@ -261,11 +275,11 @@ export default function ServersPage() {
                 </h1>
               </div>
               
-              <div className="flex items-center gap-4 ml-16">
+              <div className="flex flex-wrap items-center gap-4 ml-16">
                 <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                   <span className="text-gray-300 font-medium">
-                    {loading ? 'Yükleniyor...' : `${guilds.length} sunucu bulundu`}
+                    {loading ? 'Yükleniyor...' : `${filteredGuilds.length} sunucu`}
                   </span>
                 </div>
                 
@@ -278,7 +292,106 @@ export default function ServersPage() {
               </div>
             </motion.div>
 
-            {guilds.length === 0 ? (
+            {/* Search, Filter and View Controls */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-col md:flex-row gap-4 mb-8"
+            >
+              {/* Search */}
+              <div className="flex-1 relative">
+                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Sunucu ara..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                />
+              </div>
+
+              {/* Filter */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFilterBotPresent(null)}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all ${
+                    filterBotPresent === null
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  Tümü
+                </button>
+                <button
+                  onClick={() => setFilterBotPresent(true)}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all ${
+                    filterBotPresent === true
+                      ? 'bg-green-500 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  Bot Var
+                </button>
+                <button
+                  onClick={() => setFilterBotPresent(false)}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all ${
+                    filterBotPresent === false
+                      ? 'bg-gray-500 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  Bot Yok
+                </button>
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex gap-2 bg-white/5 rounded-xl p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-3 rounded-lg transition-all ${
+                    viewMode === 'grid'
+                      ? 'bg-purple-500 text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  title="Grid görünümü"
+                >
+                  <Squares2X2Icon className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-3 rounded-lg transition-all ${
+                    viewMode === 'list'
+                      ? 'bg-purple-500 text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  title="Liste görünümü"
+                >
+                  <ListBulletIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+
+            {filteredGuilds.length === 0 && searchQuery ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-20"
+              >
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-500/10 mb-6">
+                  <MagnifyingGlassIcon className="w-12 h-12 text-gray-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Sunucu Bulunamadı</h2>
+                <p className="text-gray-400 text-lg mb-6">"{searchQuery}" için sonuç bulunamadı.</p>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="px-6 py-3 rounded-xl bg-purple-500 hover:bg-purple-600 text-white font-semibold transition-all"
+                >
+                  Aramayı Temizle
+                </button>
+              </motion.div>
+            ) : guilds.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -293,8 +406,8 @@ export default function ServersPage() {
                 <p className="text-gray-500 text-sm max-w-md mx-auto">Discord'da bir sunucuya yönetici izni aldığında burada görünecektir.</p>
               </motion.div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {guilds.map((guild, index) => (
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'flex flex-col gap-4'}>
+                {filteredGuilds.map((guild, index) => (
                   <motion.div
                     key={guild.id}
                     initial={{ opacity: 0, y: 20 }}
