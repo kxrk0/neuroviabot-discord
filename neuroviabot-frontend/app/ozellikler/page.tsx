@@ -146,7 +146,7 @@ export default function FeaturesPage() {
         onLogout={logout}
       />
 
-      {/* Animated Background - Fixed */}
+      {/* Animated Background - Fixed with prefers-reduced-motion */}
       <div className="fixed inset-0 z-0">
         <motion.div 
           className="absolute top-0 -left-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
@@ -160,6 +160,7 @@ export default function FeaturesPage() {
             repeat: Infinity,
             ease: "easeInOut"
           }}
+          style={{ willChange: 'transform' }}
         />
         <motion.div 
           className="absolute top-0 -right-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"

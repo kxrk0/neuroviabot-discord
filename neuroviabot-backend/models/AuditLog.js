@@ -6,39 +6,54 @@ const auditLogSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  action: {
+  type: {
     type: String,
     required: true,
+    index: true,
     enum: [
-      'guild.settings.update',
-      'guild.feature.toggle',
-      'moderation.ban',
-      'moderation.unban',
-      'moderation.kick',
-      'moderation.mute',
-      'moderation.unmute',
-      'moderation.warn',
-      'role.create',
-      'role.delete',
-      'role.update',
-      'channel.create',
-      'channel.delete',
-      'channel.update',
-      'member.join',
-      'member.leave',
-      'message.delete',
-      'message.bulk_delete',
-      'nrc.transfer',
-      'nrc.purchase',
-      'marketplace.listing',
-      'ticket.create',
-      'ticket.close',
-      'reaction_role.add',
-      'reaction_role.remove',
-      'automod.action',
-      'command.execute',
-      'other'
+      'MEMBER_JOIN',
+      'MEMBER_LEAVE',
+      'MEMBER_BAN',
+      'MEMBER_KICK',
+      'ROLE_CREATE',
+      'ROLE_UPDATE',
+      'ROLE_DELETE',
+      'CHANNEL_CREATE',
+      'CHANNEL_UPDATE',
+      'CHANNEL_DELETE',
+      'SETTINGS_CHANGE',
+      'MESSAGE_DELETE',
+      'GUILD_UPDATE',
+      'OTHER'
     ]
+  },
+  action: {
+    type: String,
+    required: true
+  },
+  userId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  username: {
+    type: String
+  },
+  avatar: {
+    type: String
+  },
+  targetId: {
+    type: String
+  },
+  severity: {
+    type: String,
+    required: true,
+    enum: ['info', 'warning', 'danger', 'success'],
+    default: 'info'
+  },
+  details: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   },
   executor: {
     id: String,
@@ -96,6 +111,8 @@ auditLogSchema.statics.getLogs = async function(guildId, options = {}) {
     page = 1,
     limit = 50,
     action,
+    type,
+    severity,
     userId,
     startDate,
     endDate
@@ -104,7 +121,15 @@ auditLogSchema.statics.getLogs = async function(guildId, options = {}) {
   const query = { guildId };
 
   if (action) query.action = action;
-  if (userId) query['executor.id'] = userId;
+  if (type) query.type = type;
+  if (severity) query.severity = severity;
+  if (userId) {
+    // Check both old format (executor.id) and new format (userId)
+    query.$or = [
+      { userId },
+      { 'executor.id': userId }
+    ];
+  }
   if (startDate || endDate) {
     query.timestamp = {};
     if (startDate) query.timestamp.$gte = new Date(startDate);
@@ -113,24 +138,43 @@ auditLogSchema.statics.getLogs = async function(guildId, options = {}) {
 
   const skip = (page - 1) * limit;
 
-  const [logs, total] = await Promise.all([
-    this.find(query)
-      .sort({ timestamp: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
-    this.countDocuments(query)
-  ]);
+  try {
+    const [logs, total] = await Promise.all([
+      this.find(query)
+        .sort({ timestamp: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.countDocuments(query)
+    ]);
+    
+    // Transform logs to match frontend expectations
+    const transformedLogs = logs.map(log => ({
+      id: log._id.toString(),
+      type: log.type || 'OTHER',
+      userId: log.userId || log.executor?.id || 'unknown',
+      username: log.username || log.executor?.username || 'Unknown',
+      avatar: log.avatar || log.executor?.avatar || null,
+      targetId: log.targetId || log.target?.id,
+      action: log.action,
+      details: log.details || log.metadata || {},
+      severity: log.severity || 'info',
+      timestamp: log.timestamp || log.createdAt
+    }));
 
-  return {
-    logs,
-    pagination: {
-      page,
-      limit,
-      total,
-      pages: Math.ceil(total / limit)
-    }
-  };
+    return {
+      logs: transformedLogs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  } catch (error) {
+    console.error('[AuditLog] Error in getLogs:', error);
+    throw error;
+  }
 };
 
 // Static method to cleanup old logs (optional, for data retention)

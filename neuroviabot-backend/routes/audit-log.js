@@ -16,26 +16,54 @@ const requireAuth = (req, res, next) => {
 router.get('/:guildId', requireAuth, async (req, res) => {
   try {
     const { guildId } = req.params;
-    const { page = 1, limit = 50, action, userId, startDate, endDate } = req.query;
+    const { page = 1, limit = 50, action, userId, startDate, endDate, type, severity } = req.query;
+    
+    // Validate guildId
+    if (!guildId || guildId === 'unknown') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid guild ID',
+        logs: [],
+        total: 0,
+        page: 1,
+        totalPages: 0
+      });
+    }
+    
+    console.log('[AuditLog] Fetching logs for guild:', guildId, { page, limit, type, severity });
     
     // Fetch from MongoDB - persistent storage
     const result = await AuditLog.getLogs(guildId, {
       page: parseInt(page),
       limit: parseInt(limit),
       action,
+      type,
+      severity,
       userId,
       startDate,
       endDate
     });
     
+    console.log('[AuditLog] Found', result.logs?.length || 0, 'logs');
+    
     res.json({
       success: true,
-      logs: result.logs,
+      logs: result.logs || [],
+      total: result.pagination?.total || 0,
+      page: result.pagination?.page || 1,
+      totalPages: result.pagination?.totalPages || 0,
       pagination: result.pagination
     });
   } catch (error) {
-    console.error('[AuditLog] Error fetching:', error.message);
-    res.status(500).json({ success: false, error: 'Failed to fetch audit logs' });
+    console.error('[AuditLog] Error fetching logs:', error.message, error.stack);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch audit logs',
+      logs: [],
+      total: 0,
+      page: 1,
+      totalPages: 0
+    });
   }
 });
 

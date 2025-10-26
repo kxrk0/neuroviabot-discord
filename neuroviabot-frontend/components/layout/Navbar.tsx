@@ -177,9 +177,9 @@ export default function Navbar({ language, onLanguageChange, user, onLogout }: N
                         <div className="flex items-center gap-2">
                           <p className="navbar__user-info-name">{user.username}</p>
                           {(user?.id === '315875588906680330' || user?.id === '413081778031427584') && (
-                            <span className="relative inline-flex items-center px-2 py-1 text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 animate-pulse">
-                              <span className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 rounded blur-sm animate-pulse" />
-                              <span className="relative z-10" style={{ textShadow: '0 0 10px rgba(168,85,247,0.8), 0 0 20px rgba(168,85,247,0.4)' }}>Developer</span>
+                            <span className="relative inline-flex items-center px-2.5 py-1 text-[10px] font-bold rounded-md bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-purple-500/30 border border-purple-400/50">
+                              <span className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 rounded-md blur-sm" />
+                              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300" style={{ textShadow: '0 0 10px rgba(168,85,247,0.6)' }}>DEVELOPER</span>
                             </span>
                           )}
                         </div>

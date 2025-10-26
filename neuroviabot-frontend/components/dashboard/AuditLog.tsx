@@ -136,30 +136,17 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
   }, []);
 
   // Socket.IO real-time updates
-  const { socket, on, off } = useSocket();
+  const { socket, on, off, connected, joinGuild, leaveGuild } = useSocket();
 
   useEffect(() => {
-    // Early return if prerequisites aren't met - suppress logs to avoid console noise
-    if (!socket || !guildId || guildId === 'unknown') {
+    // Early return if no valid guildId
+    if (!guildId || guildId === 'unknown') {
+      console.log('[AuditLog] No valid guildId, skipping socket join');
       return;
     }
 
-    // Wait for socket to be connected before joining room
-    if (!socket.connected) {
-      // Set up a one-time connect listener to join once connected
-      const handleConnect = () => {
-        console.log('[AuditLog] Socket connected, joining guild room:', guildId);
-        socket.emit('join_guild', guildId);
-      };
-      
-      socket.once('connect', handleConnect);
-      
-      return () => {
-        socket.off('connect', handleConnect);
-      };
-    }
-
-    console.log('[AuditLog] Socket ready, joining guild room:', guildId);
+    // Join guild room using the new method
+    console.log('[AuditLog] Attempting to join guild room:', guildId);
 
     const handleAuditLogEntry = (entry: AuditEntry) => {
       if (!entry || !entry.id) {
@@ -186,17 +173,23 @@ export default function AuditLog({ guildId, userId }: AuditLogProps) {
       }
     };
 
-    // Join guild room
-    console.log('[AuditLog] Emitting join_guild:', guildId);
-    socket.emit('join_guild', guildId);
+    // Join guild room with new method
+    joinGuild(guildId).then(success => {
+      if (success) {
+        console.log('[AuditLog] Successfully joined guild room');
+      } else {
+        console.warn('[AuditLog] Failed to join guild room, will retry on connect');
+      }
+    });
+    
     on('audit_log_entry', handleAuditLogEntry);
 
     return () => {
-      console.log('[AuditLog] Leaving guild room:', guildId);
-      socket.emit('leave_guild', guildId);
+      console.log('[AuditLog] Cleaning up, leaving guild room:', guildId);
+      leaveGuild(guildId);
       off('audit_log_entry', handleAuditLogEntry);
     };
-  }, [socket, guildId, on, off, showNotification]);
+  }, [guildId, on, off, joinGuild, leaveGuild, showNotification]);
 
   const fetchLogs = useCallback(async (pageNum: number = 1) => {
     if (!guildId || guildId === 'unknown') {

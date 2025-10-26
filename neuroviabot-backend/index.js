@@ -216,16 +216,44 @@ io.on('connection', (socket) => {
   console.log(`[Socket.IO] Client connected: ${socket.id}`);
   console.log(`[Socket.IO] Total connected clients: ${io.engine.clientsCount}`);
 
-  // Join guild room
-  socket.on('join_guild', (guildId) => {
-    socket.join(`guild_${guildId}`);
-    console.log(`[Socket.IO] Client ${socket.id} joined guild ${guildId}`);
+  // Join guild room with ACK
+  socket.on('join_guild', (guildId, ack) => {
+    try {
+      if (!guildId || guildId === 'unknown') {
+        console.warn(`[Socket.IO] Invalid guildId received from client ${socket.id}:`, guildId);
+        if (typeof ack === 'function') {
+          ack({ success: false, error: 'Invalid guild ID' });
+        }
+        return;
+      }
+      
+      socket.join(`guild_${guildId}`);
+      console.log(`[Socket.IO] ✅ Client ${socket.id} joined guild ${guildId}`);
+      
+      // Send acknowledgment
+      if (typeof ack === 'function') {
+        ack({ success: true, guildId });
+      }
+    } catch (error) {
+      console.error(`[Socket.IO] Error joining guild room:`, error);
+      if (typeof ack === 'function') {
+        ack({ success: false, error: error.message });
+      }
+    }
   });
 
   // Leave guild room
   socket.on('leave_guild', (guildId) => {
-    socket.leave(`guild_${guildId}`);
-    console.log(`[Socket.IO] Client ${socket.id} left guild ${guildId}`);
+    try {
+      if (!guildId || guildId === 'unknown') {
+        return;
+      }
+      
+      socket.leave(`guild_${guildId}`);
+      console.log(`[Socket.IO] Client ${socket.id} left guild ${guildId}`);
+    } catch (error) {
+      console.error(`[Socket.IO] Error leaving guild room:`, error);
+    }
   });
 
   // Settings update from dashboard
