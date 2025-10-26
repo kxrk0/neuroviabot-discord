@@ -104,13 +104,40 @@ export default function PremiumSettings({ guildId, userId }: PremiumSettingsProp
         <div className="space-y-2">
           <h4 className="text-sm font-semibold text-gray-400 mb-3">Aktif Özellikler:</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {premium?.features?.map((feature: string, index: number) => (
-              <div key={index} className="flex items-center gap-2 text-sm text-gray-300">
-                <CheckCircleIcon className="w-4 h-4 text-green-400 flex-shrink-0" />
-                <span>{feature}</span>
-              </div>
-            )) || (
-              <div className="text-gray-500 text-sm">Temel özellikler</div>
+            {isPremium ? (
+              // Premium Features
+              [
+                'Sınırsız Tepki Rolleri',
+                'Gelişmiş Otomasyon',
+                'Öncelikli Destek',
+                'Özel Komutlar (Sınırsız)',
+                'Gelişmiş İstatistikler',
+                'Özel Bot Durumu',
+                'Sunucu Yedekleme',
+                'Gelişmiş Güvenlik',
+                'Özel Hoşgeldin Mesajları',
+                'İleri Seviye Moderasyon'
+              ].map((feature: string, index: number) => (
+                <div key={index} className="flex items-center gap-2 text-sm text-gray-300">
+                  <CheckCircleIcon className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  <span>{feature}</span>
+                </div>
+              ))
+            ) : (
+              // Free Features
+              [
+                'Temel Moderasyon',
+                'Hoşgeldin Mesajları',
+                'Seviye Sistemi',
+                'Tepki Rolleri (5 adet)',
+                'Temel Komutlar',
+                'Sunucu İstatistikleri'
+              ].map((feature: string, index: number) => (
+                <div key={index} className="flex items-center gap-2 text-sm text-gray-300">
+                  <CheckCircleIcon className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                  <span>{feature}</span>
+                </div>
+              ))
             )}
           </div>
         </div>
@@ -132,8 +159,8 @@ export default function PremiumSettings({ guildId, userId }: PremiumSettingsProp
               <div className="text-sm text-gray-400">Özel Komutlar</div>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-4">
-              <div className="text-2xl font-bold text-blue-400">2x</div>
-              <div className="text-sm text-gray-400">NRC Çarpanı</div>
+              <div className="text-2xl font-bold text-blue-400">✓</div>
+              <div className="text-sm text-gray-400">Gelişmiş İstatistikler</div>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-4">
               <div className="text-2xl font-bold text-green-400">✓</div>

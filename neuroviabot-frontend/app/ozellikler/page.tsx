@@ -28,42 +28,6 @@ export default function FeaturesPage() {
 
   const features = [
     {
-      icon: CurrencyDollarIcon,
-      title: 'NeuroCoin (NRC) Ekonomisi',
-      description: 'Tam özellikli kripto-benzeri ekonomi sistemi',
-      gradient: 'from-purple-500 to-pink-500',
-      bgGradient: 'from-purple-500/10 to-pink-500/10',
-      tags: ['Daily/Work', 'Transfer', 'Banka Sistemi', 'Leaderboard'],
-      status: 'active'
-    },
-    {
-      icon: ArrowsRightLeftIcon,
-      title: 'P2P Trading Network',
-      description: 'Kullanıcılar arası güvenli ticaret',
-      gradient: 'from-blue-500 to-cyan-500',
-      bgGradient: 'from-blue-500/10 to-cyan-500/10',
-      tags: ['Escrow', 'Counter-Offer', 'Trade History', 'Reputation'],
-      status: 'active'
-    },
-    {
-      icon: ChartPieIcon,
-      title: 'Investment & Staking',
-      description: 'NRC yatırım ve kredi sistemi',
-      gradient: 'from-green-500 to-emerald-500',
-      bgGradient: 'from-green-500/10 to-emerald-500/10',
-      tags: ['Staking', 'Interest', 'Loans', 'Credit Score'],
-      status: 'active'
-    },
-    {
-      icon: ShoppingBagIcon,
-      title: 'Global Marketplace',
-      description: 'Sunucular arası pazar yeri',
-      gradient: 'from-amber-500 to-orange-500',
-      bgGradient: 'from-amber-500/10 to-orange-500/10',
-      tags: ['Cross-Server', 'Tax System', 'Guild Treasury', 'Categories'],
-      status: 'active'
-    },
-    {
       icon: ShieldCheckIcon,
       title: 'Advanced Auto-Moderation',
       description: 'Gelişmiş otomatik moderasyon',
