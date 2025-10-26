@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [showDevNotification, setShowDevNotification] = useState(false);
   
   // Developer IDs
-  const DEVELOPER_IDS = ['773539215098249246', 'YOUR_DEV_ID_2']; // Add developer Discord IDs here
+  const DEVELOPER_IDS = ['315875588906680330', '413081778031427584']; // swxff & schizoid
 
   useEffect(() => {
     checkAuth();
@@ -79,10 +79,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Check if developer and show notification
           if (wasNotLoggedIn && DEVELOPER_IDS.includes(userData.id)) {
             setShowDevNotification(true);
-            // Play sound
-            const audio = new Audio('/sounds/dev-login.mp3');
-            audio.volume = 0.5;
-            audio.play().catch(err => console.log('Audio play failed:', err));
+            // Play success notification sound using Web Audio API
+            try {
+              const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+              const oscillator = audioContext.createOscillator();
+              const gainNode = audioContext.createGain();
+              
+              oscillator.connect(gainNode);
+              gainNode.connect(audioContext.destination);
+              
+              // Play a pleasant notification sound (C major chord)
+              oscillator.type = 'sine';
+              oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+              oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+              oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+              
+              gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+              
+              oscillator.start(audioContext.currentTime);
+              oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (err) {
+              console.log('Audio play failed:', err);
+            }
             // Hide notification after 5 seconds
             setTimeout(() => setShowDevNotification(false), 5000);
           }
