@@ -128,16 +128,6 @@ const categories = [
     ]
   },
   {
-    id: 'marketplace',
-    name: 'Marketplace',
-    description: 'Sunucunuz için ürün oluşturun ve satış yapın',
-    icon: ShoppingBagIcon,
-    color: 'from-emerald-500 to-teal-500',
-    premium: false,
-    isExternal: true,
-    link: '/dashboard/{serverId}/marketplace' // Will be replaced with actual serverId
-  },
-  {
     id: 'general',
     name: 'Genel Ayarlar',
     description: 'Bot yapılandırması',

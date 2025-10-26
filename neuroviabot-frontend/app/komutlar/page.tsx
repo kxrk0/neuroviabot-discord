@@ -139,12 +139,7 @@ export default function CommandsPage() {
       if (response.data.success) {
         // Category metadata mapping
         const categoryMap: Record<string, any> = {
-          economy: { 
-            name: '🪙 NeuroCoin Ekonomisi', 
-            icon: <CurrencyDollarIcon className="w-6 h-6" />, 
-            color: 'purple' 
-          },
-          moderation: { 
+          moderation: {
             name: 'Moderasyon', 
             icon: <ShieldCheckIcon className="w-6 h-6" />, 
             color: 'red' 

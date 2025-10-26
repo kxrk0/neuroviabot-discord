@@ -25,7 +25,6 @@ import FeatureManager from '../../../components/dashboard/FeatureManager';
 import WelcomeSettings from '../../../components/dashboard/WelcomeSettings';
 import ModerationSettings from '../../../components/dashboard/ModerationSettings';
 import LevelingSettings from '../../../components/dashboard/LevelingSettings';
-import EconomySettings from '../../../components/dashboard/EconomySettings';
 import BackupSettings from '../../../components/dashboard/BackupSettings';
 import SecuritySettings from '../../../components/dashboard/SecuritySettings';
 import AnalyticsSettings from '../../../components/dashboard/AnalyticsSettings';
@@ -163,28 +162,6 @@ const categories = [
         name: 'Seviye Ödülleri',
         description: 'Belirli seviyelerde otomatik rol verin',
         settings: ['rewards']
-      },
-    ]
-  },
-  {
-    id: 'economy',
-    name: 'Ekonomi',
-    description: 'Sunucu ekonomisi ve NRC Coin ayarları',
-    icon: ChartBarIcon,
-    color: 'from-yellow-600 to-amber-600',
-    premium: false,
-    features: [
-      {
-        id: 'nrcSettings',
-        name: 'NRC Coin Ayarları',
-        description: 'NRC Coin kazanma ve günlük ödül ayarları',
-        settings: ['dailyReward', 'levelReward', 'shopItems']
-      },
-      {
-        id: 'serverCurrency',
-        name: 'Sunucu Para Birimi',
-        description: 'Sunucu özel para birimi ayarları',
-        settings: ['enabled', 'currencyName', 'startingBalance']
       },
     ]
   },
@@ -1162,14 +1139,6 @@ export default function ServerDashboard() {
                   />
                 )}
 
-                {/* Economy Settings Component */}
-                {activeCategory === 'economy' && (
-                  <EconomySettings 
-                    guildId={serverId} 
-                    userId={user?.id || 'unknown'} 
-                  />
-                )}
-
                 {/* Backup Settings Component */}
                 {activeCategory === 'backup' && (
                   <BackupSettings 
@@ -1210,7 +1179,7 @@ export default function ServerDashboard() {
                 )}
                 
                 {/* Other Features */}
-                {activeCategory !== 'overview' && activeCategory !== 'members' && activeCategory !== 'channels' && activeCategory !== 'audit' && activeCategory !== 'server-stats' && activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'economy' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'reaction-roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features?.map((feature) => {
+                {activeCategory !== 'overview' && activeCategory !== 'members' && activeCategory !== 'channels' && activeCategory !== 'audit' && activeCategory !== 'server-stats' && activeCategory !== 'commands' && activeCategory !== 'features' && activeCategory !== 'welcome' && activeCategory !== 'moderation' && activeCategory !== 'leveling' && activeCategory !== 'music' && activeCategory !== 'games' && activeCategory !== 'backup' && activeCategory !== 'security' && activeCategory !== 'analytics' && activeCategory !== 'automation' && activeCategory !== 'roles' && activeCategory !== 'reaction-roles' && activeCategory !== 'custom' && activeCategory !== 'premium' && currentCategory?.features?.map((feature) => {
                   // Map categories to backend format
                   const categoryMap: any = {
                     'welcome': 'welcome',

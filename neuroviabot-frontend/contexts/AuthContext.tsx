@@ -1,14 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface User {
   id: string;
   username: string;
   discriminator: string;
   avatar: string | null;
-  nrcBalance: number;
-  nrcRank: number;
   premiumTier: 'free' | 'premium' | 'vip';
 }
 
@@ -39,6 +38,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [showDevNotification, setShowDevNotification] = useState(false);
+  
+  // Developer IDs
+  const DEVELOPER_IDS = ['773539215098249246', 'YOUR_DEV_ID_2']; // Add developer Discord IDs here
 
   useEffect(() => {
     checkAuth();
@@ -66,10 +69,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const userData = await res.json();
         if (userData && userData.id) {
+          const wasNotLoggedIn = !user;
           setUser(userData);
           // Cache user data in localStorage
           if (typeof window !== 'undefined') {
             localStorage.setItem('neurovia_user', JSON.stringify(userData));
+          }
+          
+          // Check if developer and show notification
+          if (wasNotLoggedIn && DEVELOPER_IDS.includes(userData.id)) {
+            setShowDevNotification(true);
+            // Play sound
+            const audio = new Audio('/sounds/dev-login.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(err => console.log('Audio play failed:', err));
+            // Hide notification after 5 seconds
+            setTimeout(() => setShowDevNotification(false), 5000);
           }
         } else {
           setUser(null);
@@ -126,6 +141,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshUser
     }}>
       {children}
+      
+      {/* Developer Login Notification */}
+      <AnimatePresence>
+        {showDevNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -100, scale: 0.3 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+            className="fixed top-8 right-8 z-[9999] pointer-events-none"
+          >
+            <motion.div
+              animate={{
+                boxShadow: [
+                  '0 0 20px rgba(168, 85, 247, 0.5)',
+                  '0 0 40px rgba(168, 85, 247, 0.8)',
+                  '0 0 20px rgba(168, 85, 247, 0.5)'
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="bg-gradient-to-br from-purple-600 via-purple-700 to-blue-700 backdrop-blur-xl border-2 border-purple-400 rounded-2xl p-6 shadow-2xl"
+            >
+              <div className="flex items-center gap-4">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                  className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center"
+                >
+                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </motion.div>
+                <div>
+                  <h3 className="text-white font-black text-xl mb-1">Hoş Geldin Developer! 🚀</h3>
+                  <p className="text-purple-200 text-sm font-medium">Başarılı giriş - Tüm sistemler hazır!</p>
+                </div>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="text-4xl"
+                >
+                  👨‍💻
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AuthContext.Provider>
   );
 }
