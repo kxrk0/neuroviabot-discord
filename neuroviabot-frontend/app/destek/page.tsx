@@ -20,13 +20,8 @@ const faqs = [
     category: 'Başlangıç'
   },
   {
-    question: 'NRC nedir ve nasıl kazanılır?',
-    answer: 'NeuroCoin (NRC), botumuzun ekonomi sistemi için kullanılan sanal para birimidir. Günlük ödüller, görevler tamamlayarak, casino oyunları oynayarak ve aktif olarak sunucuda bulunarak NRC kazanabilirsiniz.',
-    category: 'Ekonomi'
-  },
-  {
     question: 'Premium özellikleri nelerdir?',
-    answer: 'Premium üyelikle gelişmiş analitik, özel komutlar, öncelikli destek, reklamsız deneyim, özel roller ve daha fazla NRC kazanma oranına erişebilirsiniz. Ayrıca marketplace\'te özel ürünler listeleyebilirsiniz.',
+    answer: 'Premium üyelikle gelişmiş analitik, özel komutlar, öncelikli destek, reklamsız deneyim, özel roller ve daha fazla özelleştirilmiş bot deneyimine erişebilirsiniz.',
     category: 'Premium'
   },
   {
@@ -40,14 +35,24 @@ const faqs = [
     category: 'Seviye Sistemi'
   },
   {
-    question: 'P2P trading nedir?',
-    answer: 'Peer-to-peer trading, kullanıcıların kendi aralarında güvenli bir şekilde NRC ve özel itemler alışverişi yapmasını sağlar. /trade komutu ile işlem başlatabilir, bot aracılığıyla güvenli transferler yapabilirsiniz.',
-    category: 'Trading'
+    question: 'Ticket sistemi nasıl kullanılır?',
+    answer: 'Ticket sistemi ile kullanıcılar özel destek kanalları açabilir. /ticket komutu ile ayarları yapılandırabilir, kullanıcılar panel üzerinden ticket oluşturabilir. Her ticket özel bir kanal olarak açılır.',
+    category: 'Destek'
+  },
+  {
+    question: 'Çekiliş sistemi nasıl çalışır?',
+    answer: 'Çekiliş sistemi ile sunucunuzda otomatik çekilişler düzenleyebilirsiniz. /giveaway komutu ile çekiliş başlatabilir, süre, kazanan sayısı ve ödül belirleyebilirsiniz.',
+    category: 'Etkinlik'
   },
   {
     question: 'Bot çevrimdışı görünüyor, ne yapmalıyım?',
     answer: 'Öncelikle bot\'un sunucunuzda olduğundan ve gerekli izinlere sahip olduğundan emin olun. Eğer sorun devam ediyorsa, Discord sunucumuzdan destek talep edebilir veya /status komutu ile bot durumunu kontrol edebilirsiniz.',
     category: 'Teknik'
+  },
+  {
+    question: 'Dashboard üzerinden neleri yönetebilirim?',
+    answer: 'Dashboard ile sunucu ayarlarınızı, moderasyon kurallarınızı, hoşgeldin mesajlarınızı, oto-rol sistemlerini ve daha fazlasını web üzerinden kolayca yönetebilirsiniz.',
+    category: 'Dashboard'
   },
   {
     question: 'Özel komutlar nasıl oluşturulur?',

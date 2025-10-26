@@ -26,7 +26,7 @@ const feedbackTypes = [
   { icon: <ExclamationTriangleIcon className="w-6 h-6" />, value: 'issue', label: 'Sorun Bildirimi', description: 'Karşılaştığınız problemler', emoji: '⚠️' }
 ];
 
-const experienceAreas = ['NRC Ekonomi', 'P2P Trading', 'Moderasyon', 'Ticket Sistemi', 'Çekiliş', 'Leveling', 'Dashboard', 'Bot Performansı', 'Komutlar', 'Destek', 'Dokümantasyon', 'Marketplace'];
+const experienceAreas = ['Moderasyon', 'Ticket Sistemi', 'Çekiliş', 'Leveling', 'Dashboard', 'Bot Performansı', 'Komutlar', 'Destek', 'Dokümantasyon', 'Oto-Mesaj', 'Oto-Rol', 'Log Sistemi'];
 
 export default function FeedbackPage() {
   const { user, isLoading, logout } = useAuth();
