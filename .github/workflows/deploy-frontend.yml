@@ -89,6 +89,10 @@ jobs:
             echo "🔹 Node.js version: $(node --version)"
             echo "🔹 NPM version: $(npm --version)"
             
+            # Clean npm cache to avoid corrupted package issues
+            echo "🧹 Cleaning npm cache..."
+            npm cache clean --force
+            
             # Install dependencies with legacy peer deps for compatibility
             npm install --legacy-peer-deps
             INSTALL_EXIT_CODE=$?
