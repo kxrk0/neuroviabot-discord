@@ -1,8 +1,8 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import {
   ArrowLeftIcon,
   ShieldCheckIcon,
@@ -215,13 +215,16 @@ export default function CommandsPage() {
     }
   }
 
-  const filteredCategories = categories.map(category => ({
-    ...category,
-    commands: category.commands.filter(cmd =>
-      cmd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cmd.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })).filter(category => category.commands.length > 0);
+  const filteredCategories = useMemo(() => 
+    categories.map(category => ({
+      ...category,
+      commands: category.commands.filter(cmd =>
+        cmd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        cmd.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(category => category.commands.length > 0),
+    [categories, searchQuery]
+  );
 
   const totalCommands = categories.reduce((acc, cat) => acc + cat.commands.length, 0);
 
