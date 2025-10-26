@@ -66,6 +66,17 @@ export default function CommandsPage() {
     }
   };
 
+  const filteredCategories = useMemo(() => 
+    categories.map(category => ({
+      ...category,
+      commands: category.commands.filter(cmd =>
+        cmd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        cmd.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(category => category.commands.length > 0),
+    [categories, searchQuery]
+  );
+
   useEffect(() => {
     fetchCommands();
   }, []);
@@ -115,7 +126,7 @@ export default function CommandsPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedCategory, filteredCategories, selectedCommandIndex]);
+  }, [selectedCategory, filteredCategories, selectedCommandIndex, copyToClipboard]);
 
   // Reset selected command index when category changes
   useEffect(() => {
@@ -214,17 +225,6 @@ export default function CommandsPage() {
       setLoading(false);
     }
   }
-
-  const filteredCategories = useMemo(() => 
-    categories.map(category => ({
-      ...category,
-      commands: category.commands.filter(cmd =>
-        cmd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cmd.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    })).filter(category => category.commands.length > 0),
-    [categories, searchQuery]
-  );
 
   const totalCommands = categories.reduce((acc, cat) => acc + cat.commands.length, 0);
 
