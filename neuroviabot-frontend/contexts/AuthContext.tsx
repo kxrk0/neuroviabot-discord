@@ -141,8 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               document.addEventListener('click', playOnInteraction, { once: true });
               document.addEventListener('keydown', playOnInteraction, { once: true });
               
-              // Hide notification after 5 seconds
-              setTimeout(() => setShowDevNotification(false), 5000);
+              // Hide notification after 3 seconds
+              setTimeout(() => setShowDevNotification(false), 3000);
             }
           }
         } else {
@@ -228,11 +228,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }}
               exit={{ 
                 opacity: 0, 
-                scale: 0.8,
-                y: -100,
-                transition: { duration: 0.3 } 
+                scale: 0.95,
+                y: -20,
+                transition: { 
+                  duration: 0.6,
+                  ease: "easeInOut"
+                } 
               }}
-              className="fixed top-6 right-6 z-[9999] w-full max-w-md"
+              className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-md px-4"
             >
               <div className="relative">
                 {/* Animated Glow */}
