@@ -91,55 +91,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               localStorage.removeItem('neurovia_show_dev_notification');
               setShowDevNotification(true);
               
-              // Play success notification sound using Web Audio API
-              // Use user interaction to unlock AudioContext
-              const playNotificationSound = () => {
+              // Browser notification sound (simple beep without AudioContext)
+              setTimeout(() => {
                 try {
-                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-                  
-                  // Resume audio context (required for autoplay policy)
-                  audioContext.resume().then(() => {
-                    // Create multiple oscillators for a richer sound
-                    const playTone = (frequency: number, startTime: number, duration: number) => {
-                      const oscillator = audioContext.createOscillator();
-                      const gainNode = audioContext.createGain();
-                      
-                      oscillator.connect(gainNode);
-                      gainNode.connect(audioContext.destination);
-                      
-                      oscillator.type = 'sine';
-                      oscillator.frequency.setValueAtTime(frequency, startTime);
-                      
-                      gainNode.gain.setValueAtTime(0, startTime);
-                      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.01);
-                      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-                      
-                      oscillator.start(startTime);
-                      oscillator.stop(startTime + duration);
-                    };
-                    
-                    const now = audioContext.currentTime;
-                    // Play ascending C major chord
-                    playTone(523.25, now, 0.3); // C5
-                    playTone(659.25, now + 0.15, 0.3); // E5
-                    playTone(783.99, now + 0.3, 0.4); // G5
-                  });
+                  // Use system notification sound if available
+                  if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Developer Mode', {
+                      body: 'Hoş geldin! Tüm sistemler hazır.',
+                      icon: '/favicon.ico',
+                      silent: false
+                    });
+                  }
                 } catch (err) {
-                  console.log('Audio play failed:', err);
+                  console.log('Notification failed:', err);
                 }
-              };
-              
-              // Try to play immediately
-              setTimeout(playNotificationSound, 1000);
-              
-              // Also play on any user interaction
-              const playOnInteraction = () => {
-                playNotificationSound();
-                document.removeEventListener('click', playOnInteraction);
-                document.removeEventListener('keydown', playOnInteraction);
-              };
-              document.addEventListener('click', playOnInteraction, { once: true });
-              document.addEventListener('keydown', playOnInteraction, { once: true });
+              }, 500);
               
               // Hide notification after 3 seconds
               setTimeout(() => setShowDevNotification(false), 3000);
@@ -201,139 +167,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }}>
       {children}
       
-      {/* Developer Login Notification - Hero Style */}
+      {/* Developer Login Notification - Minimal Style */}
       <AnimatePresence>
         {showDevNotification && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998]"
-            />
-            
-            {/* Notification Card */}
-            <motion.div
-              initial={{ opacity: 0, y: -100, scale: 0.8 }}
-              animate={{ 
-                opacity: 1, 
-                y: 0, 
-                scale: 1,
-                transition: {
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 20
-                }
-              }}
-              exit={{ 
-                opacity: 0, 
-                scale: 0.95,
-                y: -20,
-                transition: { 
-                  duration: 0.6,
-                  ease: "easeInOut"
-                } 
-              }}
-              className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-md px-4"
-            >
-              <div className="relative">
-                {/* Animated Glow */}
-                <motion.div
-                  animate={{
-                    opacity: [0.4, 0.8, 0.4],
-                    scale: [1, 1.05, 1]
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-3xl blur-2xl"
-                />
-                
-                {/* Card Content */}
-                <div className="relative bg-gradient-to-br from-gray-900/95 via-purple-900/90 to-blue-900/90 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl overflow-hidden">
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0" style={{
-                      backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                      backgroundSize: '20px 20px'
-                    }} />
-                  </div>
-                  
-                  {/* Animated Gradient Orbs */}
-                  <motion.div
-                    animate={{
-                      x: [0, 100, 0],
-                      y: [0, -50, 0]
-                    }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute top-0 right-0 w-64 h-64 bg-purple-500/30 rounded-full blur-3xl"
-                  />
-                  <motion.div
-                    animate={{
-                      x: [0, -100, 0],
-                      y: [0, 50, 0]
-                    }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                    className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/30 rounded-full blur-3xl"
-                  />
-                  
-                  <div className="relative flex items-center gap-4">
-                    {/* Icon */}
-                    <motion.div
-                      animate={{ 
-                        rotate: [0, 360],
-                        scale: [1, 1.1, 1]
-                      }}
-                      transition={{ 
-                        rotate: { duration: 3, repeat: Infinity, ease: 'linear' },
-                        scale: { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-                      }}
-                      className="flex-shrink-0"
-                    >
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl blur-lg opacity-60" />
-                        <div className="relative w-14 h-14 bg-gradient-to-br from-purple-500 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-xl">
-                          <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </div>
-                    </motion.div>
-                    
-                    {/* Text Content */}
-                    <div className="flex-1">
-                      <motion.h3 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-xl font-bold text-white mb-1"
-                      >
-                        Developer Mode Active 🚀
-                      </motion.h3>
-                      <motion.p 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-gray-300 text-sm font-medium mb-2"
-                      >
-                        Hoş geldin! Tüm sistemler hazır.
-                      </motion.p>
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="flex gap-2"
-                      >
-                        <div className="px-2.5 py-1 rounded-full bg-green-500/20 border border-green-500/30 flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                          <span className="text-green-300 text-xs font-semibold">System Online</span>
-                        </div>
-                      </motion.div>
-                    </div>
-                  </div>
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ 
+              opacity: 1, 
+              y: 0,
+              transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 25
+              }
+            }}
+            exit={{ 
+              opacity: 0,
+              y: -20,
+              transition: { 
+                duration: 0.5,
+                ease: "easeOut"
+              } 
+            }}
+            style={{
+              position: 'fixed',
+              top: '6rem',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 9999,
+              maxWidth: '400px',
+              width: '90%'
+            }}
+          >
+            {/* Modern Minimal Card */}
+            <div className="relative">
+              {/* Subtle glow */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur-lg opacity-30" />
+              
+              {/* Card */}
+              <div className="relative flex items-center gap-3 bg-gray-900/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 shadow-xl">
+                {/* Icon */}
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
                 </div>
+                
+                {/* Text */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm mb-0.5">Developer Mode Active</p>
+                  <p className="text-gray-400 text-xs">Tüm sistemler hazır 🚀</p>
+                </div>
+                
+                {/* Status dot */}
+                <div className="flex-shrink-0 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               </div>
-            </motion.div>
-          </>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </AuthContext.Provider>
