@@ -92,39 +92,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setShowDevNotification(true);
               
               // Play success notification sound using Web Audio API
-              setTimeout(() => {
+              // Use user interaction to unlock AudioContext
+              const playNotificationSound = () => {
                 try {
                   const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
                   
-                  // Create multiple oscillators for a richer sound
-                  const playTone = (frequency: number, startTime: number, duration: number) => {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
+                  // Resume audio context (required for autoplay policy)
+                  audioContext.resume().then(() => {
+                    // Create multiple oscillators for a richer sound
+                    const playTone = (frequency: number, startTime: number, duration: number) => {
+                      const oscillator = audioContext.createOscillator();
+                      const gainNode = audioContext.createGain();
+                      
+                      oscillator.connect(gainNode);
+                      gainNode.connect(audioContext.destination);
+                      
+                      oscillator.type = 'sine';
+                      oscillator.frequency.setValueAtTime(frequency, startTime);
+                      
+                      gainNode.gain.setValueAtTime(0, startTime);
+                      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.01);
+                      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                      
+                      oscillator.start(startTime);
+                      oscillator.stop(startTime + duration);
+                    };
                     
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(frequency, startTime);
-                    
-                    gainNode.gain.setValueAtTime(0, startTime);
-                    gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.01);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-                    
-                    oscillator.start(startTime);
-                    oscillator.stop(startTime + duration);
-                  };
-                  
-                  const now = audioContext.currentTime;
-                  // Play ascending C major chord
-                  playTone(523.25, now, 0.3); // C5
-                  playTone(659.25, now + 0.15, 0.3); // E5
-                  playTone(783.99, now + 0.3, 0.4); // G5
-                  
+                    const now = audioContext.currentTime;
+                    // Play ascending C major chord
+                    playTone(523.25, now, 0.3); // C5
+                    playTone(659.25, now + 0.15, 0.3); // E5
+                    playTone(783.99, now + 0.3, 0.4); // G5
+                  });
                 } catch (err) {
                   console.log('Audio play failed:', err);
                 }
-              }, 800); // Longer delay to ensure page is fully loaded
+              };
+              
+              // Try to play immediately
+              setTimeout(playNotificationSound, 1000);
+              
+              // Also play on any user interaction
+              const playOnInteraction = () => {
+                playNotificationSound();
+                document.removeEventListener('click', playOnInteraction);
+                document.removeEventListener('keydown', playOnInteraction);
+              };
+              document.addEventListener('click', playOnInteraction, { once: true });
+              document.addEventListener('keydown', playOnInteraction, { once: true });
               
               // Hide notification after 5 seconds
               setTimeout(() => setShowDevNotification(false), 5000);
@@ -217,7 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 y: -100,
                 transition: { duration: 0.3 } 
               }}
-              className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-2xl px-4"
+              className="fixed top-6 right-6 z-[9999] w-full max-w-md"
             >
               <div className="relative">
                 {/* Animated Glow */}
@@ -231,7 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 />
                 
                 {/* Card Content */}
-                <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/50 to-blue-900/50 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 shadow-2xl overflow-hidden">
+                <div className="relative bg-gradient-to-br from-gray-900/95 via-purple-900/90 to-blue-900/90 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl overflow-hidden">
                   {/* Background Pattern */}
                   <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{
@@ -258,7 +273,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/30 rounded-full blur-3xl"
                   />
                   
-                  <div className="relative flex items-center gap-6">
+                  <div className="relative flex items-center gap-4">
                     {/* Icon */}
                     <motion.div
                       animate={{ 
@@ -272,10 +287,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                       className="flex-shrink-0"
                     >
                       <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl blur-xl opacity-75" />
-                        <div className="relative w-20 h-20 bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl">
-                          <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl blur-lg opacity-60" />
+                        <div className="relative w-14 h-14 bg-gradient-to-br from-purple-500 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-xl">
+                          <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         </div>
                       </div>
@@ -287,17 +302,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-blue-200 mb-2"
+                        className="text-xl font-bold text-white mb-1"
                       >
-                        Hoş Geldin Developer! 🚀
+                        Developer Mode Active 🚀
                       </motion.h3>
                       <motion.p 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="text-purple-200 text-lg font-medium mb-3"
+                        className="text-gray-300 text-sm font-medium mb-2"
                       >
-                        Başarılı giriş - Tüm sistemler hazır!
+                        Hoş geldin! Tüm sistemler hazır.
                       </motion.p>
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -305,27 +320,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         transition={{ delay: 0.4 }}
                         className="flex gap-2"
                       >
-                        <div className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/50 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                          <span className="text-green-300 text-sm font-semibold">Online</span>
-                        </div>
-                        <div className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center gap-2">
-                          <span className="text-purple-300 text-sm font-semibold">👨‍💻 Developer Mode</span>
+                        <div className="px-2.5 py-1 rounded-full bg-green-500/20 border border-green-500/30 flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                          <span className="text-green-300 text-xs font-semibold">System Online</span>
                         </div>
                       </motion.div>
                     </div>
-                    
-                    {/* Emoji */}
-                    <motion.div
-                      animate={{ 
-                        scale: [1, 1.2, 1],
-                        rotate: [0, 10, -10, 0]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="text-6xl flex-shrink-0"
-                    >
-                      👨‍💻
-                    </motion.div>
                   </div>
                 </div>
               </div>
